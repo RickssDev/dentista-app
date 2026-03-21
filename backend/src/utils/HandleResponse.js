@@ -14,12 +14,13 @@ class HandleResponse {
 	 * // En un controlador:
 	 * // return HandleResponse.success(res, 200, 'Usuario actualizado correctamente');
 	 */
-	static success(res, statusCode, message) {
-		return res.status(statusCode).json({
-			success: true,
-			message
-		});
-	}
+static success(res, statusCode, message, payload = null) {
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    payload
+  });
+}
 
 	/**
 	 * Envia una respuesta HTTP exitosa con payload adicional.
@@ -35,7 +36,7 @@ class HandleResponse {
 	 * // En un controlador:
 	 * // return HandleResponse.successWithPayload(res, 200, 'Usuarios obtenidos', users);
 	 */
-	static created(res, status = 201, message, payload) {
+	static created(res, status = 201, message, payload = null) {
 		return res.status(status).json({
 			success: true,
 			message,

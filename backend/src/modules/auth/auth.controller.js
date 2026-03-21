@@ -1,2 +1,13 @@
-const catchAsync = require('../utils/catchAsync');
-const HandleResponse = require('../utils/HandleResponse');
+const catchAsync = require('../../utils/catchAsync'); 
+const HandleResponse = require('../../utils/HandleResponse');
+const service = require('./auth.service');
+
+exports.register = catchAsync(async (req, res) => {
+const data = await service.register(req.body);
+return HandleResponse.created(res,201,'Usuario registrado correctamente',data);
+});
+
+exports.login = catchAsync(async (req, res) => {
+const data = await service.login(req.body);
+return HandleResponse.success(res, 200,'Login exitoso',data);
+});
