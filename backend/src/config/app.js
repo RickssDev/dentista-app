@@ -7,7 +7,7 @@ function createApp() {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  
+  app.use('/uploads', express.static('uploads'));
   app.get('/', (_req, res) => {
     res.json({
       message: 'API dentista activa.'
