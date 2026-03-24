@@ -11,13 +11,14 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - ./uploads:/app/uploads
 
   db:
     image: mysql:8
     restart: always
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: ijbf_destissa
+      MYSQL_DATABASE: ijbf_dentissa
     ports:
       - "3307:3306"
     volumes:

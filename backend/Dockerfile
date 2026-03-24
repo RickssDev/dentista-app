@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para levantar tu app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
