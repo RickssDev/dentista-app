@@ -7,6 +7,7 @@ exports.getUsuarios = async () => {
       u.nombre_usuario AS nombre,
       u.apellido,
       u.correo AS email,
+      u.imagen,
       u.estado,
       r.id_rol AS rol_id,
       r.rol AS rol_nombre
@@ -24,6 +25,7 @@ exports.getUsuarioById = async (id) => {
       u.nombre_usuario,
       u.apellido,
       u.correo,
+      u.imagen,
       u.estado,
       r.id_rol AS rol_id,
       r.rol AS rol_nombre

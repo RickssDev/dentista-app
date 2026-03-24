@@ -1,10 +1,22 @@
 const express = require("express");
 const errorHandler = require('../middlewares/errorHandler');
 const indexRoutes = require('../routes');
+const cors = require('cors');
 
 function createApp() {
   const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5174",
+  "http://10.0.0.177:5174" 
+];
+
+app.use(cors({
+  origin: function(origin, callback){
+    return callback(null, true);
+  },
+  credentials: true
+}));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use('/uploads', express.static('uploads'));
