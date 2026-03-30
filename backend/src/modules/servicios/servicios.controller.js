@@ -13,9 +13,6 @@ exports.getServicioById = catchAsync(async (req, res) => {
 });
 
 exports.createServicio = catchAsync(async (req, res) => {
-  console.log('BODY:', req.body);
-  console.log('FILE:', req.file);
-
   if (req.file) {
     req.body.imagen = '/uploads/' + req.file.filename;
   }

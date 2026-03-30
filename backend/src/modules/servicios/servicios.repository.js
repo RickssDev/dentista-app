@@ -55,15 +55,6 @@ exports.createServicio = async (data) => {
   return result.insertId;
 };
 
-exports.getServicioByName = async (nombre) => {
-  const [rows] = await pool.query(`
-    SELECT * FROM servicio WHERE nombre_servicio = ?
-  `, [nombre]);
-
-  return rows[0];
-};
-
-
 exports.updateServicio = async (id, data) => {
   const fieldMap = {
     nombre: 'nombre_servicio',
