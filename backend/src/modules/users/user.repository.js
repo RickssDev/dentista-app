@@ -5,6 +5,7 @@ exports.getUsuarios = async () => {
     SELECT 
       u.id_usuario AS id,
       u.nombre_usuario AS nombre,
+      u.telefono,
       u.apellido,
       u.correo AS email,
       u.imagen,
@@ -23,6 +24,7 @@ exports.getUsuarioById = async (id) => {
     SELECT 
       u.id_usuario,
       u.nombre_usuario,
+      u.telefono,
       u.apellido,
       u.correo,
       u.imagen,
@@ -41,9 +43,9 @@ exports.createUsuario = async (data) => {
   const { nombre, email, apellido, password, id_rol, imagen } = data;
 
   const [result] = await pool.query(`
-    INSERT INTO usuarios (nombre_usuario, correo, apellido, contrasena, id_rol, estado, imagen)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [nombre, email, apellido, password, id_rol, 'activo', imagen]);
+    INSERT INTO usuarios (nombre_usuario, telefono, correo, apellido, contrasena, id_rol, estado, imagen)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `, [nombre, telefono, email, apellido, password, id_rol, 'activo', imagen]);
 
   return result.insertId;
 };
@@ -51,6 +53,7 @@ exports.createUsuario = async (data) => {
 exports.updateUsuario = async (id, data) => {
   const fieldMap = {
     nombre: 'nombre_usuario',
+    telefono: 'telefono',
     email: 'correo',
     apellido: 'apellido',
     password: 'contrasena',
