@@ -8,13 +8,14 @@ const jwtFactory = new JWTFactory();
 
 exports.register = async ({
   nombre_usuario,
+  telefono,
   apellido,
   correo,
   contrasena,
   confirmar_contrasena
 }) => {
 
-    if (!nombre_usuario || !apellido || !correo || !contrasena || !confirmar_contrasena) {
+    if (!nombre_usuario || !telefono || !apellido || !correo || !contrasena || !confirmar_contrasena) {
     const error = new Error('Todos los campos son obligatorios');
     error.statusCode = 400;
     throw error;
@@ -38,6 +39,7 @@ exports.register = async ({
 
   return await repo.createUser({
     nombre_usuario,
+    telefono,
     apellido,
     correo,
     contrasena: hashedPassword,
