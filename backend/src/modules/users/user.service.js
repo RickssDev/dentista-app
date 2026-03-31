@@ -7,6 +7,7 @@ exports.getUsuarios = async () => {
   return usuarios.map(u => ({
     id: u.id,
     nombre: u.nombre,
+    telefono: u.telefono,
     apellido: u.apellido,
     email: u.email,
     estado: u.estado,
@@ -27,6 +28,7 @@ exports.getUsuarioById = async (id) => {
   return {
     id: u.id,
     nombre: u.nombre,
+    telefono: u.telefono,
     apellido: u.apellido,
     email: u.email,
     estado: u.estado,
