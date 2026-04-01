@@ -1,0 +1,375 @@
+.admin-container {
+  display: flex;
+}
+.panel-title {
+  border-top: 2px solid #aaa;
+  padding-top: 15px;
+  margin-top: 10px;
+}
+/* CONTENIDO */
+.admin-content {
+  margin-left: 260px;
+  padding: 20px;
+  width: 100%;
+  background: #f4dede;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: #ccc;
+  border-radius: 50%;
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  flex: 1;
+  background: #f3eaea;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.action-card {
+  flex: 1;
+  background: #dbaeb0;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+}
+
+.action-card svg {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+/* TABLA */
+.table-container {
+  background: #f3eaea;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+.delete-icon {
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .admin-content {
+    margin-left: 0;
+  }
+
+  .stats {
+    flex-direction: column;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+/* 🔥 CONTENEDOR */
+.usuarios-container {
+  padding: 20px;
+}
+
+/* HEADER */
+.usuarios-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.usuarios-header h1 {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* BOTÓN */
+.btn-add {
+  background: #e94b6a;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+
+.btn-add:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* TABLA CONTENEDOR */
+.usuarios-table {
+  background: #f5eeee;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+/* HEADER TABLA */
+.table-header {
+  display: grid;
+  grid-template-columns: 70px 1.2fr 1fr 2fr 1fr 1fr;
+  font-weight: bold;
+  border-bottom: 2px solid #bbb;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+/* FILAS */
+.table-row {
+  display: grid;
+  grid-template-columns: 70px 1.2fr 1fr 2fr 1fr 1fr;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+/* HOVER FILA */
+.table-row:hover {
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+}
+
+/* AVATAR */
+.avatar {
+  width: 42px;
+  height: 42px;
+  background: #d9d9d9;
+  border-radius: 50%;
+}
+
+/* ESTADO */
+.estado {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  text-align: center;
+  width: fit-content;
+}
+
+.estado.activo {
+  background: #8bd46e;
+  color: #000;
+}
+
+.estado.inactivo {
+  background: #ff4d6d;
+  color: #fff;
+}
+
+/* ACCIONES */
+.acciones {
+  display: flex;
+  gap: 15px;
+}
+
+/* ICONOS */
+.edit {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.edit:hover {
+  transform: scale(1.2);
+  color: #3b82f6;
+}
+
+.delete {
+  cursor: pointer;
+  transition: 0.2s;
+  color: #e63946;
+}
+
+.delete:hover {
+  transform: scale(1.2);
+}
+/* 🔥 SERVICIOS */
+.servicios-container {
+  padding: 20px;
+}
+
+/* HEADER */
+.servicios-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.servicios-header h1 {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* BOTÓN */
+.btn-add {
+  background: #e94b6a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.btn-add:hover {
+  transform: scale(1.05);
+}
+
+/* BUSCADOR */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #bfbfbf;
+  padding: 10px 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  margin-left: 10px;
+  width: 100%;
+  outline: none;
+}
+
+/* FILTRO */
+.filter {
+  margin-bottom: 20px;
+}
+
+.btn-filter {
+  background: #cfc7c7;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* TABLA */
+.servicios-table {
+  background: #f5eeee;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+/* GRID */
+.servicios-grid {
+  display: grid;
+  grid-template-columns: 100px 1.5fr 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+/* HEADER TABLA */
+.table-header {
+  font-weight: bold;
+  border-bottom: 2px solid #bbb;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+/* FILAS */
+.table-row {
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+.table-row:hover {
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+}
+
+/* IMAGEN */
+.servicio-img {
+  width: 70px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* ESTADOS (reusa los mismos) */
+.estado.activo {
+  background: #8bd46e;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+.estado.inactivo {
+  background: #a0a4d6;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+/* ACCIONES */
+.acciones {
+  display: flex;
+  gap: 12px;
+}
+
+.edit {
+  cursor: pointer;
+}
+
+.delete {
+  cursor: pointer;
+  color: red;
+}

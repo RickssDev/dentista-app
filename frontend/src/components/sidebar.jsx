@@ -1,44 +1,87 @@
+import {
+  FaHome,
+  FaUsers,
+  FaCalendarAlt,
+  FaStethoscope,
+  FaHistory,
+  FaTags,
+  FaQuestionCircle,
+  FaImages,
+  FaComments,
+  FaChartBar,
+  FaBars
+} from "react-icons/fa";
+
 import { useState } from "react";
-import "../styles/sidebar.css"
+import { useNavigate, useLocation } from "react-router-dom";
+import "../styles/sidebar.css";
 
 function Sidebar() {
-  const [active, setActive] = useState("Promociones");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
-    "Inicio",
-    "Usuarios",
-    "Citas",
-    "Servicios",
-    "Historial",
-    "Promociones",
-    "Faqs",
-    "Galería",
-    "Comentarios",
-    "Reportes"
+    { name: "Inicio", path: "/admin", icon: <FaHome /> },
+    { name: "Usuarios", path: "/admin/usuarios", icon: <FaUsers /> },
+    { name: "Citas", path: "/admin/citas", icon: <FaCalendarAlt /> },
+    { name: "Servicios", path: "/admin/servicios", icon: <FaStethoscope /> },
+    { name: "Historial", path: "/admin/historial", icon: <FaHistory /> },
+    { name: "Promociones", path: "/admin/promociones", icon: <FaTags /> },
+    { name: "Faqs", path: "/admin/faqs", icon: <FaQuestionCircle /> },
+    { name: "Galería", path: "/admin/galeria", icon: <FaImages /> },
+    { name: "Comentarios", path: "/admin/comentarios", icon: <FaComments /> },
+    { name: "Reportes", path: "/admin/reportes", icon: <FaChartBar /> }
   ];
 
   return (
-    <div className="sidebar">
-      
-      {/* HEADER */}
-      <div className="sidebar-header">
-        <span>Menú</span>
-        <span className="menu-icon">☰</span>
-      </div>
+    <>
+      {/* BOTÓN ABRIR */}
+      <button className="open-btn" onClick={() => setIsOpen(true)}>
+        ☰
+      </button>
 
-      {/* MENU */}
-      <ul className="menu">
-        {menuItems.map((item) => (
-          <li
-            key={item}
-            className={active === item ? "active" : ""}
-            onClick={() => setActive(item)}
+      <div className={`sidebar ${isOpen ? "open" : ""}`}>
+        
+        {/* HEADER */}
+        <div className="sidebar-header">
+          <span>Menú</span>
+          <FaBars className="menu-icon" onClick={() => setIsOpen(!isOpen)} />
+        </div>
+
+        {/* MENÚ */}
+        <ul className="menu">
+          {menuItems.map((item) => (
+            <li
+              key={item.name}
+              className={location.pathname === item.path ? "active" : ""}
+              onClick={() => {
+                navigate(item.path);
+                setIsOpen(false);
+              }}
+            >
+              <span>{item.name}</span>
+              <span className="icon">{item.icon}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* 🔥 CERRAR SESIÓN */}
+        <div className="logout-container">
+          <button
+            className="logout-btn"
+            onClick={() => {
+              // aquí puedes limpiar sesión después
+              navigate("/");
+            }}
           >
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
+            Cerrar sesión
+          </button>
+        </div>
+
+      </div>
+    </>
   );
 }
 
