@@ -138,4 +138,74 @@ exports.getCitasPorPeriodo = async (tipo) => {
 
   return await repo.getCitasPorPeriodo(tipo);
 };
+exports.cancelarCita = async (id, motivo) => {
+  if (!id || isNaN(id)) {
+    throw new Error('ID de cita inválido');
+  }
 
+  if (!motivo) {
+    throw new Error(
+      'Debe proporcionar un motivo para cancelar'
+    );
+  }
+
+  const cita = await repo.getCitaById(id);
+
+  if (!cita) {
+    throw new Error('Cita no encontrada');
+  }
+
+  if (cita.estado === 'cancelada') {
+    throw new Error('La cita ya está cancelada');
+  }
+
+  await repo.updateCita(id, {
+    estado: 'cancelada',
+    motivo
+  });
+
+  return {
+    message: 'Cita cancelada correctamente'
+  };
+};
+
+exports.getMisCitas = async (id_paciente) => {
+  if (!id_paciente || isNaN(id_paciente)) {
+    throw new Error('ID de paciente inválido');
+  }
+
+  const citas = await repo.getMisCitas(id_paciente);
+
+  return citas.map((c) => ({
+    id: c.id_cita,
+    fecha_agendada: c.fecha_agendada,
+    hora: c.hora,
+    servicio: c.nombre_servicio,
+    estado: c.estado,
+    motivo: c.motivo
+  }));
+};
+exports.createCitaPaciente = async (data) => {
+  if (!data || Object.keys(data).length === 0) {
+    throw new Error('No se recibieron datos');
+  }
+
+  const {id_paciente,fecha_agendada,hora,id_servicio} = data;
+
+  if (!id_paciente ||!fecha_agendada ||!hora ||!id_servicio
+  ) {
+    throw new Error(
+      'Faltan campos obligatorios'
+    );
+  }
+
+  const citaExistente =await repo.findCitaExistente(fecha_agendada,hora);
+
+  if (citaExistente) {
+    throw new Error('Ya existe una cita en ese horario');
+  }
+
+  const id = await repo.createCita({id_paciente,fecha_agendada,hora,id_servicio,estado: 'pendiente'});
+
+  return { id };
+};
