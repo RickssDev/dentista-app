@@ -11,3 +11,8 @@ exports.login = catchAsync(async (req, res) => {
 const data = await service.login(req.body);
 return HandleResponse.success(res, 200,'Login exitoso',data);
 });
+exports.cambiarContrasena = catchAsync(async (req, res) => {
+const { idUsuario } = req.params;
+const data = await service.cambiarContrasena(idUsuario, req.body);
+return HandleResponse.success(res,200,'Contraseña actualizada correctamente',data);
+});

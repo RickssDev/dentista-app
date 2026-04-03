@@ -35,3 +35,29 @@ exports.createUser = async ({
     id_rol,
   };
 };
+
+exports.findUserById = async (idUsuario) => {
+  const [rows] = await pool.query(
+    `
+    SELECT *
+    FROM usuarios
+    WHERE id_usuario = ?
+    `,
+    [idUsuario]
+  );
+
+  return rows[0] || null;
+};
+exports.updatePassword = async (
+  idUsuario,
+  nuevaContrasena
+) => {
+  await pool.query(
+    `
+    UPDATE usuarios
+    SET contrasena = ?
+    WHERE id_usuario = ?
+    `,
+    [nuevaContrasena, idUsuario]
+  );
+};

@@ -51,3 +51,20 @@ exports.getCitasPorPeriodo = async (req, res, next) => {
     next(error);
   }
 };
+exports.getMisCitas = catchAsync(async (req, res) => {
+const { idPaciente } = req.params;
+const data = await service.getMisCitas(idPaciente);
+return HandleResponse.success(res,200,'Mis citas obtenidas correctamente',data);
+});
+
+exports.cancelarCita = catchAsync(async (req, res) => {
+const { id } = req.params;
+const { motivo } = req.body;
+const data =await service.cancelarCita(id, motivo);
+return HandleResponse.success(res,200,'Cita cancelada correctamente',data);
+});
+
+exports.createCitaPaciente = catchAsync(async (req, res) => {
+const data = await service.createCitaPaciente(req.body);
+return HandleResponse.success(res,201,'Cita creada correctamente',data);
+});

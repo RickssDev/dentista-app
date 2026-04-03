@@ -1,2 +1,26 @@
-const catchAsync = require('../utils/catchAsync');
-const HandleResponse = require('../utils/HandleResponse');
+const catchAsync = require('../../utils/catchAsync'); 
+const HandleResponse = require('../../utils/HandleResponse');
+const service = require('./pacientes.service');
+
+exports.getPacienteByUserId = catchAsync(async (req, res) => {
+const { idUsuario } = req.params;
+const data = await service.getPacienteByUserId(idUsuario);
+return HandleResponse.success(res,200,'Perfil obtenido correctamente',data);
+});
+
+exports.createPaciente = catchAsync(async (req, res) => {
+const data = await service.createPaciente(req.body);
+return HandleResponse.success(res,201,'Perfil creado correctamente',data);
+});
+
+exports.getPerfil = catchAsync(async (req, res) => {
+const { idUsuario } = req.params;
+const data = await service.getPerfil(idUsuario);
+return HandleResponse.success(res,200,'Perfil obtenido correctamente',data);
+});
+
+exports.updatePerfil = catchAsync(async (req, res) => {
+const { idUsuario } = req.params;
+const data = await service.updatePerfil(idUsuario,req.body);
+return HandleResponse.success(res,200,'Perfil actualizado correctamente',data);
+});

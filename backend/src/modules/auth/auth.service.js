@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const JWTFactory = require('../../utils/JWTFactory');
 const repo = require('./auth.repository');
+const paciente = require('../pacientes/pacientes.repository');
 
 const SALT_ROUNDS = 10;
 const ROL_PACIENTE = 3; 
@@ -63,19 +64,84 @@ exports.login = async ({ correo, contrasena }) => {
     error.statusCode = 401;
     throw error;
   }
+ let tienePerfilPaciente = null;
+
+  if (user.rol === 'Paciente') {
+    const perfilPaciente =
+      await paciente.findByUserId(user.id_usuario);
+
+    tienePerfilPaciente = !!perfilPaciente;
+  }
 
   const token = jwtFactory.createToken({
-    id: user.id,
+    id: user.id_usuario,
     rol: user.rol
   });
 
   return {
     token,
     user: {
-      id: user.id,
+      id: user.id_usuario,
       nombre_usuario: user.nombre_usuario,
       correo: user.correo,
       rol: user.rol
-    }
+    },
+    tienePerfilPaciente
+  };
+};
+exports.cambiarContrasena = async (
+  idUsuario,
+  {
+    contrasena_actual,
+    nueva_contrasena,
+    confirmar_contrasena
+  }
+) => {
+  const user = await repo.findUserById(idUsuario);
+
+  if (!user) {
+    const error = new Error('Usuario no encontrado');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isMatch = await bcrypt.compare(
+    contrasena_actual,
+    user.contrasena
+  );
+
+  if (!isMatch) {
+    const error = new Error(
+      'La contraseña actual es incorrecta'
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (
+    nueva_contrasena !==
+    confirmar_contrasena
+  ) {
+    const error = new Error(
+      'Las contraseñas no coinciden'
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const hashedPassword =
+    await bcrypt.hash(
+      nueva_contrasena,
+      SALT_ROUNDS
+    );
+
+  await repo.updatePassword(
+    idUsuario,
+    hashedPassword
+  );
+
+  return {
+    message:
+      'Contraseña actualizada correctamente'
   };
 };

@@ -170,3 +170,24 @@ exports.getCitasPorPeriodo = async (tipo) => {
   const [rows] = await pool.query(query);
   return rows;
 };
+exports.getMisCitas = async (id_paciente) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      c.id_cita,
+      c.fecha_agendada,
+      c.hora,
+      c.estado,
+      c.motivo,
+      s.nombre_servicio
+    FROM citas c
+    JOIN servicio s
+      ON c.id_servicio = s.id_servicio
+    WHERE c.id_paciente = ?
+    ORDER BY c.fecha_agendada DESC, c.hora DESC
+    `,
+    [id_paciente]
+  );
+
+  return rows;
+};
