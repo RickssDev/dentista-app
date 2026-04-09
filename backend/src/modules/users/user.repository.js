@@ -40,12 +40,12 @@ exports.getUsuarioById = async (id) => {
 };
 
 exports.createUsuario = async (data) => {
-  const { nombre, email, apellido, password, id_rol, imagen } = data;
+  const { nombre, telefono, correo, apellido, password, id_rol, imagen } = data;
 
   const [result] = await pool.query(`
     INSERT INTO usuarios (nombre_usuario, telefono, correo, apellido, contrasena, id_rol, estado, imagen)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [nombre, telefono, email, apellido, password, id_rol, 'activo', imagen]);
+  `, [nombre, telefono, correo, apellido, password, id_rol, 'activo', imagen]);
 
   return result.insertId;
 };
