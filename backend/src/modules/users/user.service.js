@@ -27,10 +27,10 @@ exports.getUsuarioById = async (id) => {
 
   return {
     id: u.id,
-    nombre: u.nombre,
+    nombre: u.nombre_usuario,
     telefono: u.telefono,
     apellido: u.apellido,
-    email: u.email,
+    email: u.correo,
     estado: u.estado,
     rol: {
       id: u.rol_id,
