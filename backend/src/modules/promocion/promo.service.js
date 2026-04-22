@@ -1,4 +1,5 @@
 const repo = require('./promo.repository');
+const AppError = require('../../utils/AppError');
 
 exports.createPromocion = async (data, file) => {
   const {
@@ -11,7 +12,7 @@ exports.createPromocion = async (data, file) => {
   } = data;
 
   if (!id_servicio || !nombre_promocion || !descripcion || !fecha_inicio || !fecha_fin) {
-    throw new Error('Todos los campos son obligatorios');
+    throw new AppError('Todos los campos son obligatorios', 400);
   }
 
   const imagen = file
@@ -37,7 +38,7 @@ exports.getPromocionById = async (id) => {
   const promocion = await repo.getPromocionById(id);
 
   if (!promocion) {
-    throw new Error('Promoción no encontrada');
+    throw new AppError('Promoción no encontrada', 404);
   }
 
   return promocion;
@@ -47,7 +48,7 @@ exports.updatePromocion = async (id, data, file) => {
   const exists = await repo.getPromocionById(id);
 
   if (!exists) {
-    throw new Error('Promoción no encontrada');
+    throw new AppError('Promoción no encontrada', 404);
   }
 
   const imagen = file
@@ -66,7 +67,7 @@ exports.deletePromocion = async (id) => {
   const exists = await repo.getPromocionById(id);
 
   if (!exists) {
-    throw new Error('Promoción no encontrada');
+    throw new AppError('Promoción no encontrada', 404);
   }
 
   await repo.deletePromocion(id);

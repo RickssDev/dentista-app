@@ -1,4 +1,5 @@
 const repo = require('./servicios.repository');
+const AppError = require('../../utils/AppError');
 
 exports.getServicios = async () => {
   const servicios = await repo.getServicios();
@@ -17,7 +18,7 @@ exports.getServicioById = async (id) => {
   const s = await repo.getServicioById(id);
 
   if (!s) {
-    throw new Error('Servicio no encontrado');
+    throw new AppError('Servicio no encontrado', 404);
   }
 
   return {
@@ -32,18 +33,18 @@ exports.getServicioById = async (id) => {
 
 exports.createServicio = async (data) => {
   if (!data || Object.keys(data).length === 0) {
-    throw new Error('No se recibieron datos');
+    throw new AppError('No se recibieron datos', 400);
   }
 
   const { nombre, descripcion, duracion } = data;
 
   if (!nombre || !descripcion || !duracion) {
-    throw new Error('Faltan campos obligatorios');
+    throw new AppError('Faltan campos obligatorios', 400);
   }
 
   const existingServicio = await repo.getServicioByName(nombre);
   if (existingServicio) {
-    throw new Error(`El servicio con nombre "${nombre}" ya existe`);
+    throw new AppError(`El servicio con nombre "${nombre}" ya existe`, 400);
   }
 
   const id = await repo.createServicio(data);
@@ -67,12 +68,12 @@ exports.updateServicio = async (id, data) => {
   if (cleanedData.nombre) {
     const existingServicio = await repo.getServicioByName(cleanedData.nombre);
     if (existingServicio && existingServicio.id_servicio != id) {
-      throw new Error(`Ya existe un servicio con nombre "${cleanedData.nombre}"`);
+      throw new AppError(`Ya existe un servicio con nombre "${cleanedData.nombre}"`, 400);
     }
   }
 
   if (Object.keys(cleanedData).length === 0) {
-    throw new Error('No hay campos para actualizar');
+    throw new AppError('No hay campos para actualizar', 400);
   }
 
   await repo.updateServicio(id, cleanedData);

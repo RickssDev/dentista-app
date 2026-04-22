@@ -1,4 +1,5 @@
 const repo = require("./citas.repository");
+const AppError = require('../../utils/AppError');
 
 exports.getCitas = async () => {
   const citas = await repo.getCitas();
@@ -20,7 +21,7 @@ exports.getCitaById = async (id) => {
   if (!id || isNaN(id)) throw new Error("ID de cita inválido");
 
   const c = await repo.getCitaById(id);
-  if (!c) throw new Error("Cita no encontrada");
+  if (!c) throw new AppError("Cita no encontrada", 404);
 
   return {
     id: c.id_cita,
@@ -36,8 +37,7 @@ exports.getCitaById = async (id) => {
 };
 
 exports.getCitasByEstado = async (estado) => {
-  if (!estado) throw new Error("Estado requerido");
-
+  if (!estado) throw new AppError("Estado requerido", 400);
   const citas = await repo.getCitasByEstado(estado);
 
   return citas.map((c) => ({
@@ -54,7 +54,8 @@ exports.getCitasByEstado = async (estado) => {
 };
 
 exports.getCitasByPaciente = async (id_paciente) => {
-  if (!id_paciente || isNaN(id_paciente)) throw new Error("ID de paciente inválido");
+  if (!id_paciente || isNaN(id_paciente)) 
+    throw new AppError("ID de paciente inválido", 400);
 
   const citas = await repo.getCitasByPaciente(id_paciente);
 
@@ -72,18 +73,19 @@ exports.getCitasByPaciente = async (id_paciente) => {
 };
 
 exports.createCita = async (data) => {
-  if (!data || Object.keys(data).length === 0) throw new Error("No se recibieron datos");
+  if (!data || Object.keys(data).length === 0) 
+    throw new AppError("No se recibieron datos", 400);
 
   const { id_paciente, fecha_agendada, hora, id_servicio, estado = "pendiente", motivo } = data;
 
   if (!id_paciente || !fecha_agendada || !hora || !id_servicio) {
-    throw new Error("Faltan campos obligatorios: id_paciente, fecha_agendada, hora, id_servicio");
+    throw new AppError("Faltan campos obligatorios: id_paciente, fecha_agendada, hora, id_servicio", 400);
   }
 
  const citaExistente = await repo.findCitaExistente(fecha_agendada, hora);
 
   if (citaExistente) {
-    throw new Error("Ya existe una cita en ese horario");
+    throw new AppError("Ya existe una cita en ese horario", 400);
   }
 
   const id = await repo.createCita({ id_paciente, fecha_agendada, hora, id_servicio, estado, motivo });
@@ -92,7 +94,7 @@ exports.createCita = async (data) => {
 };
 
 exports.updateCita = async (id, data) => {
-  if (!id || isNaN(id)) throw new Error("ID de cita inválido");
+  if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
 
   const cleanedData = {};
   for (const key in data) {
@@ -101,10 +103,10 @@ exports.updateCita = async (id, data) => {
     }
   }
 
-  if (Object.keys(cleanedData).length === 0) throw new Error("No hay campos para actualizar");
+  if (Object.keys(cleanedData).length === 0) throw new AppError("No hay campos para actualizar", 400);
 
   if ((cleanedData.fecha_agendada || cleanedData.hora) && !cleanedData.motivo) {
-  throw new Error("Debe proporcionar un motivo al reagendar la cita");
+  throw new AppError("Debe proporcionar un motivo al reagendar la cita", 400);
 }
 
 if (cleanedData.fecha_agendada || cleanedData.hora) {
@@ -115,7 +117,7 @@ if (cleanedData.fecha_agendada || cleanedData.hora) {
     const citaExistente = await repo.findCitaExistente(nuevaFecha, nuevaHora);
 
     if (citaExistente && citaExistente.id_cita !== id) {
-      throw new Error("Ese horario ya está ocupado");
+      throw new AppError("Ese horario ya está ocupado", 400);
     }
   }
   
@@ -124,7 +126,7 @@ if (cleanedData.fecha_agendada || cleanedData.hora) {
 };
 
 exports.deleteCita = async (id) => {
-  if (!id || isNaN(id)) throw new Error("ID de cita inválido");
+  if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
 
   await repo.deleteCita(id);
   return { message: "Cita eliminada correctamente" };
@@ -133,30 +135,28 @@ exports.getCitasPorPeriodo = async (tipo) => {
   const tiposValidos = ['diaria', 'semanal', 'mensual'];
 
   if (!tiposValidos.includes(tipo)) {
-    throw new Error('Tipo de filtro inválido');
+    throw new AppError('Tipo de filtro inválido', 400);
   }
 
   return await repo.getCitasPorPeriodo(tipo);
 };
 exports.cancelarCita = async (id, motivo) => {
   if (!id || isNaN(id)) {
-    throw new Error('ID de cita inválido');
+    throw new AppError('ID de cita inválido', 400);
   }
 
   if (!motivo) {
-    throw new Error(
-      'Debe proporcionar un motivo para cancelar'
-    );
+    throw new AppError('Debe proporcionar un motivo para cancelar', 400);
   }
 
   const cita = await repo.getCitaById(id);
 
   if (!cita) {
-    throw new Error('Cita no encontrada');
+    throw new AppError('Cita no encontrada', 404);
   }
 
   if (cita.estado === 'cancelada') {
-    throw new Error('La cita ya está cancelada');
+    throw new AppError('La cita ya está cancelada', 400);
   }
 
   await repo.updateCita(id, {
@@ -171,7 +171,7 @@ exports.cancelarCita = async (id, motivo) => {
 
 exports.getMisCitas = async (id_paciente) => {
   if (!id_paciente || isNaN(id_paciente)) {
-    throw new Error('ID de paciente inválido');
+    throw new AppError('ID de paciente inválido', 400);
   }
 
   const citas = await repo.getMisCitas(id_paciente);
@@ -187,22 +187,20 @@ exports.getMisCitas = async (id_paciente) => {
 };
 exports.createCitaPaciente = async (data) => {
   if (!data || Object.keys(data).length === 0) {
-    throw new Error('No se recibieron datos');
+    throw new AppError('No se recibieron datos', 400);
   }
 
   const {id_paciente,fecha_agendada,hora,id_servicio} = data;
 
   if (!id_paciente ||!fecha_agendada ||!hora ||!id_servicio
   ) {
-    throw new Error(
-      'Faltan campos obligatorios'
-    );
+    throw new AppError('Faltan campos obligatorios', 400);
   }
 
   const citaExistente =await repo.findCitaExistente(fecha_agendada,hora);
 
   if (citaExistente) {
-    throw new Error('Ya existe una cita en ese horario');
+    throw new AppError('Ya existe una cita en ese horario', 400);
   }
 
   const id = await repo.createCita({id_paciente,fecha_agendada,hora,id_servicio,estado: 'pendiente'});

@@ -1,5 +1,6 @@
 const repo = require('./user.repository');
 const PasswordHash = require('../../utils/PasswordHash');
+const AppError = require('../../utils/AppError');
 
 exports.getUsuarios = async () => {
   const usuarios = await repo.getUsuarios();
@@ -10,6 +11,7 @@ exports.getUsuarios = async () => {
     telefono: u.telefono,
     apellido: u.apellido,
     email: u.email,
+    imagen: u.imagen,
     estado: u.estado,
     rol: {
       id: u.rol_id,
@@ -22,7 +24,7 @@ exports.getUsuarioById = async (id) => {
   const u = await repo.getUsuarioById(id);
 
   if (!u) {
-    throw new Error('Usuario no encontrado');
+    throw new AppError('Usuario no encontrado', 404);
   }
 
   return {
@@ -31,6 +33,7 @@ exports.getUsuarioById = async (id) => {
     telefono: u.telefono,
     apellido: u.apellido,
     email: u.correo,
+    imagen: u.imagen,
     estado: u.estado,
     rol: {
       id: u.rol_id,
@@ -38,7 +41,7 @@ exports.getUsuarioById = async (id) => {
     }
   };
 };
-
+ 
 exports.createUsuario = async (data) => {
 
   const hashedPassword = await PasswordHash.apply(data.password);
@@ -67,7 +70,7 @@ exports.updateUsuario = async (id, data) => {
   }
 
   if (Object.keys(cleanedData).length === 0) {
-    throw new Error('No hay campos para actualizar');
+    throw new AppError('No hay campos para actualizar', 400);
   }
 
   await repo.updateUsuario(id, cleanedData);

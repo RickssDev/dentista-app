@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const JWTFactory = require('../../utils/JWTFactory');
 const repo = require('./auth.repository');
 const paciente = require('../pacientes/pacientes.repository');
+const AppError = require('../../utils/AppError');
 
 const SALT_ROUNDS = 10;
 const ROL_PACIENTE = 3; 
@@ -17,23 +18,17 @@ exports.register = async ({
 }) => {
 
     if (!nombre_usuario || !telefono || !apellido || !correo || !contrasena || !confirmar_contrasena) {
-    const error = new Error('Todos los campos son obligatorios');
-    error.statusCode = 400;
-    throw error;
+    throw new AppError('Todos los campos son obligatorios', 400);
   }
 
   if (contrasena !== confirmar_contrasena) {
-    const error = new Error('Las contraseñas no coinciden');
-    error.statusCode = 400;
-    throw error;
+    throw new AppError('Las contraseñas no coinciden', 400);
   }
 
   const existingUser = await repo.findUserByEmail(correo);
 
   if (existingUser) {
-    const error = new Error('El correo ya está registrado');
-    error.statusCode = 400;
-    throw error;
+    throw new AppError('El correo ya está registrado', 400);
   }
 
   const hashedPassword = await bcrypt.hash(contrasena, SALT_ROUNDS);
@@ -50,19 +45,15 @@ exports.register = async ({
 
 exports.login = async ({ correo, contrasena }) => {
   const user = await repo.findUserByEmail(correo);
-
+const prueba = variableQueNoExiste;
   if (!user) {
-    const error = new Error('Credenciales inválidas');
-    error.statusCode = 401;
-    throw error;
+    throw new AppError('Credenciales inválidas', 401);
   }
 
   const isMatch = await bcrypt.compare(contrasena, user.contrasena);
 
   if (!isMatch) {
-    const error = new Error('Credenciales inválidas');
-    error.statusCode = 401;
-    throw error;
+    throw new AppError('Credenciales inválidas', 401);
   }
  let tienePerfilPaciente = null;
 
@@ -100,9 +91,7 @@ exports.cambiarContrasena = async (
   const user = await repo.findUserById(idUsuario);
 
   if (!user) {
-    const error = new Error('Usuario no encontrado');
-    error.statusCode = 404;
-    throw error;
+    throw new AppError('Usuario no encontrado', 404);
   }
 
   const isMatch = await bcrypt.compare(
@@ -111,22 +100,17 @@ exports.cambiarContrasena = async (
   );
 
   if (!isMatch) {
-    const error = new Error(
-      'La contraseña actual es incorrecta'
-    );
-    error.statusCode = 400;
-    throw error;
+    throw new AppError('La contraseña actual es incorrecta', 400);
   }
 
   if (
     nueva_contrasena !==
     confirmar_contrasena
   ) {
-    const error = new Error(
-      'Las contraseñas no coinciden'
+    throw new AppError(
+      'Las contraseñas no coinciden',
+      400
     );
-    error.statusCode = 400;
-    throw error;
   }
 
   const hashedPassword =
