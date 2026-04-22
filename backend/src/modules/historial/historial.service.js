@@ -1,5 +1,6 @@
 const repo = require('./historial.repository');
 const {pool} = require('../../config/db');
+const AppError = require('../../utils/AppError');
 
 exports.crearDesdeCita = async (idCita, data) => {
   const connection = await pool.getConnection();
@@ -10,11 +11,11 @@ exports.crearDesdeCita = async (idCita, data) => {
     const cita = await repo.getCitaPendiente(idCita, connection);
 
     if (!cita) {
-      throw new Error('La cita no existe');
+      throw new AppError('La cita no existe', 404);
     }
 
     if (cita.estado !== 'pendiente') {
-      throw new Error('La cita ya fue procesada');
+      throw new AppError('La cita ya fue procesada', 400);
     }
 
     const historial = await repo.crearHistorial(connection, {
@@ -43,7 +44,7 @@ exports.obtenerDatosFormulario = async (idCita) => {
   const cita = await repo.getCitaPendiente(idCita);
 
   if (!cita) {
-    throw new Error('Cita no encontrada');
+    throw new AppError('Cita no encontrada', 404);
   }
 
   return cita;

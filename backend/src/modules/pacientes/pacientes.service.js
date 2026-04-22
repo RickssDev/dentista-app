@@ -1,4 +1,5 @@
 const repo = require('./pacientes.repository');
+const AppError = require('../../utils/AppError');
 
 exports.getPacienteByUserId = async (idUsuario) => {
   const paciente = await repo.findByUserId(idUsuario);
@@ -19,7 +20,7 @@ exports.createPaciente = async ({
   const pacienteExistente = await repo.findByUserId(id_usuario);
 
   if (pacienteExistente) {
-    throw new Error('El paciente ya tiene perfil registrado');
+    throw new AppError('El paciente ya tiene perfil registrado', 400);
   }
 
   const nuevoPaciente = await repo.create({
@@ -35,9 +36,7 @@ exports.getPerfil = async (idUsuario) => {
   const perfil = await repo.findPerfilByUserId(idUsuario);
 
   if (!perfil) {
-    const error = new Error('Perfil no encontrado');
-    error.statusCode = 404;
-    throw error;
+    throw new AppError('Perfil no encontrado', 404);
   }
 
   return perfil;
@@ -54,9 +53,7 @@ exports.updatePerfil = async (
   const perfil = await repo.findPerfilByUserId(idUsuario);
 
   if (!perfil) {
-    const error = new Error('Perfil no encontrado');
-    error.statusCode = 404;
-    throw error;
+    throw new AppError('Perfil no encontrado', 404);
   }
 
   await repo.updatePerfilByUserId(
