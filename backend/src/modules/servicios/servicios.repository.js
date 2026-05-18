@@ -40,10 +40,6 @@ exports.getServicioById = async (id) => {
 };
 
 exports.createServicio = async (data) => {
-  if (!data) {
-    throw new Error('Data undefined en repository');
-  }
-
   const { nombre, descripcion, duracion, imagen } = data;
 
   const [result] = await pool.query(
@@ -66,10 +62,6 @@ exports.updateServicio = async (id, data) => {
 
   const entries = Object.entries(data)
     .filter(([key, value]) => fieldMap[key] && value !== undefined && value !== '');
-
-  if (!entries.length) {
-    throw new Error('No hay campos válidos para actualizar');
-  }
 
   const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(', ');
   const values = entries.map(([, value]) => value);
