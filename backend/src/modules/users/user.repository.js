@@ -63,11 +63,7 @@ exports.updateUsuario = async (id, data) => {
   };
 
   const entries = Object.entries(data)
-    .filter(([key, value]) => fieldMap[key] && value !== undefined && value !== '');
-
-  if (!entries.length) {
-    throw new Error('No hay campos válidos para actualizar');
-  }
+  .filter(([key, value]) => fieldMap[key] && value !== undefined && value !== '');
 
   const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(', ');
   const values = entries.map(([, value]) => value);
