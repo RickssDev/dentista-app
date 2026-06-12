@@ -191,3 +191,95 @@ exports.getMisCitas = async (id_paciente) => {
 
   return rows;
 };
+
+exports.getPacienteWhatsApp = async (id_paciente) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      u.telefono,
+      u.nombre_usuario,
+      u.apellido
+    FROM paciente p
+    JOIN usuarios u
+      ON p.id_usuario = u.id_usuario
+    WHERE p.id_paciente = ?
+    `,
+    [id_paciente]
+  );
+
+  return rows[0];
+};
+
+exports.getCitasParaRecordatorio = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      c.id_cita,
+      c.fecha_agendada,
+      c.hora,
+      c.id_paciente,
+      u.telefono,
+      u.nombre_usuario
+    FROM citas c
+    JOIN paciente p
+      ON c.id_paciente = p.id_paciente
+    JOIN usuarios u
+      ON p.id_usuario = u.id_usuario
+    WHERE DATE(c.fecha_agendada) = DATE(DATE_ADD(CURDATE(), INTERVAL 1 DAY))
+      AND c.estado = 'pendiente'
+      AND c.recordatorio_enviado = FALSE
+  `);
+
+  return rows;
+};
+exports.marcarRecordatorioEnviado = async (id_cita) => {
+  await pool.query(
+    `
+    UPDATE citas
+    SET recordatorio_enviado = TRUE
+    WHERE id_cita = ?
+    `,
+    [id_cita]
+  );
+};
+
+exports.getDatosWhatsAppCita = async (id_cita) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      c.fecha_agendada,
+      c.hora,
+      u.telefono,
+      u.nombre_usuario
+    FROM citas c
+    JOIN paciente p
+      ON c.id_paciente = p.id_paciente
+    JOIN usuarios u
+      ON p.id_usuario = u.id_usuario
+    WHERE c.id_cita = ?
+    `,
+    [id_cita]
+  );
+
+  return rows[0];
+};
+
+exports.getCitasDelDia = async (
+  fecha_agendada
+) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      c.id_cita,
+      c.hora,
+      s.duracion
+    FROM citas c
+    JOIN servicio s
+      ON c.id_servicio = s.id_servicio
+    WHERE c.fecha_agendada = ?
+      AND c.estado != 'cancelada'
+    `,
+    [fecha_agendada]
+  );
+
+  return rows;
+};
