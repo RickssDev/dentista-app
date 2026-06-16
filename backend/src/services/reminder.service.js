@@ -6,7 +6,7 @@ cron.schedule("* * * * *", async () => {
   try {
     const citas = await citasRepo.getCitasParaRecordatorio();
 
-    console.log("CITAS ENCONTRADAS:", citas.length);
+    //console.log("CITAS ENCONTRADAS:", citas.length);
 
     for (const cita of citas) {
 
