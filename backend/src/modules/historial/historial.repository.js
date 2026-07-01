@@ -1,4 +1,4 @@
-const {pool} = require('../../config/db');
+const { pool } = require("../../config/db");
 
 exports.crearHistorial = async (client, data) => {
   const query = `
@@ -18,16 +18,38 @@ exports.crearHistorial = async (client, data) => {
     data.fecha,
     data.servicio,
     data.diagnostico,
-    data.observaciones
+    data.observaciones,
   ];
 
   const [result] = await client.query(query, values);
 
   return {
     id_historial: result.insertId,
-    ...data
+    ...data,
   };
 };
+
+exports.getHistorialById = async (idHistorial, client = pool) => {
+  const query = `
+    SELECT 
+      h.id_historial,
+      h.fecha,
+      h.servicio,
+      h.diagnostico,
+      h.observaciones,
+      p.id_paciente,
+      u.nombre_usuario
+    FROM h_clinico h
+    INNER JOIN paciente p ON h.id_paciente = p.id_paciente
+    INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
+    WHERE h.id_historial = ?
+  `;
+
+  const [rows] = await client.query(query, [idHistorial]);
+
+  return rows[0];
+};
+
 exports.finalizarCita = async (client, idCita) => {
   const query = `
     UPDATE citas
@@ -58,7 +80,7 @@ exports.getCitaPendiente = async (idCita, client = pool) => {
     WHERE c.id_cita = ?
   `;
 
-const [rows] = await client.query(query, [idCita]);
+  const [rows] = await client.query(query, [idCita]);
 
   return rows[0];
 };
@@ -80,4 +102,27 @@ exports.getHistoriales = async () => {
   const [rows] = await pool.query(query);
 
   return rows;
+};
+
+exports.actualizarHistorial = async (client, idHistorial, data) => {
+  const query = `
+    UPDATE h_clinico
+    SET
+      fecha = ?,
+      servicio = ?,
+      diagnostico = ?,
+      observaciones = ?
+    WHERE id_historial = ?
+  `;
+
+  const values = [
+    data.fecha,
+    data.servicio,
+    data.diagnostico,
+    data.observaciones,
+    idHistorial
+  ];
+
+  const [result] = await client.query(query, values);
+  return result;
 };
