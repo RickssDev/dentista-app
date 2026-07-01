@@ -13,6 +13,7 @@ exports.findByUserId = async (idUsuario) => {
   return rows[0] || null;
 };
 
+//funcion tras registrar la cuenta de usuario, se crea el perfil del paciente
 exports.create = async ({
   direccion,
   fecha_nacimiento,
