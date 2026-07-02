@@ -106,3 +106,13 @@ exports.updateEstadoComentario = async (id, estado) => {
     [estado, id],
   );
 };
+
+exports.deleteComentario = async (id) => {
+  await pool.query(
+    `
+      DELETE FROM comentarios
+      WHERE id_comentario = ?
+    `,
+    [id],
+  );
+};

@@ -82,3 +82,17 @@ exports.updateEstadoComentario = async (id, estado) => {
     message: "Estado actualizado correctamente",
   };
 };
+
+exports.deleteComentario = async (id) => {
+  const comentario = await comentarioRepo.getComentarioById(id);
+
+  if (!comentario) {
+    throw new AppError("Comentario no encontrado", 404);
+  }
+
+  await comentarioRepo.deleteComentario(id);
+
+  return {
+    message: "Comentario eliminado correctamente",
+  };
+};

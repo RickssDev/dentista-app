@@ -8,5 +8,6 @@ router.get("/:id", controller.getComentarioById);
 router.post("/", controller.createComentario);
 router.patch("/:id/estado", controller.updateEstadoComentario);
 router.patch("/:id/respuesta", controller.replyComentario);
+router.delete("/:id", controller.deleteComentario);
 
 module.exports = router;
