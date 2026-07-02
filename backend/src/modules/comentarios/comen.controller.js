@@ -33,3 +33,9 @@ exports.updateEstadoComentario = catchAsync(async (req, res) => {
   (req.params.id, req.body.estado,);
   return HandleResponse.success(res, 200, data.message);
 });
+
+exports.deleteComentario = catchAsync(async (req, res) => {
+  const data = await service.deleteComentario(req.params.id);
+  return HandleResponse.success(res, 200, data.message);
+});
+
