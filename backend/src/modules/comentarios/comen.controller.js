@@ -3,13 +3,15 @@ const HandleResponse = require("../../utils/HandleResponse");
 const service = require("./comen.service");
 
 exports.getComentarios = catchAsync(async (req, res) => {
-  const data = await service.getComentarios();
+  const { estado = "todos" } = req.params;
+
+  const data = await service.getComentarios(estado);
+
   return HandleResponse.success(res, 200, "Comentarios obtenidos", data);
 });
-
 exports.getComentariosPublicos = catchAsync(async (req, res) => {
   const data = await service.getComentariosPublicos();
-  return HandleResponse.success(res, 200, "Comentarios públicos obtenidos", data,);
+  return HandleResponse.success(res, 200, "Comentarios públicos obtenidos", data);
 });
 
 exports.getComentarioById = catchAsync(async (req, res) => {
@@ -23,14 +25,18 @@ exports.createComentario = catchAsync(async (req, res) => {
 });
 
 exports.replyComentario = catchAsync(async (req, res) => {
-  const data = await service.replyComentario
-  (req.params.id, req.body.respuesta_admin,);
+  const data = await service.replyComentario(
+    req.params.id,
+    req.body.respuesta_admin,
+  );
   return HandleResponse.success(res, 200, data.message);
 });
 
 exports.updateEstadoComentario = catchAsync(async (req, res) => {
-  const data = await service.updateEstadoComentario
-  (req.params.id, req.body.estado,);
+  const data = await service.updateEstadoComentario(
+    req.params.id,
+    req.body.estado,
+  );
   return HandleResponse.success(res, 200, data.message);
 });
 
@@ -38,4 +44,3 @@ exports.deleteComentario = catchAsync(async (req, res) => {
   const data = await service.deleteComentario(req.params.id);
   return HandleResponse.success(res, 200, data.message);
 });
-
