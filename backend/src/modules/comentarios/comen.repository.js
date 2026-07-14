@@ -18,8 +18,8 @@ exports.getComentarioByCita = async (idCita) => {
   return rows[0];
 };
 
-exports.getComentarios = async () => {
-  const [rows] = await pool.query(`
+exports.getComentarios = async (estado = "todos") => {
+  let query = `
     SELECT
       c.id_comentario,
       c.comentario,
@@ -40,8 +40,18 @@ exports.getComentarios = async () => {
       ON p.id_usuario = u.id_usuario
     JOIN servicio s
       ON ci.id_servicio = s.id_servicio
-    ORDER BY c.fecha DESC
-  `);
+  `;
+
+  const params = [];
+
+  if (estado !== "todos") {
+    query += " WHERE c.estado = ?";
+    params.push(estado);
+  }
+
+  query += " ORDER BY c.fecha DESC";
+
+  const [rows] = await pool.query(query, params);
 
   return rows;
 };

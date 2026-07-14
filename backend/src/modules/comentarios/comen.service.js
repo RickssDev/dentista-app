@@ -2,8 +2,8 @@ const comentarioRepo = require("./comen.repository");
 const citaRepo = require("../citas/citas.repository");
 const AppError = require("../../utils/AppError");
 
-exports.getComentarios = async () => {
-  return await comentarioRepo.getComentarios();
+exports.getComentarios = async (estado = "todos") => {
+  return await comentarioRepo.getComentarios(estado);
 };
 
 exports.getComentarioById = async (id) => {
