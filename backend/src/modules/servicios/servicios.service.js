@@ -1,16 +1,16 @@
-const repo = require('./servicios.repository');
-const AppError = require('../../utils/AppError');
+const repo = require("./servicios.repository");
+const AppError = require("../../utils/AppError");
 
 exports.getServicios = async () => {
   const servicios = await repo.getServicios();
 
-  return servicios.map(s => ({
+  return servicios.map((s) => ({
     id: s.id_servicio,
     nombre: s.nombre_servicio,
     descripcion: s.descripcion,
     duracion: s.duracion,
     estado: s.estado,
-    imagen: s.imagen
+    imagen: s.imagen,
   }));
 };
 
@@ -18,7 +18,7 @@ exports.getServicioById = async (id) => {
   const s = await repo.getServicioById(id);
 
   if (!s) {
-    throw new AppError('Servicio no encontrado', 404);
+    throw new AppError("Servicio no encontrado", 404);
   }
 
   return {
@@ -27,19 +27,19 @@ exports.getServicioById = async (id) => {
     descripcion: s.descripcion,
     duracion: s.duracion,
     estado: s.estado,
-    imagen: s.imagen
+    imagen: s.imagen,
   };
 };
 
 exports.createServicio = async (data) => {
   if (!data || Object.keys(data).length === 0) {
-    throw new AppError('No se recibieron datos', 400);
+    throw new AppError("No se recibieron datos", 400);
   }
 
   const { nombre, descripcion, duracion } = data;
 
   if (!nombre || !descripcion || !duracion) {
-    throw new AppError('Faltan campos obligatorios', 400);
+    throw new AppError("Faltan campos obligatorios", 400);
   }
 
   const existingServicio = await repo.getServicioByName(nombre);
@@ -56,11 +56,7 @@ exports.updateServicio = async (id, data) => {
   const cleanedData = {};
 
   for (const key in data) {
-    if (
-      data[key] !== '' &&
-      data[key] !== undefined &&
-      data[key] !== null
-    ) {
+    if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
       cleanedData[key] = data[key];
     }
   }
@@ -68,21 +64,36 @@ exports.updateServicio = async (id, data) => {
   if (cleanedData.nombre) {
     const existingServicio = await repo.getServicioByName(cleanedData.nombre);
     if (existingServicio && existingServicio.id_servicio != id) {
-      throw new AppError(`Ya existe un servicio con nombre "${cleanedData.nombre}"`, 400);
+      throw new AppError(
+        `Ya existe un servicio con nombre "${cleanedData.nombre}"`,
+        400,
+      );
     }
   }
 
   if (Object.keys(cleanedData).length === 0) {
-    throw new AppError('No hay campos para actualizar', 400);
+    throw new AppError("No hay campos para actualizar", 400);
   }
 
   await repo.updateServicio(id, cleanedData);
 
-  return { message: 'Servicio actualizado correctamente' };
+  return { message: "Servicio actualizado correctamente" };
 };
 
 exports.deleteServicio = async (id) => {
   await repo.deleteServicio(id);
 
-  return { message: 'Servicio eliminado correctamente' };
+  return { message: "Servicio eliminado correctamente" };
+};
+
+exports.getServiciosPublicos = async () => {
+  const servicios = await repo.getServiciosPublicos();
+
+  return servicios.map((s) => ({
+    id: s.id_servicio,
+    nombre: s.nombre_servicio,
+    descripcion: s.descripcion,
+    duracion: s.duracion,
+    imagen: s.imagen,
+  }));
 };
