@@ -76,3 +76,7 @@ exports.deletePromocion = async (id) => {
     message: 'Promoción eliminada correctamente'
   };
 };
+
+exports.getPromocionPublicos = async () => {
+  return await repo.getPromocionPublicos();
+};
