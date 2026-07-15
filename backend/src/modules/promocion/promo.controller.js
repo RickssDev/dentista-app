@@ -32,3 +32,7 @@ exports.deletePromocion = catchAsync(async (req, res) => {
 const data = await service.deletePromocion(req.params.id);
 HandleResponse.success(res, 200, data.message, null);
 });
+exports.getPromocionPublicos = catchAsync(async (req, res) => {
+const data = await service.getPromocionPublicos();
+HandleResponse.success(res, 200, 'Promociones públicas obtenidas correctamente', data);
+});

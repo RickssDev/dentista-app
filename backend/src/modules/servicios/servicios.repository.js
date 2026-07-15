@@ -88,6 +88,7 @@ exports.getServiciosPublicos = async () => {
       s.duracion,
       s.imagen
     FROM servicio s
+    where s.estado = 'activo'
   `);
 
   return rows;
