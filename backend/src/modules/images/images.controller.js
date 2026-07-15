@@ -32,3 +32,8 @@ exports.deleteImagen = catchAsync(async (req, res) => {
   const data = await service.deleteImagen(req.params.id);
   return HandleResponse.success(res, 200, data.message);
 });
+
+exports.getImagenesPublicas = catchAsync(async (req, res) => {
+  const data = await service.getImagenesPublicas();
+  return HandleResponse.success(res, 200, 'Imágenes públicas obtenidas', data);
+});
