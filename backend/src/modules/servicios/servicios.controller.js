@@ -1,30 +1,27 @@
-const catchAsync = require('../../utils/catchAsync'); 
-const HandleResponse = require('../../utils/HandleResponse');
-const service = require('./servicios.service');
+const catchAsync = require("../../utils/catchAsync");
+const HandleResponse = require("../../utils/HandleResponse");
+const service = require("./servicios.service");
 
 exports.getServicios = catchAsync(async (req, res) => {
   const data = await service.getServicios();
-  return HandleResponse.success(res, 200, 'Servicios obtenidos', data);
+  return HandleResponse.success(res, 200, "Servicios obtenidos", data);
 });
 
 exports.getServicioById = catchAsync(async (req, res) => {
   const data = await service.getServicioById(req.params.id);
-  return HandleResponse.success(res, 200, 'Servicio obtenido', data);
+  return HandleResponse.success(res, 200, "Servicio obtenido", data);
 });
 
 exports.createServicio = catchAsync(async (req, res) => {
   if (req.file) {
-    req.body.imagen = '/uploads/' + req.file.filename;
-  }
-
+    req.body.imagen = "/uploads/" + req.file.filename;}
   const data = await service.createServicio(req.body);
-
-  return HandleResponse.created(res, 201, 'Servicio creado', data);
+  return HandleResponse.created(res, 201, "Servicio creado", data);
 });
 
 exports.updateServicio = catchAsync(async (req, res) => {
   if (req.file) {
-    req.body.imagen = '/uploads/' + req.file.filename;
+    req.body.imagen = "/uploads/" + req.file.filename;
   }
   const data = await service.updateServicio(req.params.id, req.body);
   return HandleResponse.success(res, 200, data.message);
@@ -33,4 +30,9 @@ exports.updateServicio = catchAsync(async (req, res) => {
 exports.deleteServicio = catchAsync(async (req, res) => {
   const data = await service.deleteServicio(req.params.id);
   return HandleResponse.success(res, 200, data.message);
+});
+
+exports.getServiciosPublicos = catchAsync(async (req, res) => {
+  const data = await service.getServiciosPublicos();
+  return HandleResponse.success(res, 200, "Servicios obtenidos", data);
 });
