@@ -53,4 +53,6 @@ exports.deleteImagen = async (id) => {
   return { message: 'Imagen eliminada correctamente' };
 };
 
- 
+exports.getImagenesPublicas = async () => {
+  return await repo.getImagenesPublicas();
+};

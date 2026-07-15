@@ -1,7 +1,7 @@
-const {pool} = require('../../config/db');
+const { pool } = require("../../config/db");
 
 exports.getImagen = async () => {
-const [rows] = await pool.query(`
+  const [rows] = await pool.query(`
         SELECT 
         id_imagen,
         titulo,
@@ -15,7 +15,8 @@ const [rows] = await pool.query(`
 };
 
 exports.getImagenById = async (id) => {
-  const [rows] = await pool.query(`
+  const [rows] = await pool.query(
+    `
     SELECT 
       id_imagen,
       titulo,
@@ -24,7 +25,9 @@ exports.getImagenById = async (id) => {
       visible
     FROM imagenes
     WHERE id_imagen = ?
-  `, [id]);
+  `,
+    [id],
+  );
 
   return rows[0];
 };
@@ -32,25 +35,29 @@ exports.getImagenById = async (id) => {
 exports.createImagen = async (data) => {
   const { titulo, imagen, visible } = data;
 
-  const [result] = await pool.query(`
+  const [result] = await pool.query(
+    `
     INSERT INTO imagenes (titulo, imagen, visible)
     VALUES (?, ?, ?)
-  `, [titulo, imagen, visible]);
+  `,
+    [titulo, imagen, visible],
+  );
 
   return result.insertId;
 };
 
 exports.updateImagen = async (id, data) => {
   const fieldMap = {
-    titulo: 'titulo',
-    imagen: 'imagen',
-    visible: 'visible'
+    titulo: "titulo",
+    imagen: "imagen",
+    visible: "visible",
   };
 
-  const entries = Object.entries(data)
-  .filter(([key, value]) => fieldMap[key] && value !== undefined && value !== '');
+  const entries = Object.entries(data).filter(
+    ([key, value]) => fieldMap[key] && value !== undefined && value !== "",
+  );
 
-  const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(', ');
+  const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(", ");
   const values = entries.map(([, value]) => value);
 
   const query = `UPDATE imagenes SET ${fields} WHERE id_imagen = ?`;
@@ -60,4 +67,19 @@ exports.updateImagen = async (id, data) => {
 
 exports.deleteImagen = async (id) => {
   await pool.query(`DELETE FROM imagenes WHERE id_imagen = ?`, [id]);
+};
+
+exports.getImagenesPublicas = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      id_imagen,
+      titulo,
+      imagen,
+      fecha_publicada
+    FROM imagenes
+    WHERE visible = 1
+    ORDER BY fecha_publicada DESC;
+  `);
+
+  return rows;
 };
