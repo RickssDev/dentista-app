@@ -283,3 +283,33 @@ exports.getCitasDelDia = async (
 
   return rows;
 };
+
+exports.getProximaCita = async (idPaciente) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      c.id_cita,
+      c.fecha_agendada,
+      c.hora,
+      s.nombre_servicio
+    FROM citas c
+    INNER JOIN servicio s
+      ON c.id_servicio = s.id_servicio
+    WHERE c.id_paciente = ?
+      AND c.estado = 'pendiente'
+      AND (
+        c.fecha_agendada > CURDATE()
+        OR (
+          c.fecha_agendada = CURDATE()
+          AND c.hora >= CURTIME()
+        )
+      )
+    ORDER BY c.fecha_agendada ASC, c.hora ASC
+    LIMIT 1
+    `,
+    [idPaciente]
+  );
+
+  return rows[0] || null;
+};
+

@@ -45,7 +45,6 @@ exports.register = async ({
 
 exports.login = async ({ correo, contrasena }) => {
   const user = await repo.findUserByEmail(correo);
-const prueba = variableQueNoExiste;
   if (!user) {
     throw new AppError('Credenciales inválidas', 401);
   }

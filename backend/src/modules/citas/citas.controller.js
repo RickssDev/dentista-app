@@ -68,3 +68,9 @@ exports.createCitaPaciente = catchAsync(async (req, res) => {
 const data = await service.createCitaPaciente(req.body);
 return HandleResponse.success(res,201,'Cita creada correctamente',data);
 });
+
+exports.getProximaCita = catchAsync(async (req, res) => {
+  const idUsuario = req.user.id;
+  const cita = await service.getProximaCita(idUsuario);
+  res.status(200).json({status: "success", data: cita, });
+});
