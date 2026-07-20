@@ -2,6 +2,7 @@ const repo = require("./citas.repository");
 const AppError = require("../../utils/AppError");
 const { sendTemplateMessage } = require("../../services/whatp.service");
 const servicioRepo = require("../servicios/servicios.repository");
+const pacienteRepo = require("../pacientes/pacientes.repository");
 
 const timeToMinutes = (time) => {
   const [h, m] = time.split(":");
@@ -409,4 +410,14 @@ exports.createCitaPaciente = async (data) => {
     console.error("ERROR WHATSAPP:", error.response?.data || error.message);
   }
   return { id };
+};
+
+exports.getProximaCita = async (idUsuario) => {
+  const paciente = await pacienteRepo.findByUserId(idUsuario);
+
+  if (!paciente) {
+    throw new AppError("Paciente no encontrado.", 404);
+  }
+
+  return await repo.getProximaCita(paciente.id_paciente);
 };
