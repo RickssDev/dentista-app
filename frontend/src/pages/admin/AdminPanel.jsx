@@ -32,7 +32,6 @@ function AdminPanel() {
 
         <Routes>
 
-          {/* 🔥 INICIO (tu diseño intacto) */}
           <Route path="/" element={
             <>
               <div className="topbar">
@@ -101,7 +100,6 @@ function AdminPanel() {
             </>
           } />
 
-          {/* 🔥 USUARIOS */}
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="servicios" element={<AdminServicios />} />
           <Route path="historial" element={<AdminHistorial />} />

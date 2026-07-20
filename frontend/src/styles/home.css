@@ -17,7 +17,6 @@
   overflow: hidden;
 }
 
-/* TÍTULO */
 .title {
   text-align: center;
   color: #d94f70;
@@ -25,14 +24,12 @@
   margin-bottom: 20px;
 }
 
-/* CONTENIDO */
 .hero-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* TEXTO */
 .text h1 {
   color: white;
   font-size: 42px;
@@ -46,7 +43,6 @@
   margin-bottom: 20px;
 }
 
-/* BOTÓN */
 .btn-agendar {
   background: #d94f70;
   color: white;
@@ -63,7 +59,6 @@
   background: #b93a58;
 }
 
-/* IMAGEN */
 .image img {
   width: 300px;
   border-radius: 50%;

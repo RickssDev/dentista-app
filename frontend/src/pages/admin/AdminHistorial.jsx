@@ -1,37 +1,53 @@
+import { useEffect, useState } from "react";
 import "../../styles/AdminPanel.css";
 import { FaSearch, FaPlus } from "react-icons/fa";
-
+import { api } from "../../services/api";
 function AdminHistorial() {
+  const [historial, setHistorial] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
 
-  const historial = [
-    {
-      nombre: "Juan Pablo Solís Lino",
-      fecha: "15/05/2025",
-      estado: "Activo"
-    },
-    {
-      nombre: "Kevin Esahú Palacios",
-      fecha: "11/02/2025",
-      estado: "Seguimiento"
-    },
-    {
-      nombre: "Indira Jeanine Berdeja",
-      fecha: "07/09/2025",
-      estado: "Alta"
+  const obtenerHistorial = async () => {
+    try {
+      const data = await api("/historial");
+      setHistorial(data.payload);
+    } catch (error) {
+      console.error(error);
     }
-  ];
+  };
+
+  useEffect(() => {
+    obtenerHistorial();
+  }, []);
+
+  const formatearFecha = (fecha) => {
+    const f = new Date(fecha);
+    return f.toLocaleDateString();
+  };
+
+  const historialFiltrado = historial.filter((item) =>
+    item.nombre_usuario
+      .toLowerCase()
+      .includes(busqueda.toLowerCase())
+  );
+
+  const verHistorial = (id) => {
+    console.log(id);
+  };
 
   return (
     <div className="servicios-container">
-
-      {/* TOPBAR */}
       <div className="topbar">
         <h2>Historial Clínico</h2>
 
         <div style={{ display: "flex", gap: "15px" }}>
           <div className="search-bar">
             <FaSearch />
-            <input type="text" placeholder="Buscar paciente..." />
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
           </div>
 
           <button className="btn-add">
@@ -40,37 +56,26 @@ function AdminHistorial() {
         </div>
       </div>
 
-      {/* TABLA */}
       <div className="table-container">
         <table>
           <thead>
             <tr>
               <th>Nombre del paciente</th>
               <th>Última consulta</th>
-              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
 
           <tbody>
-            {historial.map((item, index) => (
-              <tr key={index}>
-                <td>{item.nombre}</td>
-                <td>{item.fecha}</td>
+            {historialFiltrado.map((item) => (
+              <tr key={item.id_paciente}>
+                <td>{item.nombre_usuario}</td>
+                <td>{formatearFecha(item.ultima_consulta)}</td>
 
-                <td>
-                  <span className={`estado ${
-                    item.estado === "Activo"
-                      ? "activo"
-                      : item.estado === "Seguimiento"
-                      ? "activo"
-                      : "inactivo"
-                  }`}>
-                    {item.estado}
-                  </span>
-                </td>
-
-                <td style={{ cursor: "pointer" }}>
+                <td
+                  style={{ cursor: "pointer" }}
+                  onClick={() => verHistorial(item.id_paciente)}
+                >
                   Ver historial
                 </td>
               </tr>
@@ -78,7 +83,6 @@ function AdminHistorial() {
           </tbody>
         </table>
       </div>
-
     </div>
   );
 }

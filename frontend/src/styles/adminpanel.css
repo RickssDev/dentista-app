@@ -114,6 +114,7 @@ th, td {
     flex-direction: column;
   }
 }
+
 /* 🔥 CONTENEDOR */
 .usuarios-container {
   padding: 20px;
@@ -235,6 +236,7 @@ th, td {
 .delete:hover {
   transform: scale(1.2);
 }
+
 /* 🔥 SERVICIOS */
 .servicios-container {
   padding: 20px;
@@ -251,25 +253,6 @@ th, td {
 .servicios-header h1 {
   font-size: 28px;
   font-weight: bold;
-}
-
-/* BOTÓN */
-.btn-add {
-  background: #e94b6a;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: 0.2s;
-}
-
-.btn-add:hover {
-  transform: scale(1.05);
 }
 
 /* BUSCADOR */
@@ -310,10 +293,17 @@ th, td {
   padding: 20px;
 }
 
-/* GRID */
+/* 🔥 GRID CORREGIDO */
 .servicios-grid {
   display: grid;
-  grid-template-columns: 100px 1.5fr 2fr 1fr 1fr 1fr;
+  grid-template-columns: 
+    100px   /* Foto */
+    1.5fr   /* Título */
+    1fr     /* 🔥 Descripción MÁS CORTA */
+    1fr     /* Servicio */
+    1fr     /* Vigencia */
+    1fr     /* Estado */
+    1fr;    /* Acciones */
   align-items: center;
   gap: 10px;
 }
@@ -346,7 +336,14 @@ th, td {
   border-radius: 6px;
 }
 
-/* ESTADOS (reusa los mismos) */
+/* 🔥 TEXTO CONTROLADO */
+.servicios-grid span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ESTADOS */
 .estado.activo {
   background: #8bd46e;
   padding: 5px 10px;
@@ -372,4 +369,89 @@ th, td {
 .delete {
   cursor: pointer;
   color: red;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #f5eeee;
+  padding: 25px;
+  border-radius: 15px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.modal-body input,
+.modal-body select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-save {
+  background: #e94b6a;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.btn-cancel {
+  background: #ccc;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+/* IMÁGENES */
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.preview-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+.servicios-grid {
+  grid-template-columns: 
+    100px 
+    1.5fr 
+    1fr 
+    1fr 
+    1.2fr  /* 🔥 Vigencia más espacio */
+    1fr 
+    1fr;
 }

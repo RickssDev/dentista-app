@@ -22,6 +22,8 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+const rol = localStorage.getItem("rol")?.trim().toLowerCase();
+
   const menuItems = [
     { name: "Inicio", path: "/admin", icon: <FaHome /> },
     { name: "Usuarios", path: "/admin/usuarios", icon: <FaUsers /> },
@@ -35,24 +37,41 @@ function Sidebar() {
     { name: "Reportes", path: "/admin/reportes", icon: <FaChartBar /> }
   ];
 
+  const cerrarSesion = () => {
+    const confirmar = confirm("¿Cerrar sesión?");
+    if (!confirmar) return;
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("rol");
+    sessionStorage.clear();
+
+    navigate("/login", { replace: true });
+  };
+
+ const menuFiltrado =
+  rol === "asistente"
+    ? menuItems.filter(item =>
+        ["Inicio", "Citas", "Servicios", "Promociones", "Galería"]
+          .includes(item.name)
+      )
+    : menuItems;
+
   return (
     <>
-      {/* BOTÓN ABRIR */}
       <button className="open-btn" onClick={() => setIsOpen(true)}>
         ☰
       </button>
 
       <div className={`sidebar ${isOpen ? "open" : ""}`}>
         
-        {/* HEADER */}
         <div className="sidebar-header">
           <span>Menú</span>
           <FaBars className="menu-icon" onClick={() => setIsOpen(!isOpen)} />
         </div>
 
-        {/* MENÚ */}
         <ul className="menu">
-          {menuItems.map((item) => (
+          {menuFiltrado.map((item) => (
             <li
               key={item.name}
               className={location.pathname === item.path ? "active" : ""}
@@ -67,15 +86,8 @@ function Sidebar() {
           ))}
         </ul>
 
-        {/* 🔥 CERRAR SESIÓN */}
         <div className="logout-container">
-          <button
-            className="logout-btn"
-            onClick={() => {
-              // aquí puedes limpiar sesión después
-              navigate("/");
-            }}
-          >
+          <button className="logout-btn" onClick={cerrarSesion}>
             Cerrar sesión
           </button>
         </div>

@@ -7,13 +7,10 @@ function Home() {
   return (
     <div className="home-container">
 
-      {/* FONDO / HERO */}
       <div className="hero">
 
-        {/* TEXTO SUPERIOR */}
         <h2 className="title">Consultorio Dental "Dentissa"</h2>
 
-        {/* CONTENIDO */}
         <div className="hero-content">
 
           <div className="text">
@@ -33,7 +30,6 @@ function Home() {
             </button>
           </div>
 
-          {/* IMAGEN */}
           <div className="image">
             <img
               src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5"
