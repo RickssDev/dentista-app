@@ -1,0 +1,66 @@
+.home-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #f4dede, #e8b5b5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* HERO */
+.hero {
+  width: 90%;
+  height: 85%;
+  background: #e6b1b1;
+  border-radius: 30px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.title {
+  text-align: center;
+  color: #d94f70;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text h1 {
+  color: white;
+  font-size: 42px;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.text p {
+  color: black;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.btn-agendar {
+  background: #d94f70;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-agendar:hover {
+  transform: scale(1.05);
+  background: #b93a58;
+}
+
+.image img {
+  width: 300px;
+  border-radius: 50%;
+  object-fit: cover;
+}
