@@ -1,61 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import "../../styles/CitasAdmin.css";
-import { api } from "../../services/api";
-import {
-  FaCalendarAlt,
-  FaTimesCircle,
-  FaCheckCircle
-} from "react-icons/fa";
+  import { useEffect, useMemo, useState } from "react";
+  import "../../styles/CitasAdmin.css";
+  import { api } from "../../services/api";
+  import {
+    FaCalendarAlt,
+    FaTimesCircle,
+    FaCheckCircle
+  } from "react-icons/fa";
 
-function CitasAdmin() {
+  function CitasAdmin() {
 
-  const [citas, setCitas] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [estado, setEstado] = useState("");
+    const [citas, setCitas] = useState([]);
+    const [pacientes, setPacientes] = useState([]);
+const [servicios, setServicios] = useState([]);
+    const [busqueda , setBusqueda] = useState("");
+    const [estado, setEstado] = useState("");
 
-  const [mostrarModal, setMostrarModal] = useState(false);
+    const [mostrarModal, setMostrarModal] = useState(false);
 
-  const [form, setForm] = useState({
-    id_paciente: "",
-    fecha_agendada: "",
-    hora: "",
-    id_servicio: "",
-    estado: "pendiente"
-  });
-
-  const obtenerCitas = async () => {
-
-    try {
-
-      const data = await api("/citas");
-
-      setCitas(data.payload || data);
-
-    } catch (error) {
-
-      console.error(error);
-
-    }
-
-  };
-
-useEffect(() => {
-
-  obtenerCitas();
-
-}, []);
-
-const guardarCita = async () => {
-
-  try {
-
-    await api("/citas", "POST", form);
-
-    alert("Cita creada correctamente");
-
-    setMostrarModal(false);
-
-    setForm({
+    const [form, setForm] = useState({
       id_paciente: "",
       fecha_agendada: "",
       hora: "",
@@ -63,312 +25,401 @@ const guardarCita = async () => {
       estado: "pendiente"
     });
 
-    obtenerCitas();
+    const obtenerCitas = async () => {
 
+      try {
+
+        const data = await api("/citas");
+
+        setCitas(data.payload || data);
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    };
+
+const obtenerPacientes = async () => {
+  try {
+    const data = await api("/pacientes");
+    setPacientes(data.payload || data);
   } catch (error) {
-
     console.error(error);
-
-    alert(error.message);
-
   }
-
 };
 
-  const citasFiltradas = useMemo(() => {
+const obtenerServicios = async () => {
+  try {
+    const data = await api("/servicios");
+    setServicios(data.payload || data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+ useEffect(() => {
 
-    return citas.filter((cita) => {
+  obtenerCitas();
+  obtenerPacientes();
+  obtenerServicios();
 
-      const paciente = (cita.nombre_paciente || "").toLowerCase();
+}, []);
 
-      const coincidePaciente =
-        paciente.includes(busqueda.toLowerCase());
+  const guardarCita = async () => {
 
-      const coincideEstado =
-        estado === "" || cita.estado === estado;
+    try {
 
-      return coincidePaciente && coincideEstado;
+      await api("/citas", "POST", form);
 
-    });
+      alert("Cita creada correctamente");
 
-  }, [citas, busqueda, estado]);
+      setMostrarModal(false);
 
-  return (
+      setForm({
+        id_paciente: "",
+        fecha_agendada: "",
+        hora: "",
+        id_servicio: "",
+        estado: "pendiente"
+      });
 
-    <div className="citas-container">
+      obtenerCitas();
 
-      <h1>Gestión de citas</h1>
+    } catch (error) {
 
-      <div className="citas-card">
+      console.error(error);
 
-        <div className="citas-filtros">
+      alert(error.message);
 
-          <div className="filtros-left">
+    }
 
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              value={busqueda}
-              onChange={(e) =>
-                setBusqueda(e.target.value)
-              }
-            />
+  };
 
-            <select
-              value={estado}
-              onChange={(e) =>
-                setEstado(e.target.value)
-              }
-            >
+    const citasFiltradas = useMemo(() => {
 
-              <option value="">
-                Todos
-              </option>
+      return citas.filter((cita) => {
 
-              <option value="pendiente">
-                Pendiente
-              </option>
+        const paciente = (cita.nombre_paciente || "").toLowerCase();
 
-              <option value="completada">
-                Completada
-              </option>
+        const coincidePaciente =
+          paciente.includes(busqueda.toLowerCase());
 
-              <option value="cancelada">
-                Cancelada
-              </option>
+        const coincideEstado =
+          estado === "" || cita.estado === estado;
 
-            </select>
+        return coincidePaciente && coincideEstado;
+
+      });
+
+    }, [citas, busqueda, estado]);
+
+    return (
+
+      <div className="citas-container">
+
+        <h1>Gestión de citas</h1>
+
+        <div className="citas-card">
+
+          <div className="citas-filtros">
+
+            <div className="filtros-left">
+
+              <input
+                type="text"
+                placeholder="Buscar paciente..."
+                value={busqueda}
+                onChange={(e) =>
+                  setBusqueda(e.target.value)
+                }
+              />
+
+              <select
+                value={estado}
+                onChange={(e) =>
+                  setEstado(e.target.value)
+                }
+              >
+
+                <option value="">
+                  Todos
+                </option>
+
+                <option value="pendiente">
+                  Pendiente
+                </option>
+
+                <option value="completada">
+                  Completada
+                </option>
+
+                <option value="cancelada">
+                  Cancelada
+                </option>
+
+              </select>
+
+            </div>
+
+          <button
+      className="btn-crear"
+      onClick={() => setMostrarModal(true)}
+  >
+
+      + Crear cita
+
+  </button>
 
           </div>
 
-         <button
-    className="btn-crear"
-    onClick={() => setMostrarModal(true)}
->
-
-    + Crear cita
-
-</button>
-
         </div>
 
-      </div>
+        <div className="tabla">
 
-      <div className="tabla">
+          <table>
 
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>Paciente</th>
-
-              <th>Fecha</th>
-
-              <th>Hora</th>
-
-              <th>Servicio</th>
-
-              <th>Estado</th>
-
-              <th>Acciones</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {citasFiltradas.length === 0 ? (
+            <thead>
 
               <tr>
 
-                <td colSpan="5">
+                <th>Paciente</th>
 
-                  No hay citas.
+                <th>Fecha</th>
 
-                </td>
+                <th>Hora</th>
+
+                <th>Servicio</th>
+
+                <th>Estado</th>
+
+                <th>Acciones</th>
 
               </tr>
 
-            ) : (
+            </thead>
 
-              citasFiltradas.map((cita) => (
+            <tbody>
 
-                <tr key={cita.id}>
+              {citasFiltradas.length === 0 ? (
 
-                  <td>
+                <tr>
 
-                    {cita.nombre_paciente}
+                  <td colSpan="5">
 
-                  </td>
-
-                  <td>
-
-                    {new Date(
-                      cita.fecha_agendada
-                    ).toLocaleDateString()}
+                    No hay citas.
 
                   </td>
-
-                  <td>
-
-                    {cita.hora}
-
-                  </td>
-
-                  <td>
-
-                    {cita.nombre_servicio}
-
-                  </td>
-
-                  <td>
-
-                    <span
-                      className={`estado ${cita.estado}`}
-                    >
-
-                      {cita.estado}
-
-                    </span>
-
-                  </td>
-
-                  <td>
-
-  <div
-    style={{
-      display: "flex",
-      gap: "15px",
-      justifyContent: "center",
-      fontSize: "20px"
-    }}
-  >
-
-    <FaCalendarAlt
-      color="#3b82f6"
-      style={{ cursor: "pointer" }}
-      title="Reprogramar"
-      onClick={() =>
-        alert("Reprogramar cita " + cita.id)
-      }
-    />
-
-    <FaTimesCircle
-      color="#ef4444"
-      style={{ cursor: "pointer" }}
-      title="Cancelar"
-      onClick={() =>
-        alert("Cancelar cita " + cita.id)
-      }
-    />
-
-    <FaCheckCircle
-      color="#22c55e"
-      style={{ cursor: "pointer" }}
-      title="Finalizar"
-      onClick={() =>
-        alert("Finalizar cita " + cita.id)
-      }
-    />
-
-  </div>
-
-</td>
 
                 </tr>
 
-              ))
+              ) : (
 
-            )}
+                citasFiltradas.map((cita) => (
 
-          </tbody>
+                  <tr key={cita.id}>
 
-        </table>
+                    <td>
 
-      </div>
-{mostrarModal && (
+                      {cita.nombre_paciente}
 
-<div
-className="modal-overlay"
-onClick={() => setMostrarModal(false)}
->
+                    </td>
 
-<div
-className="modal-box"
-onClick={(e) => e.stopPropagation()}
->
+                    <td>
 
-<div className="modal-header">
+                      {new Date(
+                        cita.fecha_agendada
+                      ).toLocaleDateString()}
 
-<h2>Nueva cita</h2>
+                    </td>
 
-</div>
+                    <td>
 
-<div className="modal-body">
+                      {cita.hora}
 
-<input
-type="number"
-placeholder="ID Paciente"
-value={form.id_paciente}
-onChange={(e)=>setForm({...form,id_paciente:e.target.value})}
-/>
+                    </td>
 
-<input
-type="number"
-placeholder="ID Servicio"
-value={form.id_servicio}
-onChange={(e)=>setForm({...form,id_servicio:e.target.value})}
-/>
+                    <td>
 
-<input
-type="date"
-value={form.fecha_agendada}
-onChange={(e)=>setForm({...form,fecha_agendada:e.target.value})}
-/>
+                      {cita.nombre_servicio}
 
-<input
-type="time"
-value={form.hora}
-onChange={(e)=>setForm({...form,hora:e.target.value})}
-/>
+                    </td>
 
-</div>
+                    <td>
 
-<div className="modal-footer">
+                      <span
+                        className={`estado ${cita.estado}`}
+                      >
 
-<button
-className="btn-cancel"
-onClick={()=>setMostrarModal(false)}
->
+                        {cita.estado}
 
-Cancelar
+                      </span>
 
-</button>
+                    </td>
 
-<button
-className="btn-save"
-onClick={guardarCita}
->
+                    <td>
 
-Guardar
+    <div
+      style={{
+        display: "flex",
+        gap: "15px",
+        justifyContent: "center",
+        fontSize: "20px"
+      }}
+    >
 
-</button>
+      <FaCalendarAlt
+        color="#3b82f6"
+        style={{ cursor: "pointer" }}
+        title="Reprogramar"
+        onClick={() =>
+          alert("Reprogramar cita " + cita.id)
+        }
+      />
 
-</div>
+      <FaTimesCircle
+        color="#ef4444"
+        style={{ cursor: "pointer" }}
+        title="Cancelar"
+        onClick={() =>
+          alert("Cancelar cita " + cita.id)
+        }
+      />
 
-</div>
+      <FaCheckCircle
+        color="#22c55e"
+        style={{ cursor: "pointer" }}
+        title="Finalizar"
+        onClick={() =>
+          alert("Finalizar cita " + cita.id)
+        }
+      />
 
-</div>
-
-)}
     </div>
 
-  );
+  </td>
 
-}
+                  </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+  {mostrarModal && (
+
+  <div
+  className="modal-overlay"
+  onClick={() => setMostrarModal(false)}
+  >
+
+  <div
+  className="modal-box"
+  onClick={(e) => e.stopPropagation()}
+  >
+
+  <div className="modal-header">
+
+  <h2>Nueva cita</h2>
+
+  </div>
+
+  <div className="modal-body">
+
+ <select
+  value={form.id_paciente}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      id_paciente: e.target.value
+    })
+  }
+>
+  <option value="">Seleccionar paciente</option>
+
+  {pacientes.map((paciente) => (
+    <option
+      key={paciente.id_paciente}
+      value={paciente.id_paciente}
+    >
+      {paciente.nombre}
+    </option>
+  ))}
+</select>
+
+<select
+  value={form.id_servicio}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      id_servicio: e.target.value
+    })
+  }
+>
+  <option value="">Seleccionar servicio</option>
+
+  {servicios.map((servicio) => (
+    <option
+      key={servicio.id_servicio}
+      value={servicio.id_servicio}
+    >
+      {servicio.nombre_servicio}
+    </option>
+  ))}
+</select>
 
 
-export default CitasAdmin;
+
+  <input
+  type="date"
+  value={form.fecha_agendada}
+  onChange={(e)=>setForm({...form,fecha_agendada:e.target.value})}
+  />
+
+  <input
+  type="time"
+  value={form.hora}
+  onChange={(e)=>setForm({...form,hora:e.target.value})}
+  />
+
+  </div>
+
+  <div className="modal-footer">
+
+  <button
+  className="btn-cancel"
+  onClick={()=>setMostrarModal(false)}
+  >
+
+  Cancelar
+
+  </button>
+
+  <button
+  className="btn-save"
+  onClick={guardarCita}
+  >
+
+  Guardar
+
+  </button>
+
+  </div>
+
+  </div>
+
+  </div>
+
+  )}
+      </div>
+
+    );
+
+  }
+
+
+  export default CitasAdmin;
