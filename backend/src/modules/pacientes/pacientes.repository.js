@@ -84,3 +84,22 @@ exports.updatePerfilByUserId = async (
     [direccion, genero, idUsuario]
   );
 };
+
+exports.getPacientesSelect = async () => {
+    const [rows] = await pool.query(`
+        SELECT
+    p.id_paciente,
+    CONCAT(
+        u.nombre_usuario,
+        ' ',
+        u.apellido
+    ) AS nombre
+FROM paciente p
+INNER JOIN usuarios u
+    ON p.id_usuario = u.id_usuario
+WHERE u.estado = 'activo'
+ORDER BY u.nombre_usuario, u.apellido;
+    `);
+
+    return rows;
+};
