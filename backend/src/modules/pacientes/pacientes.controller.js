@@ -24,3 +24,8 @@ const { idUsuario } = req.params;
 const data = await service.updatePerfil(idUsuario,req.body);
 return HandleResponse.success(res,200,'Perfil actualizado correctamente',data);
 });
+
+exports.getPacientesSelect = catchAsync(async (req, res) => {
+    const data = await service.getPacientesSelect();
+    return HandleResponse.success(res, 200, "Pacientes obtenidos correctamente", data);
+});
