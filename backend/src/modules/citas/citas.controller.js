@@ -74,3 +74,9 @@ exports.getProximaCita = catchAsync(async (req, res) => {
   const cita = await service.getProximaCita(idUsuario);
   res.status(200).json({status: "success", data: cita, });
 });
+
+exports.getHorariosDisponibles = catchAsync(async (req, res) => {
+  const { fecha, id_servicio } = req.query;
+  const horarios = await service.getHorariosDisponibles(fecha,id_servicio);
+  res.status(200).json({status: "success",data: horarios,});
+});

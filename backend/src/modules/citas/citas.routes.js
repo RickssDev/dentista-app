@@ -9,6 +9,7 @@ router.get("/filtro/:tipo", controller.getCitasPorPeriodo);
 router.get("/paciente/:id_paciente", controller.getCitasByPaciente);
 router.get("/miscitas/:idPaciente", controller.getMisCitas);
 router.get("/proximacita", verifyToken, controller.getProximaCita);
+router.get("/horarios-disponibles", controller.getHorariosDisponibles);
 
 router.post("/paciente", controller.createCitaPaciente);
 router.post("/", controller.createCita);
