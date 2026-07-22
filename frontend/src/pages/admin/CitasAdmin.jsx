@@ -44,6 +44,11 @@ const [servicios, setServicios] = useState([]);
 const obtenerPacientes = async () => {
   try {
     const data = await api("/pacientes");
+
+    console.log("Respuesta completa:");
+    console.log(data);
+    console.log(JSON.stringify(data, null, 2));
+
     setPacientes(data.payload || data);
   } catch (error) {
     console.error(error);
@@ -53,11 +58,18 @@ const obtenerPacientes = async () => {
 const obtenerServicios = async () => {
   try {
     const data = await api("/servicios");
+
+    console.log("Respuesta servicios:");
+    console.log(data);
+    console.log(JSON.stringify(data, null, 2));
+
     setServicios(data.payload || data);
   } catch (error) {
     console.error(error);
   }
 };
+
+
  useEffect(() => {
 
   obtenerCitas();
@@ -114,6 +126,8 @@ const obtenerServicios = async () => {
 
     }, [citas, busqueda, estado]);
 
+    console.log(servicios);
+console.log(pacientes);
     return (
 
       <div className="citas-container">
@@ -350,7 +364,6 @@ const obtenerServicios = async () => {
     </option>
   ))}
 </select>
-
 <select
   value={form.id_servicio}
   onChange={(e) =>
@@ -364,15 +377,13 @@ const obtenerServicios = async () => {
 
   {servicios.map((servicio) => (
     <option
-      key={servicio.id_servicio}
-      value={servicio.id_servicio}
+      key={servicio.id}
+      value={servicio.id}
     >
-      {servicio.nombre_servicio}
+      {servicio.nombre}
     </option>
   ))}
 </select>
-
-
 
   <input
   type="date"
