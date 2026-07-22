@@ -3,8 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/admin/login";
 import AdminPanel from "./pages/admin/AdminPanel";
+import InicioPaciente from "./pages/paciente/InicioPaciente";
+import CitasPaciente from "./pages/paciente/CitasPaciente";
+import PerfilPaciente from "./pages/paciente/PerfilPaciente"; 
 
-// 🔐 PROTECTOR
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/login" replace />;
@@ -15,21 +17,46 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* 🔥 REDIRECCIÓN INICIAL */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* 🔐 LOGIN */}
         <Route path="/login" element={<Login />} />
 
-        {/* (opcional) HOME si lo quieres usar después */}
         <Route path="/home" element={<Home />} />
 
-        {/* 🛠 ADMIN PROTEGIDO */}
+        {/* ADMIN PROTEGIDO */}
         <Route
           path="/admin/*"
           element={
             <PrivateRoute>
               <AdminPanel />
+            </PrivateRoute>
+          }
+        />
+
+        {/* PACIENTE */}
+        <Route
+          path="/paciente"
+          element={
+            <PrivateRoute>
+              <InicioPaciente />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/paciente/citaspaciente"
+          element={
+            <PrivateRoute>
+              <CitasPaciente />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/paciente/perfil"
+          element={
+            <PrivateRoute>
+              <PerfilPaciente />
             </PrivateRoute>
           }
         />

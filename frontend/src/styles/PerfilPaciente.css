@@ -1,0 +1,93 @@
+/* Heredas .inicio-container, .card, .btn de tus estilos globales */
+
+.perfil-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 900px;
+}
+
+@media (min-width: 1024px) {
+    .perfil-grid {
+        grid-template-columns: 1fr 1fr; /* Divide en dos columnas en pantallas grandes */
+        align-items: start;
+    }
+}
+
+.perfil-card {
+    margin-top: 0;
+    padding: 35px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.form-row .input-group {
+    flex: 1;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.input-group input, 
+.input-group select {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus, 
+.input-group select:focus {
+    border-color: #d94b7a;
+}
+
+/* Estilos para inputs bloqueados (Figma design) */
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icon input {
+    width: 100%;
+    padding-right: 40px; /* Espacio para el candado */
+}
+
+.input-disabled {
+    background-color: #f0f0f0;
+    color: #777 !important;
+    border: 1px solid #e0e0e0 !important;
+    cursor: not-allowed;
+}
+
+.lock-icon {
+    position: absolute;
+    right: 15px;
+    font-size: 14px;
+    color: #888;
+    pointer-events: none;
+}
+
+.botones-derecha {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    gap: 15px;
+}

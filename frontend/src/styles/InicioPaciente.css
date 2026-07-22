@@ -1,0 +1,74 @@
+.inicio-container{
+    margin-left:260px;
+    padding:30px;
+    background:#FCEEEE;
+    min-height:100vh;
+}
+
+.card{
+    background:white;
+    border:1px solid #cfcfcf;
+    border-radius:10px;
+    padding:25px;
+    margin-top:25px;
+}
+
+.subtitulo{
+    color:gray;
+    margin-bottom:20px;
+}
+
+.cita-info{
+    display:flex;
+    gap:120px;
+    margin-bottom:25px;
+}
+
+.botones{
+    display:flex;
+    gap:20px;
+}
+
+.btn{
+    padding:10px 25px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.btn-reprogramar{
+    background:#d94b7a;
+    color:white;
+}
+
+.btn-cancelar{
+    background:white;
+    border:1px solid #bdbdbd;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    text-align:left;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+}
+
+.estado{
+    background:#55c96b;
+    color:white;
+    padding:5px 10px;
+    border-radius:5px;
+}
+
+h1{
+    margin-bottom:20px;
+}

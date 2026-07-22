@@ -61,12 +61,11 @@ function Login() {
         JSON.stringify(tienePerfilPaciente)
       );
 
-      if (usuario.rol === "Administrador" || usuario.rol === "Asistente") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/paciente", { replace: true });
-      }
-
+     if (usuario.rol === "Administrador" || usuario.rol === "Asistente") {
+  navigate("/admin", { replace: true });
+} else {
+navigate("/paciente", { replace: true });
+}
     } catch (error) {
       console.error("ERROR LOGIN:", error);
 
