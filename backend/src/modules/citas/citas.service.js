@@ -421,3 +421,51 @@ exports.getProximaCita = async (idUsuario) => {
 
   return await repo.getProximaCita(paciente.id_paciente);
 };
+
+exports.getHorariosDisponibles = async (fecha, id_servicio) => {
+  if (!fecha || !id_servicio) {
+    throw new AppError("Fecha e id del servicio son obligatorios", 400);
+  }
+
+  const servicio = await servicioRepo.getServicioById(id_servicio);
+
+  if (!servicio) {
+    throw new AppError("Servicio no encontrado", 404);
+  }
+
+  const duracion = durationToMinutes(servicio.duracion);
+
+  const citasDelDia = await repo.getCitasDelDia(fecha);
+
+  const horariosDisponibles = [];
+
+  // Jornada laboral
+  const inicioLaboral = 8 * 60;
+  const finLaboral = 16 * 60;
+
+  // Intervalos cada hora
+  for (
+    let inicio = inicioLaboral;
+    inicio + duracion <= finLaboral;
+    inicio += 60
+  ) {
+    const fin = inicio + duracion;
+
+    const ocupado = citasDelDia.some((cita) => {
+      const inicioExistente = timeToMinutes(cita.hora);
+      const finExistente =
+        inicioExistente + durationToMinutes(cita.duracion);
+
+      return inicio < finExistente && fin > inicioExistente;
+    });
+
+    if (!ocupado) {
+      const hora = String(Math.floor(inicio / 60)).padStart(2, "0");
+      const minutos = String(inicio % 60).padStart(2, "0");
+
+      horariosDisponibles.push(`${hora}:${minutos}`);
+    }
+  }
+
+  return horariosDisponibles;
+};
