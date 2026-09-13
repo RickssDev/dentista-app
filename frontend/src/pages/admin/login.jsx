@@ -61,12 +61,11 @@ function Login() {
         JSON.stringify(tienePerfilPaciente)
       );
 
-      if (usuario.rol === "Administrador" || usuario.rol === "Asistente") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/paciente", { replace: true });
-      }
-
+     if (usuario.rol === "Administrador" || usuario.rol === "Asistente") {
+  navigate("/admin", { replace: true });
+} else {
+navigate("/paciente", { replace: true });
+}
     } catch (error) {
       console.error("ERROR LOGIN:", error);
 
@@ -221,11 +220,13 @@ function Login() {
               </button>
             </div>
 
-            <div className="toggle-panel toggle-right">
-              <button type="button" onClick={() => setActive(true)}>
-                Registrarse
-              </button>
-            </div>
+          <div className="toggle-panel toggle-right">
+  <p className="toggle-text">¿No tienes cuenta?</p>
+
+  <button type="button" onClick={() => setActive(true)}>
+    Registrarse
+  </button>
+</div>
 
           </div>
         </div>

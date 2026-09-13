@@ -179,6 +179,12 @@
 .container.active .toggle-left{
     transform:translateX(0);
 }
+.toggle-text{
+    color:#000;
+    font-size:18px;
+    font-weight:500;
+    margin-bottom:15px;
+}
 
 .toggle-right{
     right:0;

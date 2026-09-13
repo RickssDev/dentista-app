@@ -1,0 +1,101 @@
+/* Heredamos .inicio-container, .card, .btn y modales de tu CSS existente */
+
+.header-citas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-citas h1 {
+    margin-bottom: 0; /* Para alinear con el botón */
+}
+
+/* Estilos de Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    text-align: left;
+    padding: 15px 10px;
+    font-size: 12px;
+    color: #666;
+    border-bottom: 1px solid #eee;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 18px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Clases dinámicas para los Estados */
+.estado {
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    display: inline-block;
+    text-align: center;
+    min-width: 90px;
+}
+
+.estado.confirmada {
+    background: #d94b7a; /* Tu rosa fuerte */
+    color: white;
+}
+
+.estado.pendiente {
+    background: #f19aae; /* Un rosa más claro */
+    color: white;
+}
+
+.estado.cancelada {
+    background: #e0e0e0;
+    color: #555;
+}
+
+/* Paginación estática (Figma) */
+.paginacion {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn-pag {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: #eaeaea;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pag.activa {
+    background: #d94b7a;
+    color: white;
+}
+
+/* Ajuste rápido para select e inputs del modal si no los tenías estilizados globalmente */
+.modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 20px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-family: inherit;
+}

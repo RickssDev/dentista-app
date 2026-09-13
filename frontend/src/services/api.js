@@ -1,52 +1,51 @@
-const BASE_URL = "http://10.0.5.102:3000/api/v1";
-
+const BASE_URL = "http://192.168.1.67:3000/api/v1";
 export const api = async (
-  endpoint,
-  method = "GET",
-  data = null,
-  isFormData = false
-) => {
-  const token = localStorage.getItem("token");
+    endpoint,
+    method = "GET",
+    data = null,
+    isFormData = false
+  ) => {
+    const token = localStorage.getItem("token");
 
-  const options = {
-    method,
-    headers: {}
-  };
+    const options = {
+      method,
+      headers: {}
+    };
 
-  if (token) {
-    options.headers["Authorization"] =
-      `Bearer ${token}`;
-  }
-
-  if (data) {
-    if (isFormData) {
-      options.body = data;
-    } else {
-      options.headers["Content-Type"] =
-        "application/json";
-      options.body = JSON.stringify(data);
+    if (token) {
+      options.headers["Authorization"] =
+        `Bearer ${token}`;
     }
-  }
 
-  const response = await fetch(
-    `${BASE_URL}${endpoint}`,
-    options
-  );
+    if (data) {
+      if (isFormData) {
+        options.body = data;
+      } else {
+        options.headers["Content-Type"] =
+          "application/json";
+        options.body = JSON.stringify(data);
+      }
+    }
 
-  let result;
-
-  try {
-    result = await response.json();
-  } catch {
-    result = {};
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      result.message ||
-      "Error interno del servidor"
+    const response = await fetch(
+      `${BASE_URL}${endpoint}`,
+      options
     );
-  }
 
-  return result;
-};
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result.message ||
+        "Error interno del servidor"
+      );
+    }
+
+    return result;
+  };

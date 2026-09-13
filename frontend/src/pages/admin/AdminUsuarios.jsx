@@ -3,8 +3,7 @@ import "../../styles/AdminPanel.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { api } from "../../services/api";
 
-const BASE_IMG_URL = "http://10.0.5.102:3000";
-
+const BASE_IMG_URL = "http://10.0.3.217:3000";
 function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
