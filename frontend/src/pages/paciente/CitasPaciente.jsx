@@ -15,7 +15,7 @@ function CitasPaciente() {
 
   // Asumiendo que obtienes el id del paciente autenticado de algún lado (contexto, localStorage o la misma API)
   // Lo pondré estático a 4 como en tu ejemplo del JSON, pero ajústalo a tu lógica.
-  const idPaciente = 4;
+  const id_paciente = 4;
 
   useEffect(() => {
     cargarCitas();
@@ -25,7 +25,7 @@ function CitasPaciente() {
     try {
       setLoading(true);
       // Usamos tu servicio api exactamente como en InicioPaciente
-      const res = await api(`/citas/paciente/${idPaciente}`);
+      const res = await api(`/api/v1/citas/paciente/${id_paciente}`);
       
       // Manejo por si la API devuelve directamente el array o dentro de un objeto
       const data = res.data ? res.data : res;
@@ -44,7 +44,7 @@ function CitasPaciente() {
         "/citas/paciente",
         "POST",
         {
-          id_paciente: idPaciente,
+          id_paciente: id_paciente,
           fecha_agendada: fecha,
           hora: hora,
           id_servicio: parseInt(idServicio)

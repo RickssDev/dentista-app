@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.23:3000/api/v1";
+const BASE_URL = "http://192.168.1.67:3000/api/v1";
 export const api = async (
     endpoint,
     method = "GET",

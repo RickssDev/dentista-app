@@ -220,11 +220,13 @@ navigate("/paciente", { replace: true });
               </button>
             </div>
 
-            <div className="toggle-panel toggle-right">
-              <button type="button" onClick={() => setActive(true)}>
-                Registrarse
-              </button>
-            </div>
+          <div className="toggle-panel toggle-right">
+  <p className="toggle-text">¿No tienes cuenta?</p>
+
+  <button type="button" onClick={() => setActive(true)}>
+    Registrarse
+  </button>
+</div>
 
           </div>
         </div>

@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
-import Login from "./pages/admin/login";
+import Login from "./pages/admin/Login";
 import AdminPanel from "./pages/admin/AdminPanel";
 import InicioPaciente from "./pages/paciente/InicioPaciente";
 import CitasPaciente from "./pages/paciente/CitasPaciente";
-import PerfilPaciente from "./pages/paciente/PerfilPaciente"; 
+import PerfilPaciente from "./pages/paciente/PerfilPaciente";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -16,14 +16,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Página principal */}
+        <Route path="/" element={<Home />} />
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
-
+        {/* Login */}
         <Route path="/login" element={<Login />} />
 
-        <Route path="/home" element={<Home />} />
-
-        {/* ADMIN PROTEGIDO */}
+        {/* Panel de administrador */}
         <Route
           path="/admin/*"
           element={
@@ -33,7 +32,7 @@ function App() {
           }
         />
 
-        {/* PACIENTE */}
+        {/* Inicio del paciente */}
         <Route
           path="/paciente"
           element={
@@ -43,6 +42,7 @@ function App() {
           }
         />
 
+        {/* Citas del paciente */}
         <Route
           path="/paciente/citaspaciente"
           element={
@@ -52,6 +52,7 @@ function App() {
           }
         />
 
+        {/* Perfil del paciente */}
         <Route
           path="/paciente/perfil"
           element={
@@ -61,6 +62,8 @@ function App() {
           }
         />
 
+        {/* Cualquier ruta inexistente */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
