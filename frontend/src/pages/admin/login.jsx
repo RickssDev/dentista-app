@@ -64,7 +64,11 @@ function Login() {
      if (usuario.rol === "Administrador" || usuario.rol === "Asistente") {
   navigate("/admin", { replace: true });
 } else {
-navigate("/paciente", { replace: true });
+  if (tienePerfilPaciente) {
+    navigate("/paciente", { replace: true });
+  } else {
+    navigate("/paciente/completar-perfil", { replace: true });
+  }
 }
     } catch (error) {
       console.error("ERROR LOGIN:", error);

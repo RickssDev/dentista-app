@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
-import Login from "./pages/admin/Login";
+import Login from "./pages/admin/login";
 import AdminPanel from "./pages/admin/AdminPanel";
 import InicioPaciente from "./pages/paciente/InicioPaciente";
 import CitasPaciente from "./pages/paciente/CitasPaciente";
 import PerfilPaciente from "./pages/paciente/PerfilPaciente";
+import CompletarPerfil from "./pages/paciente/CompletarPerfil";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -28,6 +29,15 @@ function App() {
           element={
             <PrivateRoute>
               <AdminPanel />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/paciente/completar-perfil"
+          element={
+            <PrivateRoute>
+              <CompletarPerfil />
             </PrivateRoute>
           }
         />

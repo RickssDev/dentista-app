@@ -15,14 +15,17 @@ function InicioPaciente() {
   const [motivo, setMotivo] = useState("");
   const [motivoCancelar, setMotivoCancelar] = useState("");
 
+  const [historialCitas, setHistorialCitas] = useState([]);
+
   useEffect(() => {
     cargarProximaCita();
+    cargarHistorialCitas();
   }, []);
 
   const cargarProximaCita = async () => {
     try {
       setLoading(true);
-      const res = await api("/citas/miproximacita");
+      const res = await api("/citas/proximacita");
       setProximaCita(res.data || null);
     } catch (error) {
       console.error(error);
@@ -31,6 +34,21 @@ function InicioPaciente() {
       setLoading(false);
     }
   };
+
+  const cargarHistorialCitas = async () => {
+  try {
+    const res = await api("/citas/miscitas");
+
+    const citas = Array.isArray(res.payload)
+      ? res.payload
+      : [];
+
+    setHistorialCitas(citas);
+  } catch (error) {
+    console.error("ERROR MIS CITAS:", error);
+    setHistorialCitas([]);
+  }
+};
 
   const abrirReprogramar = () => {
     if (!proximaCita) return;
@@ -64,6 +82,7 @@ function InicioPaciente() {
       alert("Cita reprogramada correctamente");
       setMostrarReprogramar(false);
       cargarProximaCita();
+      cargarHistorialCitas();
     } catch (error) {
       alert(error.message);
     }
@@ -83,19 +102,22 @@ function InicioPaciente() {
       setMostrarCancelar(false);
       setMotivoCancelar("");
       cargarProximaCita();
+      cargarHistorialCitas();
     } catch (error) {
       alert(error.message);
     }
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    return new Date(fechaISO).toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+   const formatearFecha = (fechaISO) => {
+  if (!fechaISO) return "";
+
+  const fecha = fechaISO.substring(0, 10);
+
+  const [year, month, day] = fecha.split("-");
+
+  return `${day}/${month}/${year}`;
+};
+
 
   return (
     <>
@@ -152,13 +174,69 @@ function InicioPaciente() {
           )}
         </div>
 
-        <div className="card">
-          <h2>Pendiente</h2>
-        </div>
+       <div className="card">
+  <h2>Historial de Citas Recientes</h2>
+
+  <div className="historial-header">
+    <span>FECHA</span>
+    <span>TRATAMIENTO</span>
+    <span>ESTADO</span>
+    <span>ESPECIALISTA</span>
+  </div>
+
+  {historialCitas.length === 0 ? (
+    <p>No tienes citas registradas.</p>
+  ) : (
+    historialCitas.slice(0, 5).map((cita) => (
+      <div className="historial-row" key={cita.id}>
+        <span>
+          {formatearFecha(cita.fecha_agendada)}
+        </span>
+
+        <span>
+          {cita.nombre_servicio}
+        </span>
+
+        <span>
+          <span className={`estado estado-${cita.estado}`}>
+            {cita.estado}
+          </span>
+        </span>
+
+        <span>
+          Por asignar
+        </span>
+      </div>
+    ))
+  )}
+</div>
 
         <div className="card">
-          <h2>Pendiente</h2>
-        </div>
+  <h2>Recordatorio</h2>
+
+  {proximaCita ? (
+    <>
+      <p className="recordatorio-titulo">
+        No olvides tu próxima cita
+      </p>
+
+      <p>
+        No olvides tu cita de{" "}
+        <strong>{proximaCita.nombre_servicio}</strong>{" "}
+        el{" "}
+        <strong>
+          {formatearFecha(proximaCita.fecha_agendada)}
+        </strong>{" "}
+        a las{" "}
+        <strong>
+          {proximaCita.hora.substring(0, 5)}
+        </strong>.
+      </p>
+    </>
+  ) : (
+    <p>No tienes próximas citas.</p>
+  )}
+</div>
       </div>
 
       {mostrarReprogramar && (
