@@ -10,24 +10,29 @@ exports.getPacienteByUserId = async (idUsuario) => {
   };
 };
 
-exports.createPaciente = async ({
-  direccion,
-  fecha_nacimiento,
-  genero,
-  id_usuario
-}) => {
+exports.createPaciente = async (
+  {
+    direccion,
+    fecha_nacimiento,
+    genero
+  },
+  idUsuario
+) => {
 
-  const pacienteExistente = await repo.findByUserId(id_usuario);
+  const pacienteExistente = await repo.findByUserId(idUsuario);
 
   if (pacienteExistente) {
-    throw new AppError('El paciente ya tiene perfil registrado', 400);
+    throw new AppError(
+      'El paciente ya tiene perfil registrado',
+      400
+    );
   }
 
   const nuevoPaciente = await repo.create({
     direccion,
     fecha_nacimiento,
     genero,
-    id_usuario
+    id_usuario: idUsuario
   });
 
   return nuevoPaciente;

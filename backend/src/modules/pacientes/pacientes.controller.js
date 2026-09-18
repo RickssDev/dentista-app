@@ -9,20 +9,46 @@ return HandleResponse.success(res,200,'Perfil obtenido correctamente',data);
 });
 
 exports.createPaciente = catchAsync(async (req, res) => {
-const data = await service.createPaciente(req.body);
-return HandleResponse.success(res,201,'Perfil creado correctamente',data);
-});
+const idUsuario = req.user.id;
+const data = await service.createPaciente(
+    req.body,
+    idUsuario
+  );
 
+  return HandleResponse.success(
+    res,
+    201,
+    'Perfil creado correctamente',
+    data
+  );
+});
 exports.getPerfil = catchAsync(async (req, res) => {
-const { idUsuario } = req.params;
-const data = await service.getPerfil(idUsuario);
-return HandleResponse.success(res,200,'Perfil obtenido correctamente',data);
+  const idUsuario = req.user.id;
+
+  const data = await service.getPerfil(idUsuario);
+
+  return HandleResponse.success(
+    res,
+    200,
+    "Perfil obtenido correctamente",
+    data
+  );
 });
 
 exports.updatePerfil = catchAsync(async (req, res) => {
-const { idUsuario } = req.params;
-const data = await service.updatePerfil(idUsuario,req.body);
-return HandleResponse.success(res,200,'Perfil actualizado correctamente',data);
+  const idUsuario = req.user.id;
+
+  const data = await service.updatePerfil(
+    idUsuario,
+    req.body
+  );
+
+  return HandleResponse.success(
+    res,
+    200,
+    "Perfil actualizado correctamente",
+    data
+  );
 });
 
 exports.getPacientesSelect = catchAsync(async (req, res) => {
