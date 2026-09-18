@@ -1,0 +1,132 @@
+
+.completar-perfil-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: #f4f7fb;
+  font-family: Arial, sans-serif;
+}
+
+.completar-perfil-card {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  padding: 40px;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.completar-perfil-card h1 {
+  margin: 0 0 10px;
+  text-align: center;
+  color: #1f2937;
+  font-size: 28px;
+}
+
+.completar-perfil-descripcion {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.completar-perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.completar-perfil-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.completar-perfil-field label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.completar-perfil-field input,
+.completar-perfil-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+  background: white;
+}
+
+.completar-perfil-field input:focus,
+.completar-perfil-field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.completar-perfil-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.completar-perfil-button {
+  margin-top: 5px;
+  padding: 14px;
+  border: none;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.completar-perfil-button:hover {
+  background: #1d4ed8;
+}
+
+.completar-perfil-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .completar-perfil-page {
+    padding: 20px;
+  }
+
+  .completar-perfil-card {
+    padding: 28px 22px;
+  }
+
+  .completar-perfil-card h1 {
+    font-size: 24px;
+  }
+}
+
+.completar-perfil-later {
+   margin-top: 5px;
+  padding: 14px;
+  border: none;
+  border-radius: 9px;
+  background: #E6E838;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.completar-perfil-later:hover {
+  background: #DBDE31;
+}

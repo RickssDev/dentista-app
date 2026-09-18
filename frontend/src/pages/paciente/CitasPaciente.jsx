@@ -4,6 +4,18 @@ import { api } from "../../services/api";
 import "../../styles/MisCitas.css"; // O puedes reusar InicioPaciente.css si prefieres
 
 function CitasPaciente() {
+const obtenerFechaHoy = () => {
+  const hoy = new Date();
+
+  const year = hoy.getFullYear();
+  const month = String(hoy.getMonth() + 1).padStart(2, "0");
+  const day = String(hoy.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+  const fechaMinima = obtenerFechaHoy();
+
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,88 +24,129 @@ function CitasPaciente() {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [idServicio, setIdServicio] = useState("");
-
-  // Asumiendo que obtienes el id del paciente autenticado de algún lado (contexto, localStorage o la misma API)
-  // Lo pondré estático a 4 como en tu ejemplo del JSON, pero ajústalo a tu lógica.
-  const id_paciente = 4;
+  const [horarios, setHorarios] = useState([]);
+  const [servicios, setServicios] = useState([]);
 
   useEffect(() => {
     cargarCitas();
+    cargarServicios();
   }, []);
+
+  useEffect(() => {
+  cargarHorarios();
+}, [fecha, idServicio]);
 
   const cargarCitas = async () => {
     try {
       setLoading(true);
-      // Usamos tu servicio api exactamente como en InicioPaciente
-      const res = await api(`/api/v1/citas/paciente/${id_paciente}`);
-      
-      // Manejo por si la API devuelve directamente el array o dentro de un objeto
-      const data = res.data ? res.data : res;
-      setCitas(Array.isArray(data) ? data : [data]);
+
+      const res = await api("/citas/miscitas");
+
+      console.log("RESPUESTA COMPLETA:", res);
+
+      const data = res?.payload ?? res?.data ?? res;
+
+      setCitas(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error(error);
+      console.error("ERROR:", error);
       setCitas([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const agendarCita = async () => {
+  const cargarServicios = async () => {
     try {
-      await api(
-        "/citas/paciente",
-        "POST",
-        {
-          id_paciente: id_paciente,
-          fecha_agendada: fecha,
-          hora: hora,
-          id_servicio: parseInt(idServicio)
-        }
-      );
+      const res = await api("/servicios");
 
-      alert("Cita agendada correctamente");
-      setMostrarAgendar(false);
-      
-      // Limpiar formulario
-      setFecha("");
-      setHora("");
-      setIdServicio("");
-      
-      // Recargar la tabla
-      cargarCitas();
+      const data = res?.payload ?? res?.data ?? res;
+
+      setServicios(Array.isArray(data) ? data : []);
     } catch (error) {
-      alert(error.message || "Error al agendar la cita");
+      console.error("Error al cargar servicios:", error);
+      setServicios([]);
     }
   };
 
+  const cargarHorarios = async () => {
+  if (!fecha || !idServicio) {
+    setHorarios([]);
+    setHora("");
+    return;
+  }
+
+  try {
+    const res = await api(
+      `/citas/horarios-disponibles?fecha=${fecha}&id_servicio=${idServicio}`
+    );
+
+    const data = res?.payload ?? res?.data ?? res;
+
+    setHorarios(Array.isArray(data) ? data : []);
+    setHora("");
+  } catch (error) {
+    console.error("Error al cargar horarios:", error);
+    setHorarios([]);
+    setHora("");
+
+    alert(error.message || "No se pudieron cargar los horarios");
+  }
+};
+
+  const agendarCita = async () => {
+    const datos = {
+      fecha_agendada: fecha,
+      hora: hora,
+      id_servicio: parseInt(idServicio),
+    };
+
+    try {
+      await api("/citas/paciente", "POST", datos);
+
+      alert("Cita agendada correctamente");
+
+      setMostrarAgendar(false);
+      setFecha("");
+      setHora("");
+      setIdServicio("");
+
+      cargarCitas();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Error al agendar la cita");
+    }
+  };
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return "";
-    return new Date(fechaISO).toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+
+    const fecha = fechaISO.substring(0, 10);
+
+    const [year, month, day] = fecha.split("-");
+
+    return `${day}/${month}/${year}`;
   };
 
   const formatearHora = (horaString) => {
     if (!horaString) return "";
-    const [h, m] = horaString.split(':');
+    const [h, m] = horaString.split(":");
     const horas = parseInt(h, 10);
-    const ampm = horas >= 12 ? 'PM' : 'AM';
+    const ampm = horas >= 12 ? "PM" : "AM";
     const hora12 = horas % 12 || 12;
-    return `${hora12 < 10 ? '0' + hora12 : hora12}:${m} ${ampm}`;
+    return `${hora12 < 10 ? "0" + hora12 : hora12}:${m} ${ampm}`;
   };
 
   const getClassEstado = (estado) => {
     const estadoNormalizado = estado?.toLowerCase();
-    if (estadoNormalizado === 'confirmada' || estadoNormalizado === 'completada') {
-      return 'estado confirmada';
-    } else if (estadoNormalizado === 'pendiente') {
-      return 'estado pendiente';
+    if (
+      estadoNormalizado === "confirmada" ||
+      estadoNormalizado === "completada"
+    ) {
+      return "estado confirmada";
+    } else if (estadoNormalizado === "pendiente") {
+      return "estado pendiente";
     }
-    return 'estado cancelada';
+    return "estado cancelada";
   };
-
   return (
     <>
       <SidebarPaciente />
@@ -101,8 +154,8 @@ function CitasPaciente() {
       <div className="inicio-container">
         <div className="header-citas">
           <h1>Mis Citas</h1>
-          <button 
-            className="btn btn-reprogramar" 
+          <button
+            className="btn btn-reprogramar"
             onClick={() => setMostrarAgendar(true)}
           >
             + Agendar Nueva Cita
@@ -116,6 +169,7 @@ function CitasPaciente() {
             <table>
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>FECHA</th>
                   <th>HORA</th>
                   <th>TRATAMIENTO</th>
@@ -126,13 +180,17 @@ function CitasPaciente() {
               <tbody>
                 {citas.map((cita, index) => (
                   <tr key={cita.id || index}>
+                    <td>{cita.id}</td>
                     <td>{formatearFecha(cita.fecha_agendada)}</td>
                     <td>{formatearHora(cita.hora)}</td>
                     <td>{cita.nombre_servicio}</td>
                     <td>Por asignar</td>
                     <td>
                       <span className={getClassEstado(cita.estado)}>
-{cita.estado ? (cita.estado.charAt(0).toUpperCase() + cita.estado.slice(1)) : 'Sin estado'}
+                        {cita.estado
+                          ? cita.estado.charAt(0).toUpperCase() +
+                            cita.estado.slice(1)
+                          : "Sin estado"}
                       </span>
                     </td>
                   </tr>
@@ -163,28 +221,48 @@ function CitasPaciente() {
             <h2>Agendar Nueva Cita</h2>
 
             <label>Fecha</label>
+
             <input
               type="date"
               value={fecha}
+              min={fechaMinima}
               onChange={(e) => setFecha(e.target.value)}
             />
 
             <label>Hora</label>
-            <input
-              type="time"
+
+            <select
               value={hora}
               onChange={(e) => setHora(e.target.value)}
-            />
+              disabled={!fecha || !idServicio}
+            >
+              <option value="">
+                {!fecha
+                  ? "Primero selecciona una fecha"
+                  : !idServicio
+                    ? "Primero selecciona un servicio"
+                    : "Selecciona un horario"}
+              </option>
+
+              {horarios.map((horario) => (
+                <option key={horario} value={horario}>
+                  {formatearHora(horario)}
+                </option>
+              ))}
+            </select>
 
             <label>Servicio</label>
-            <select 
-              value={idServicio} 
+            <select
+              value={idServicio}
               onChange={(e) => setIdServicio(e.target.value)}
             >
               <option value="">Selecciona un servicio</option>
-              <option value="1">Limpieza Dental</option>
-              <option value="2">Odontología General</option>
-              {/* Aquí podrías mapear los servicios desde otra petición GET /servicios si lo necesitas */}
+
+              {servicios.map((servicio) => (
+                <option key={servicio.id} value={servicio.id}>
+                  {servicio.nombre}
+                </option>
+              ))}
             </select>
 
             <div className="modal-botones">
@@ -200,10 +278,7 @@ function CitasPaciente() {
                 Cerrar
               </button>
 
-              <button
-                className="btn btn-reprogramar"
-                onClick={agendarCita}
-              >
+              <button className="btn btn-reprogramar" onClick={agendarCita}>
                 Agendar
               </button>
             </div>
