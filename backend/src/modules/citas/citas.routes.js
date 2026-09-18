@@ -7,11 +7,11 @@ router.get("/estado/:estado", controller.getCitasByEstado);
 router.get("/filtro/:tipo", controller.getCitasPorPeriodo);
 
 router.get("/paciente/:id_paciente", controller.getCitasByPaciente);
-router.get("/miscitas/:idPaciente", controller.getMisCitas);
+router.get("/miscitas", verifyToken, controller.getMisCitas);
 router.get("/proximacita", verifyToken, controller.getProximaCita);
 router.get("/horarios-disponibles", controller.getHorariosDisponibles);
 
-router.post("/paciente", controller.createCitaPaciente);
+router.post("/paciente", verifyToken, controller.createCitaPaciente);
 router.post("/", controller.createCita);
 
 router.patch("/:id/cancelar", controller.cancelarCita);

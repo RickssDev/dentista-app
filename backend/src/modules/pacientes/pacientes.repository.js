@@ -49,7 +49,7 @@ exports.findPerfilByUserId = async (idUsuario) => {
       p.fecha_nacimiento,
       p.genero
     FROM usuarios u
-    INNER JOIN paciente p
+    LEFT JOIN paciente p
       ON u.id_usuario = p.id_usuario
     WHERE u.id_usuario = ?
     `,

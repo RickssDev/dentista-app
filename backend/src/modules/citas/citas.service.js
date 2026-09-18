@@ -316,32 +316,49 @@ exports.cancelarCita = async (id, motivo) => {
   };
 };
 
-exports.getMisCitas = async (id_paciente) => {
-  if (!id_paciente || isNaN(id_paciente)) {
-    throw new AppError("ID de paciente inválido", 400);
+exports.getMisCitas = async (idUsuario) => {
+  if (!idUsuario || isNaN(idUsuario)) {
+    throw new AppError("ID de usuario inválido", 400);
   }
 
-  const citas = await repo.getMisCitas(id_paciente);
+  const paciente = await pacienteRepo.findByUserId(idUsuario);
+
+  if (!paciente) {
+    throw new AppError("Paciente no encontrado", 404);
+  }
+
+  const citas = await repo.getMisCitas(paciente.id_paciente);
 
   return citas.map((c) => ({
     id: c.id_cita,
     fecha_agendada: c.fecha_agendada,
     hora: c.hora,
-    servicio: c.nombre_servicio,
+    nombre_servicio: c.nombre_servicio,
     estado: c.estado,
     motivo: c.motivo,
   }));
 };
-exports.createCitaPaciente = async (data) => {
+exports.createCitaPaciente = async (idUsuario, data) => {
   if (!data || Object.keys(data).length === 0) {
     throw new AppError("No se recibieron datos", 400);
   }
 
-  const { id_paciente, fecha_agendada, hora, id_servicio } = data;
+  const {fecha_agendada, hora, id_servicio } = data;
 
-  if (!id_paciente || !fecha_agendada || !hora || !id_servicio) {
+  if (!fecha_agendada || !hora || !id_servicio) {
     throw new AppError("Faltan campos obligatorios", 400);
   }
+
+const paciente = await pacienteRepo.findByUserId(idUsuario);
+
+  if (!paciente) {
+    throw new AppError(
+      "Paciente no encontrado",
+      404
+    );
+  }
+
+  const id_paciente = paciente.id_paciente;
 
   const ahoraMexico = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
