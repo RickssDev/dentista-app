@@ -41,9 +41,6 @@ const obtenerFechaHoy = () => {
       setLoading(true);
 
       const res = await api("/citas/miscitas");
-
-      console.log("RESPUESTA COMPLETA:", res);
-
       const data = res?.payload ?? res?.data ?? res;
 
       setCitas(Array.isArray(data) ? data : []);
@@ -57,7 +54,7 @@ const obtenerFechaHoy = () => {
 
   const cargarServicios = async () => {
     try {
-      const res = await api("/servicios");
+      const res = await api("/servicios/publicos");
 
       const data = res?.payload ?? res?.data ?? res;
 

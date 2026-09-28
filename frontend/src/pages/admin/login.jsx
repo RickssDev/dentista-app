@@ -55,7 +55,7 @@ function Login() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(usuario));
-      localStorage.setItem("rol", usuario.rol.toLowerCase()); // 🔥 CLAVE
+      localStorage.setItem("rol", usuario.rol.toLowerCase()); 
       localStorage.setItem(
         "tienePerfilPaciente",
         JSON.stringify(tienePerfilPaciente)

@@ -21,7 +21,7 @@ function AdminPromociones() {
     imagen: null
   });
 
-  const [ediimagentando, setEditando] = useState(false);
+  const [editando, setEditando] = useState(false);
   const [promoId, setPromoId] = useState(null);
 
   const getImageUrl = (img) => {

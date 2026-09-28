@@ -9,13 +9,36 @@
 
   function CitasAdmin() {
 
+    const obtenerFechaHoy = () => {
+    const hoy = new Date();
+
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, "0");
+    const day = String(hoy.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+const fechaMinima = obtenerFechaHoy();
+
+
     const [citas, setCitas] = useState([]);
     const [pacientes, setPacientes] = useState([]);
-const [servicios, setServicios] = useState([]);
-    const [busqueda , setBusqueda] = useState("");
+    const [servicios, setServicios] = useState([]);
+    const [horarios, setHorarios] = useState([]);
+    const [busqueda, setBusqueda] = useState("");
+    const [busquedaPaciente, setBusquedaPaciente] = useState("");
+    const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
     const [estado, setEstado] = useState("");
-
     const [mostrarModal, setMostrarModal] = useState(false);
+    const [modalAccion, setModalAccion] = useState(null);
+    const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+    const [nuevaFecha, setNuevaFecha] = useState("");
+    const [nuevaHora, setNuevaHora] = useState("");
+    const [motivo, setMotivo] = useState("");
+    const [horariosReprogramacion, setHorariosReprogramacion] = useState([]);
+    const [diagnostico, setDiagnostico] = useState("");
+    const [observaciones, setObservaciones] = useState("");
 
     const [form, setForm] = useState({
       id_paciente: "",
@@ -41,27 +64,46 @@ const [servicios, setServicios] = useState([]);
 
     };
 
-const obtenerPacientes = async () => {
+const obtenerPacientes = async (busqueda = "") => {
   try {
-    const data = await api("/pacientes");
-
-    console.log("Respuesta completa:");
-    console.log(data);
-    console.log(JSON.stringify(data, null, 2));
+    const data = await api(
+      `/pacientes?busqueda=${encodeURIComponent(busqueda)}`
+    );
 
     setPacientes(data.payload || data);
   } catch (error) {
     console.error(error);
+    setPacientes([]);
   }
 };
+const obtenerHorariosReprogramacion = async () => {
+  if (!nuevaFecha || !citaSeleccionada?.id_servicio) {
+    setHorariosReprogramacion([]);
+    setNuevaHora("");
+    return;
+  }
 
+  try {
+    const res = await api(
+      `/citas/horarios-disponibles?fecha=${nuevaFecha}&id_servicio=${citaSeleccionada.id_servicio}`
+    );
+
+    const data = res?.payload ?? res?.data ?? res;
+
+    setHorariosReprogramacion(Array.isArray(data) ? data : []);
+    setNuevaHora("");
+  } catch (error) {
+    console.error("Error al cargar horarios:", error);
+    setHorariosReprogramacion([]);
+    setNuevaHora("");
+
+    alert(error.message || "No se pudieron cargar los horarios");
+  }
+};
 const obtenerServicios = async () => {
   try {
     const data = await api("/servicios");
 
-    console.log("Respuesta servicios:");
-    console.log(data);
-    console.log(JSON.stringify(data, null, 2));
 
     setServicios(data.payload || data);
   } catch (error) {
@@ -69,14 +111,49 @@ const obtenerServicios = async () => {
   }
 };
 
+const obtenerHorarios = async () => {
+  if (!form.fecha_agendada || !form.id_servicio) {
+    setHorarios([]);
+    return;
+  }
+
+  try {
+    const res = await api(
+      `/citas/horarios-disponibles?fecha=${form.fecha_agendada}&id_servicio=${form.id_servicio}`
+    );
+  
+    const data = res?.payload ?? res?.data ?? res;
+
+    setHorarios(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Error al cargar horarios:", error);
+    setHorarios([]);
+    alert(error.message || "No se pudieron cargar los horarios");
+  }
+};
 
  useEffect(() => {
 
   obtenerCitas();
-  obtenerPacientes();
   obtenerServicios();
 
 }, []);
+
+useEffect(() => {
+  if (!mostrarModal) return;
+
+  const tiempo = setTimeout(() => {
+    obtenerPacientes(busquedaPaciente);
+  }, 300);
+
+  return () => clearTimeout(tiempo);
+}, [busquedaPaciente, mostrarModal]);
+
+useEffect(() => {
+  if (!mostrarModal) return;
+
+  obtenerHorarios();
+}, [form.fecha_agendada, form.id_servicio, mostrarModal]);
 
   const guardarCita = async () => {
 
@@ -95,7 +172,7 @@ const obtenerServicios = async () => {
         id_servicio: "",
         estado: "pendiente"
       });
-
+      setHorarios([]);
       obtenerCitas();
 
     } catch (error) {
@@ -107,6 +184,87 @@ const obtenerServicios = async () => {
     }
 
   };
+  useEffect(() => {
+  if (modalAccion !== "reprogramar") return;
+
+  obtenerHorariosReprogramacion();
+}, [nuevaFecha, modalAccion, citaSeleccionada]);
+const abrirModalAccion = (accion, cita) => {
+  setModalAccion(accion);
+  setCitaSeleccionada(cita);
+
+  setMotivo("");
+  setDiagnostico("");
+  setObservaciones("");
+};
+
+const cerrarModalAccion = () => {
+  setModalAccion(null);
+  setCitaSeleccionada(null);
+
+  setNuevaFecha("");
+  setNuevaHora("");
+  setMotivo("");
+  setDiagnostico("");
+  setObservaciones("");
+};
+
+const reprogramarCita = async () => {
+  if (!citaSeleccionada) return;
+
+  try {
+    await api(`/citas/${citaSeleccionada.id}`, "PUT", {
+      fecha_agendada: nuevaFecha,
+      hora: nuevaHora,
+      motivo
+    });
+
+    alert("Cita reprogramada correctamente");
+
+    cerrarModalAccion();
+    obtenerCitas();
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
+
+const cancelarCita = async () => {
+  if (!citaSeleccionada) return;
+
+  try {
+    await api(`/citas/${citaSeleccionada.id}/cancelar`, "PATCH", {
+      motivo
+    });
+
+    alert("Cita cancelada correctamente");
+
+    cerrarModalAccion();
+    obtenerCitas();
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
+
+const finalizarCita = async () => {
+  if (!citaSeleccionada) return;
+
+  try {
+    await api(`/historial/finalizar-cita/${citaSeleccionada.id}`, "POST", {
+      diagnostico,
+      observaciones
+    });
+
+    alert("Cita finalizada correctamente");
+
+    cerrarModalAccion();
+    obtenerCitas();
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
 
     const citasFiltradas = useMemo(() => {
 
@@ -125,9 +283,6 @@ const obtenerServicios = async () => {
       });
 
     }, [citas, busqueda, estado]);
-
-    console.log(servicios);
-console.log(pacientes);
     return (
 
       <div className="citas-container">
@@ -178,7 +333,11 @@ console.log(pacientes);
 
           <button
       className="btn-crear"
-      onClick={() => setMostrarModal(true)}
+      onClick={() => {
+  setMostrarModal(true);
+  setBusquedaPaciente("");
+  setPacienteSeleccionado(null);
+}}
   >
 
       + Crear cita
@@ -219,7 +378,7 @@ console.log(pacientes);
 
                 <tr>
 
-                  <td colSpan="5">
+                  <td colSpan="6">
 
                     No hay citas.
 
@@ -241,9 +400,7 @@ console.log(pacientes);
 
                     <td>
 
-                      {new Date(
-                        cita.fecha_agendada
-                      ).toLocaleDateString()}
+                      {cita.fecha_agendada.split("T")[0].split("-").reverse().join("/")}
 
                     </td>
 
@@ -286,27 +443,21 @@ console.log(pacientes);
         color="#3b82f6"
         style={{ cursor: "pointer" }}
         title="Reprogramar"
-        onClick={() =>
-          alert("Reprogramar cita " + cita.id)
-        }
+        onClick={() => abrirModalAccion("reprogramar", cita)}
       />
 
       <FaTimesCircle
         color="#ef4444"
         style={{ cursor: "pointer" }}
         title="Cancelar"
-        onClick={() =>
-          alert("Cancelar cita " + cita.id)
-        }
+        onClick={() => abrirModalAccion("cancelar", cita)}
       />
 
       <FaCheckCircle
         color="#22c55e"
         style={{ cursor: "pointer" }}
         title="Finalizar"
-        onClick={() =>
-          alert("Finalizar cita " + cita.id)
-        }
+        onClick={() => abrirModalAccion("finalizar", cita)}
       />
 
     </div>
@@ -339,31 +490,54 @@ console.log(pacientes);
   <div className="modal-header">
 
   <h2>Nueva cita</h2>
-
+   
   </div>
 
   <div className="modal-body">
 
- <select
-  value={form.id_paciente}
-  onChange={(e) =>
+ <input
+  type="text"
+  placeholder="Buscar paciente..."
+  value={busquedaPaciente}
+  onChange={(e) => {
+    setBusquedaPaciente(e.target.value);
+    setPacienteSeleccionado(null);
+
     setForm({
       ...form,
-      id_paciente: e.target.value
-    })
-  }
->
-  <option value="">Seleccionar paciente</option>
+      id_paciente: ""
+    });
+  }}
+/>
 
-  {pacientes.map((paciente) => (
-    <option
-      key={paciente.id_paciente}
-      value={paciente.id_paciente}
-    >
-      {paciente.nombre}
-    </option>
-  ))}
-</select>
+{busquedaPaciente && !pacienteSeleccionado && (
+  <div className="resultados-pacientes">
+    {pacientes.length > 0 ? (
+      pacientes.map((paciente) => (
+        <div
+          key={paciente.id_paciente}
+          className="resultado-paciente"
+          onClick={() => {
+            setPacienteSeleccionado(paciente);
+
+            setForm({
+              ...form,
+              id_paciente: paciente.id_paciente
+            });
+
+            setBusquedaPaciente(paciente.nombre);
+          }}
+        >
+          {paciente.nombre}
+        </div>
+      ))
+    ) : (
+      <div className="sin-resultados">
+        No se encontraron pacientes
+      </div>
+    )}
+  </div>
+)}
 <select
   value={form.id_servicio}
   onChange={(e) =>
@@ -387,15 +561,41 @@ console.log(pacientes);
 
   <input
   type="date"
+  min={fechaMinima}
   value={form.fecha_agendada}
-  onChange={(e)=>setForm({...form,fecha_agendada:e.target.value})}
-  />
+  onChange={(e) =>
+    setForm({
+      ...form,
+      fecha_agendada: e.target.value,
+      hora: ""
+    })
+  }
+/>
 
-  <input
-  type="time"
+  <select
   value={form.hora}
-  onChange={(e)=>setForm({...form,hora:e.target.value})}
-  />
+  onChange={(e) =>
+    setForm({
+      ...form,
+      hora: e.target.value
+    })
+  }
+  disabled={!form.fecha_agendada || !form.id_servicio}
+>
+  <option value="">
+    {!form.fecha_agendada
+      ? "Primero selecciona una fecha"
+      : !form.id_servicio
+        ? "Primero selecciona un servicio"
+        : "Seleccionar horario"}
+  </option>
+
+  {horarios.map((horario) => (
+    <option key={horario} value={horario}>
+      {horario}
+    </option>
+  ))}
+</select>
 
   </div>
 
@@ -403,7 +603,12 @@ console.log(pacientes);
 
   <button
   className="btn-cancel"
-  onClick={()=>setMostrarModal(false)}
+  onClick={() => {
+  setMostrarModal(false);
+  setBusquedaPaciente("");
+  setPacienteSeleccionado(null);
+}}
+
   >
 
   Cancelar
@@ -426,6 +631,132 @@ console.log(pacientes);
   </div>
 
   )}
+   {modalAccion && (
+  <div
+    className="modal-overlay"
+    onClick={cerrarModalAccion}
+  >
+    <div
+      className="modal-box"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-header">
+        <h2>
+          {modalAccion === "reprogramar" && "Reprogramar cita"}
+          {modalAccion === "cancelar" && "Cancelar cita"}
+          {modalAccion === "finalizar" && "Finalizar cita"}
+        </h2>
+      </div>
+
+      <div className="modal-body">
+
+        {modalAccion === "reprogramar" && (
+          <>
+            <label>Nueva fecha</label>
+
+            <input
+              type="date"
+              min={fechaMinima}
+              value={nuevaFecha}
+              onChange={(e) => setNuevaFecha(e.target.value)}
+            />
+
+            <label>Nueva hora</label>
+
+            <select
+              value={nuevaHora}
+              onChange={(e) => setNuevaHora(e.target.value)}
+              disabled={!nuevaFecha}
+            >
+              <option value="">
+                {!nuevaFecha
+                  ? "Primero selecciona una fecha"
+                  : "Selecciona un horario"}
+              </option>
+
+              {horariosReprogramacion.map((horario) => (
+                <option key={horario} value={horario}>
+                  {horario}
+                </option>
+              ))}
+            </select>
+
+            <label>Motivo</label>
+
+            <textarea
+              placeholder="Motivo de la reprogramación"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+            />
+          </>
+        )}
+
+        {modalAccion === "cancelar" && (
+          <>
+            <label>Motivo</label>
+
+            <textarea
+              placeholder="Motivo de la cancelación"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+            />
+          </>
+        )}
+
+        {modalAccion === "finalizar" && (
+          <>
+            <label>Diagnóstico</label>
+
+            <textarea
+              placeholder="Diagnóstico"
+              value={diagnostico}
+              onChange={(e) => setDiagnostico(e.target.value)}
+            />
+
+            <label>Observaciones</label>
+
+            <textarea
+              placeholder="Observaciones"
+              value={observaciones}
+              onChange={(e) => setObservaciones(e.target.value)}
+            />
+          </>
+        )}
+
+      </div>
+
+      <div className="modal-footer">
+
+        <button
+          className="btn-cancel"
+          onClick={cerrarModalAccion}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className="btn-save"
+          onClick={() => {
+            if (modalAccion === "reprogramar") {
+              reprogramarCita();
+            }
+
+            if (modalAccion === "cancelar") {
+              cancelarCita();
+            }
+
+            if (modalAccion === "finalizar") {
+              finalizarCita();
+            }
+          }}
+        >
+          Confirmar
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
       </div>
 
     );

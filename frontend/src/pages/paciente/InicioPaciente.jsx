@@ -14,7 +14,7 @@ function InicioPaciente() {
   const [hora, setHora] = useState("");
   const [motivo, setMotivo] = useState("");
   const [motivoCancelar, setMotivoCancelar] = useState("");
-
+  const [horariosDisponibles, setHorariosDisponibles] = useState([]);
   const [historialCitas, setHistorialCitas] = useState([]);
 
   useEffect(() => {
@@ -22,6 +22,11 @@ function InicioPaciente() {
     cargarHistorialCitas();
   }, []);
 
+  useEffect(() => {
+  if (fecha && proximaCita?.id_servicio) {
+    cargarHorariosDisponibles(fecha);
+  }
+}, [fecha, proximaCita?.id_servicio]);
   const cargarProximaCita = async () => {
     try {
       setLoading(true);
@@ -34,6 +39,28 @@ function InicioPaciente() {
       setLoading(false);
     }
   };
+
+  const cargarHorariosDisponibles = async (nuevaFecha) => {
+  if (!nuevaFecha || !proximaCita?.id_servicio) {
+    setHorariosDisponibles([]);
+    return;
+  }
+
+  try {
+    const res = await api(
+      `/citas/horarios-disponibles?fecha=${nuevaFecha}&id_servicio=${proximaCita.id_servicio}`
+    );
+
+    console.log("Fecha consultada:", nuevaFecha);
+    console.log("ID servicio:", proximaCita.id_servicio);
+    console.log("Horarios recibidos:", res.data);
+
+    setHorariosDisponibles(res.data || []);
+  } catch (error) {
+    console.error(error);
+    setHorariosDisponibles([]);
+  }
+};
 
   const cargarHistorialCitas = async () => {
   try {
@@ -51,23 +78,24 @@ function InicioPaciente() {
 };
 
   const abrirReprogramar = () => {
-    if (!proximaCita) return;
+  if (!proximaCita) return;
 
-    const fechaInicial = proximaCita.fecha_agendada
-      ? proximaCita.fecha_agendada.split("T")[0]
-      : "";
+  const fechaInicial = proximaCita.fecha_agendada
+    ? proximaCita.fecha_agendada.split("T")[0]
+    : "";
 
-    const horaInicial = proximaCita.hora
-      ? proximaCita.hora.substring(0, 5)
-      : "";
-
-    setFecha(fechaInicial);
-    setHora(horaInicial);
-    setMotivo("");
-    setMostrarReprogramar(true);
-  };
+  setFecha(fechaInicial);
+  setHora("");
+  setMotivo("");
+  setHorariosDisponibles([]);
+  setMostrarReprogramar(true);
+};
 
   const reprogramarCita = async () => {
+    if (!fecha || !hora) {
+    alert("Selecciona una fecha y un horario");
+    return;
+  }
     try {
       await api(
         `/citas/${proximaCita.id_cita}`,
@@ -107,6 +135,16 @@ function InicioPaciente() {
       alert(error.message);
     }
   };
+
+  const obtenerFechaHoy = () => {
+  const hoy = new Date();
+
+  const year = hoy.getFullYear();
+  const month = String(hoy.getMonth() + 1).padStart(2, "0");
+  const day = String(hoy.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
 
    const formatearFecha = (fechaISO) => {
   if (!fechaISO) return "";
@@ -246,17 +284,29 @@ function InicioPaciente() {
 
             <label>Fecha</label>
             <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-            />
+            type="date"
+            min={obtenerFechaHoy()}
+            value={fecha}
+            onChange={(e) => {
+              const nuevaFecha = e.target.value;
+              setFecha(nuevaFecha);
+              setHora("");
+            }}
+          />
 
             <label>Hora</label>
-            <input
-              type="time"
+            <select
               value={hora}
               onChange={(e) => setHora(e.target.value)}
-            />
+            >
+              <option value="">Selecciona un horario</option>
+
+              {horariosDisponibles.map((horario) => (
+                <option key={horario} value={horario}>
+                  {horario}
+                </option>
+              ))}
+            </select>
 
             <label>Motivo</label>
             <textarea

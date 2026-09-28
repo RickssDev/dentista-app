@@ -43,7 +43,7 @@ function CompletarPerfil() {
       console.error("Error al crear perfil:", error);
 
       setError(
-        error.response?.data?.message || "No se pudo completar el perfil",
+        error.message || "No se pudo completar el perfil",
       );
     } finally {
       setLoading(false);
