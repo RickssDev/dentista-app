@@ -8,7 +8,7 @@ function createApp() {
 
 const allowedOrigins = [
   "http://localhost:5174",
-  "http://192.168.1.223:5174" 
+  "http://192.168.11.239:5174" 
 ];
 
 app.use(cors({

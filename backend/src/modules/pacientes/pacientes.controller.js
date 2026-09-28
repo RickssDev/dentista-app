@@ -52,6 +52,7 @@ exports.updatePerfil = catchAsync(async (req, res) => {
 });
 
 exports.getPacientesSelect = catchAsync(async (req, res) => {
-    const data = await service.getPacientesSelect();
+    const { busqueda = "" } = req.query;
+    const data = await service.getPacientesSelect(busqueda);
     return HandleResponse.success(res, 200, "Pacientes obtenidos correctamente", data);
 });

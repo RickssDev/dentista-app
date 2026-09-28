@@ -73,6 +73,6 @@ exports.updatePerfil = async (
   return await repo.findPerfilByUserId(idUsuario);
 };
 
-exports.getPacientesSelect = async () => {
-    return await repo.getPacientesSelect();
+exports.getPacientesSelect = async (busqueda) => {
+    return await repo.getPacientesSelect(busqueda);
 };

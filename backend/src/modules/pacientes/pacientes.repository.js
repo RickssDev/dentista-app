@@ -85,21 +85,23 @@ exports.updatePerfilByUserId = async (
   );
 };
 
-exports.getPacientesSelect = async () => {
+exports.getPacientesSelect = async (busqueda = "") => {
     const [rows] = await pool.query(`
         SELECT
-    p.id_paciente,
-    CONCAT(
-        u.nombre_usuario,
-        ' ',
-        u.apellido
-    ) AS nombre
-FROM paciente p
-INNER JOIN usuarios u
-    ON p.id_usuario = u.id_usuario
-WHERE u.estado = 'activo'
-ORDER BY u.nombre_usuario, u.apellido;
-    `);
+            p.id_paciente,
+            CONCAT(
+                u.nombre_usuario,
+                ' ',
+                u.apellido
+            ) AS nombre
+        FROM paciente p
+        INNER JOIN usuarios u
+            ON p.id_usuario = u.id_usuario
+        WHERE u.estado = 'activo'
+          AND CONCAT(u.nombre_usuario, ' ', u.apellido) LIKE ?
+        ORDER BY u.nombre_usuario, u.apellido
+        LIMIT 20;
+    `, [`%${busqueda}%`]);
 
     return rows;
 };
