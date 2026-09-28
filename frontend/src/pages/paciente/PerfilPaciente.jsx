@@ -4,9 +4,6 @@ import { api } from "../../services/api";
 import "../../styles/PerfilPaciente.css";
 
 function PerfilPaciente() {
-  const usuario = JSON.parse(localStorage.getItem("user"));
-  const idUsuario = usuario?.id;
-
   const [loading, setLoading] = useState(true);
 
   // Datos personales
@@ -70,9 +67,6 @@ function PerfilPaciente() {
     });
   };
 
-  // =========================
-  // CAMBIOS CONTRASEÑA
-  // =========================
   const handlePasswordChange = (e) => {
     setDatosPassword({
       ...datosPassword,
@@ -125,7 +119,7 @@ function PerfilPaciente() {
 
     try {
       await api(
-        `/auth/cambiarContrasena/${idUsuario}`,
+        `/auth/cambiarContrasena`,
         "PUT",
         {
           contrasena_actual: datosPassword.contrasena_actual,

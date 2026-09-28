@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 
 function AdminPanel() {
-
+  const usuario = JSON.parse(localStorage.getItem("user"));
   const citas = [
     { hora: "08:00 AM", paciente: "Eva García", servicio: "Limpieza" },
     { hora: "09:00 AM", paciente: "Xavier Solís", servicio: "Resinas" }
@@ -44,7 +44,7 @@ function AdminPanel() {
 
                   <div className="user">
                     <div className="avatar"></div>
-                    <span>MELISSA</span>
+                    <span>{usuario?.nombre_usuario}</span>
                   </div>
                 </div>
 
@@ -129,7 +129,7 @@ function AdminPanel() {
 
           <Route path="usuarios" element={<AdminUsuarios />} />
 
-          {/* ESTA ES LA QUE TE FALTABA */}
+       
           <Route path="citas" element={<CitasAdmin />} />
 
           <Route path="servicios" element={<AdminServicios />} />
