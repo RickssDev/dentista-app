@@ -131,7 +131,31 @@ exports.createCita = async (data) => {
     estado,
     motivo,
   });
+  try {
+  const paciente = await repo.getPacienteWhatsApp(id_paciente);
+  const servicio = await servicioRepo.getServicioById(id_servicio);
 
+  if (paciente?.telefono) {
+    await sendTemplateMessage(
+      paciente.telefono,
+      "appointment_confirmation_1",
+      [
+        paciente.nombre_usuario,
+        "Clínica Dental Dentissa",
+        servicio.nombre_servicio,
+        fecha_agendada,
+        formatearHora(hora),
+      ],
+    );
+
+    console.log(`WhatsApp de confirmación enviado para cita ${id}`);
+  }
+} catch (error) {
+  console.error(
+    "ERROR WHATSAPP:",
+    error.response?.data || error.message,
+  );
+}
   return { id };
 };
 
@@ -324,7 +348,7 @@ exports.getMisCitas = async (idUsuario) => {
   const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
-    throw new AppError("Paciente no encontrado", 404);
+    return [];
   }
 
   const citas = await repo.getMisCitas(paciente.id_paciente);
@@ -433,8 +457,8 @@ exports.getProximaCita = async (idUsuario) => {
   const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
-    throw new AppError("Paciente no encontrado.", 404);
-  }
+  return null;
+}
 
   return await repo.getProximaCita(paciente.id_paciente);
 };
@@ -460,11 +484,42 @@ exports.getHorariosDisponibles = async (fecha, id_servicio) => {
   const inicioLaboral = 8 * 60;
   const finLaboral = 16 * 60;
 
+  let inicio = inicioLaboral;
+  const hoy = new Date();
+
+const opciones = {
+  timeZone: "America/Mexico_City",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+};
+
+const horaMexico = new Intl.DateTimeFormat("es-MX", opciones).formatToParts(hoy);
+
+const horaActual = Number(
+  horaMexico.find((parte) => parte.type === "hour").value
+);
+
+const minutosActuales = Number(
+  horaMexico.find((parte) => parte.type === "minute").value
+);
+
+const fechaMexico = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Mexico_City",
+}).format(hoy);
+
+if (fecha === fechaMexico) {
+  inicio = Math.ceil((horaActual * 60 + minutosActuales) / 60) * 60;
+
+  if (inicio < inicioLaboral) {
+    inicio = inicioLaboral;
+  }
+}
+
   // Intervalos cada hora
   for (
-    let inicio = inicioLaboral;
-    inicio + duracion <= finLaboral;
-    inicio += 60
+  ; inicio + duracion <= finLaboral;
+  inicio += 60
   ) {
     const fin = inicio + duracion;
 

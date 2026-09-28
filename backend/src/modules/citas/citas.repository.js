@@ -16,7 +16,8 @@ exports.getCitas = async () => {
     FROM citas c
     JOIN paciente p ON c.id_paciente = p.id_paciente
     JOIN usuarios u ON p.id_usuario = u.id_usuario
-    JOIN servicio s ON c.id_servicio = s.id_servicio;
+    JOIN servicio s ON c.id_servicio = s.id_servicio
+    ORDER BY c.fecha_agendada DESC, c.hora DESC;
   `);
   return rows;
 };
@@ -290,6 +291,7 @@ exports.getProximaCita = async (idPaciente) => {
     SELECT
       c.id_cita,
       c.fecha_agendada,
+      c.id_servicio,
       c.hora,
       s.nombre_servicio
     FROM citas c
@@ -298,12 +300,12 @@ exports.getProximaCita = async (idPaciente) => {
     WHERE c.id_paciente = ?
       AND c.estado = 'pendiente'
       AND (
-        c.fecha_agendada > CURDATE()
-        OR (
-          c.fecha_agendada = CURDATE()
-          AND c.hora >= CURTIME()
-        )
-      )
+  c.fecha_agendada > CONVERT_TZ(CURDATE(), 'UTC', 'America/Mexico_City')
+  OR (
+    c.fecha_agendada = CONVERT_TZ(CURDATE(), 'UTC', 'America/Mexico_City')
+    AND c.hora >= CONVERT_TZ(CURTIME(), 'UTC', 'America/Mexico_City')
+  )
+)
     ORDER BY c.fecha_agendada ASC, c.hora ASC
     LIMIT 1
     `,

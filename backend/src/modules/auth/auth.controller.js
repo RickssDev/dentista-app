@@ -1,18 +1,19 @@
-const catchAsync = require('../../utils/catchAsync'); 
-const HandleResponse = require('../../utils/HandleResponse');
-const service = require('./auth.service');
+const catchAsync = require("../../utils/catchAsync");
+const HandleResponse = require("../../utils/HandleResponse");
+const service = require("./auth.service");
 
 exports.register = catchAsync(async (req, res) => {
-const data = await service.register(req.body);
-return HandleResponse.created(res,201,'Usuario registrado correctamente',data);
+  const data = await service.register(req.body);
+  return HandleResponse.created(res, 201, "Usuario registrado correctamente", data,);
 });
 
 exports.login = catchAsync(async (req, res) => {
-const data = await service.login(req.body);
-return HandleResponse.success(res, 200,'Login exitoso',data);
+  const data = await service.login(req.body);
+  return HandleResponse.success(res, 200, "Login exitoso", data);
 });
+
 exports.cambiarContrasena = catchAsync(async (req, res) => {
-const { idUsuario } = req.params;
-const data = await service.cambiarContrasena(idUsuario, req.body);
-return HandleResponse.success(res,200,'Contraseña actualizada correctamente',data);
+  const idUsuario = req.user.id;
+  const data = await service.cambiarContrasena(idUsuario, req.body);
+  return HandleResponse.success(res, 200, "Contraseña actualizada correctamente", data, );
 });

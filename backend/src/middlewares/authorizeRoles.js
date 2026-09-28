@@ -1,15 +1,15 @@
+const AppError = require('../utils/AppError');
+
 exports.authorizeRoles = (...rolesPermitidos) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
-        message: 'No autenticado'
-      });
+      return next(new AppError('No autenticado', 401));
     }
 
     if (!rolesPermitidos.includes(req.user.rol)) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta acción'
-      });
+      return next(
+        new AppError('No tienes permisos para esta acción', 403)
+      );
     }
 
     next();
