@@ -455,3 +455,278 @@ th, td {
     1fr 
     1fr;
 }
+
+/* ============ HISTORIAL CLÍNICO ============ */
+.historial-page {
+  --h-primary: #d94f79;
+  --h-primary-dark: #c23e68;
+  --h-soft: #f4bfb9;
+  --h-border: #ead9d7;
+  --h-muted: #8c8c8c;
+  --h-text: #1f1f1f;
+  color: var(--h-text);
+}
+
+/* Cabecera del listado */
+.historial-page .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.historial-page .topbar h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.historial-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.historial-page .search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  padding: 10px 16px;
+  background: var(--h-soft);
+  border-radius: 8px;
+}
+
+.historial-page .search-bar input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--h-text);
+}
+
+.historial-page .search-bar input::placeholder {
+  color: #6b5654;
+}
+
+.historial-page .btn-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--h-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.historial-page .btn-add:hover:not(:disabled) {
+  background: var(--h-primary-dark);
+}
+
+.historial-page .btn-add:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Tarjetas y tablas */
+.historial-page .table-container {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px 28px;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.historial-page .table-container h2 {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
+}
+
+.historial-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historial-page th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--h-text);
+}
+
+.historial-page td {
+  padding: 16px 10px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--h-border);
+}
+
+.historial-page tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.historial-page td:last-child {
+  white-space: nowrap;
+}
+
+.historial-page .historial-empty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--h-muted);
+}
+
+.historial-error {
+  margin: 15px 0;
+  padding: 10px 14px;
+  color: #b3372b;
+  background: #fdecea;
+  border-radius: 8px;
+}
+
+/* Botones de texto */
+.historial-page .btn-link {
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  color: var(--h-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.historial-page .btn-link:hover {
+  color: var(--h-primary-dark);
+}
+
+.historial-page .btn-back {
+  margin-bottom: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--h-text);
+  cursor: pointer;
+}
+
+.historial-page .btn-back:hover {
+  color: var(--h-primary);
+}
+
+/* Perfil clínico */
+.historial-page .perfil-card {
+  margin-bottom: 20px;
+}
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.perfil-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.perfil-label {
+  font-size: 0.85rem;
+  color: var(--h-muted);
+}
+
+.perfil-valor {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+/* Detalle y edición de consulta */
+.historial-page .detalle-fila td {
+  padding: 20px;
+  background: #fbf1ef;
+}
+
+.detalle-item {
+  margin: 0 0 8px;
+}
+
+.historial-page .form-campo {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--h-muted);
+}
+
+.historial-page .form-campo input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--h-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--h-text);
+}
+
+.historial-page .form-campo input:focus {
+  outline: none;
+  border-color: var(--h-primary);
+  box-shadow: 0 0 0 3px rgba(217, 79, 121, 0.15);
+}
+
+.form-acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.historial-page .btn-guardar,
+.historial-page .btn-cancelar {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.historial-page .btn-guardar {
+  background: var(--h-primary);
+  color: #fff;
+  border: 1px solid var(--h-primary);
+}
+
+.historial-page .btn-guardar:hover:not(:disabled) {
+  background: var(--h-primary-dark);
+}
+
+.historial-page .btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.historial-page .btn-cancelar {
+  background: #fff;
+  color: var(--h-primary);
+  border: 1px solid var(--h-primary);
+}
+
+@media (max-width: 640px) {
+  .historial-page .topbar h2 {
+    font-size: 1.5rem;
+  }
+
+  .historial-page .table-container {
+    padding: 16px;
+  }
+}
