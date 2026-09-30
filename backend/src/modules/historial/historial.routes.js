@@ -8,5 +8,6 @@ router.post("/finalizar-cita/:idCita", verifyToken, authorizeRoles("Administrado
 router.get("/cita/:idCita", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.obtenerDatosFormulario);
 router.get("/", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.getHistoriales);
 router.patch("/:idHistorial", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.actualizarHistorial);
+router.get("/paciente/:idPaciente", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.getHistorialPaciente);
 router.get("/:idHistorial", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.getHistorialById);
 module.exports = router;

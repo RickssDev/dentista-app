@@ -3,6 +3,10 @@ const { pool } = require("../../config/db");
 const AppError = require("../../utils/AppError");
 
 exports.crearDesdeCita = async (idCita, data) => {
+  if (!data.diagnostico?.trim()) {
+  throw new AppError("El diagnóstico es obligatorio", 400);
+}
+
   const connection = await pool.getConnection();
 
   try {
@@ -22,8 +26,8 @@ exports.crearDesdeCita = async (idCita, data) => {
       id_paciente: cita.id_paciente,
       fecha: cita.fecha_agendada,
       servicio: cita.servicio_realizado,
-      diagnostico: data.diagnostico,
-      observaciones: data.observaciones,
+      diagnostico: data.diagnostico.trim(),
+      observaciones: data.observaciones?.trim() || null,
     });
 
     await repo.finalizarCita(connection, idCita);
@@ -63,6 +67,14 @@ exports.getHistoriales = async () => {
 };
 
 exports.actualizarHistorial = async (idHistorial, data) => {
+  if (data.servicio !== undefined && !data.servicio?.trim()) {
+    throw new AppError("El servicio no puede estar vacío", 400);
+  }
+
+  if (data.diagnostico !== undefined && !data.diagnostico?.trim()) {
+    throw new AppError("El diagnóstico no puede estar vacío", 400);
+  }
+
   const client = await pool.getConnection();
 
   try {
@@ -96,3 +108,13 @@ exports.actualizarHistorial = async (idHistorial, data) => {
   }
 };
 
+exports.getHistorialPaciente = async (idPaciente) => {
+  const paciente = await repo.getPacientePerfil(idPaciente);
+
+  if (!paciente) {
+    throw new AppError("Paciente no encontrado", 404);
+  }
+
+  const consultas = await repo.getConsultasByPaciente(idPaciente);
+  return { paciente, consultas };
+};
