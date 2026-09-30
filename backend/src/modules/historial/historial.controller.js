@@ -30,3 +30,9 @@ exports.actualizarHistorial = catchAsync(async (req, res) => {
   const resultado = await service.actualizarHistorial(idHistorial, req.body);
   res.status(200).json(resultado);
 });
+
+exports.getHistorialPaciente = catchAsync(async (req, res) => {
+  const { idPaciente } = req.params;
+  const data = await service.getHistorialPaciente(idPaciente);
+  return HandleResponse.success(res, 200, 'Historial del paciente obtenido correctamente', data);
+});

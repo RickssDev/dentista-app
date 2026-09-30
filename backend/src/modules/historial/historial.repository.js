@@ -126,3 +126,27 @@ exports.actualizarHistorial = async (client, idHistorial, data) => {
   const [result] = await client.query(query, values);
   return result;
 };
+
+exports.getConsultasByPaciente = async (idPaciente, client = pool) => {
+  const query = `
+    SELECT id_historial, fecha, servicio, diagnostico, observaciones
+    FROM h_clinico
+    WHERE id_paciente = ?
+    ORDER BY fecha DESC, id_historial DESC
+  `;
+  const [rows] = await client.query(query, [idPaciente]);
+  return rows;
+};
+
+exports.getPacientePerfil = async (idPaciente, client = pool) => {
+  const query = `
+    SELECT
+      p.id_paciente,
+      u.nombre_usuario
+    FROM paciente p
+    INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
+    WHERE p.id_paciente = ?
+  `;
+  const [rows] = await client.query(query, [idPaciente]);
+  return rows[0];
+};
