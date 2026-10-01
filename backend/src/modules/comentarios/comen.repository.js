@@ -85,9 +85,10 @@ exports.createComentario = async (data) => {
       (
         comentario,
         calificacion,
-        id_cita
+        id_cita,
+        estado
       )
-      VALUES (?, ?, ?)
+      VALUES (?, ?, ?, "oculto")
     `,
     [data.comentario, data.calificacion, data.id_cita],
   );
@@ -126,3 +127,5 @@ exports.deleteComentario = async (id) => {
     [id],
   );
 };
+
+
