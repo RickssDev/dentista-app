@@ -730,3 +730,89 @@ th, td {
     padding: 16px;
   }
 }
+
+/* ===== Sección de Comentarios (agregar al final de AdminPanel.css) ===== */
+
+/* Pestañas Todos / Pendientes / Aprobados */
+.comentarios-tabs {
+  display: flex;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px;
+  margin-bottom: 24px;
+  background: #e07a9a;
+  border-radius: 8px;
+}
+
+.comentarios-tabs button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 28px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.comentarios-tabs button.active {
+  background: #fff;
+  color: #000;
+}
+
+/* Columnas: Usuario | Comentario | Fecha | Estado | Acciones
+   (si tu .table-header/.table-row usan otro layout, ajusta aquí) */
+.comentarios-table .table-header,
+.comentarios-table .table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 2.5fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Preview recortado con "..." */
+.comentario-preview {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #777;
+  cursor: pointer;
+}
+
+/* Badges de estado */
+.estado-badge {
+  display: inline-block;
+  padding: 2px 14px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+.estado-badge.aprobado {
+  background: #a8f5a0;
+  color: #1d6b1d;
+}
+
+.estado-badge.pendiente {
+  background: #f4f21b;
+  color: #5c5a00;
+}
+
+/* Iconos de acciones */
+.comentarios-table .acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.comentarios-table .acciones svg {
+  cursor: pointer;
+}
+
+.comentarios-table .icono-eliminar {
+  color: #e11d1d;
+}
+
+.comentarios-vacio {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+}
