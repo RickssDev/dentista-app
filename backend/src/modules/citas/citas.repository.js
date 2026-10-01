@@ -315,3 +315,19 @@ exports.getProximaCita = async (idPaciente) => {
   return rows[0] || null;
 };
 
+exports.getCitaConUsuario = async (id) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      c.id_cita,
+      c.estado,
+      c.id_paciente,
+      p.id_usuario
+    FROM citas c
+    JOIN paciente p ON c.id_paciente = p.id_paciente
+    WHERE c.id_cita = ?
+    `,
+    [id],
+  );
+  return rows[0];
+};

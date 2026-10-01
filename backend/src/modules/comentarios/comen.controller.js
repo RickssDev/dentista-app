@@ -20,7 +20,7 @@ exports.getComentarioById = catchAsync(async (req, res) => {
 });
 
 exports.createComentario = catchAsync(async (req, res) => {
-  const data = await service.createComentario(req.body);
+  const data = await service.createComentario(req.body, req.user);
   return HandleResponse.created(res, 201, "Comentario creado", data);
 });
 

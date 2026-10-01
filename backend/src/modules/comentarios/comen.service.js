@@ -20,16 +20,21 @@ exports.getComentariosPublicos = async () => {
   return await comentarioRepo.getComentariosPublicos();
 };
 
-exports.createComentario = async (data) => {
+exports.createComentario = async (data, usuario) => {
   const { comentario, calificacion, id_cita } = data;
 
   if (!comentario || !calificacion || !id_cita) {
     throw new AppError("Faltan campos obligatorios", 400);
   }
-  const cita = await citaRepo.getCitaById(id_cita);
+
+  const cita = await citaRepo.getCitaConUsuario(id_cita);
 
   if (!cita) {
     throw new AppError("La cita no existe", 404);
+  }
+
+  if (Number(cita.id_usuario) !== Number(usuario.id)) {
+    throw new AppError("No puedes comentar una cita que no es tuya", 403);
   }
 
   if (cita.estado !== "completada") {
@@ -41,9 +46,11 @@ exports.createComentario = async (data) => {
   if (existingComment) {
     throw new AppError("La cita ya tiene una reseña", 400);
   }
+
   if (calificacion < 1 || calificacion > 5) {
     throw new AppError("La calificación debe estar entre 1 y 5", 400);
   }
+
   const id = await comentarioRepo.createComentario(data);
 
   return { id };
