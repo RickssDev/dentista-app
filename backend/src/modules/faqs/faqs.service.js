@@ -32,14 +32,19 @@ exports.getFaqsById = async (id) => {
 };
 
 exports.updateFaqs = async (id, data) => {
+  const { pregunta, respuesta } = data;
+
+  if (!pregunta || !respuesta) {
+    throw new AppError('Todos los campos son obligatorios', 400);
+  }
+
   const exists = await repo.getFaqsById(id);
 
   if (!exists) {
     throw new AppError('Pregunta no encontrada', 404);
   }
-  await repo.updateFaqs(id, {
-    ...data
-  });
+
+  await repo.updateFaqs(id, { pregunta, respuesta });
 
   return await repo.getFaqsById(id);
 };
