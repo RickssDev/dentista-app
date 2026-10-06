@@ -57,6 +57,8 @@ exports.updateImagen = async (id, data) => {
     ([key, value]) => fieldMap[key] && value !== undefined && value !== "",
   );
 
+  if (entries.length === 0) return;
+
   const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(", ");
   const values = entries.map(([, value]) => value);
 
