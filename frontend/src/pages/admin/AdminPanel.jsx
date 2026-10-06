@@ -10,6 +10,7 @@ import AdminPromociones from "./AdminPromociones";
 import CitasAdmin from "./CitasAdmin";
 import AdminHistorialPaciente from "./AdminHPaciente";
 import AdminComentarios from "./AdminComentarios";
+import AdminFaqs from "./Adminfaqs";
 
 import {
   FaPlus,
@@ -143,6 +144,8 @@ function AdminPanel() {
           <Route path="historial/:idPaciente" element={<AdminHistorialPaciente />} />
 
           <Route path="comentarios" element={<AdminComentarios />} />
+
+          <Route path="faqs" element={<AdminFaqs />} />
 
         </Routes>
 
