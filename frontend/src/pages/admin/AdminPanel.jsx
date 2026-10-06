@@ -11,6 +11,7 @@ import CitasAdmin from "./CitasAdmin";
 import AdminHistorialPaciente from "./AdminHPaciente";
 import AdminComentarios from "./AdminComentarios";
 import AdminFaqs from "./Adminfaqs";
+import AdminImagenes from "./Admingaleria";
 
 import {
   FaPlus,
@@ -146,6 +147,8 @@ function AdminPanel() {
           <Route path="comentarios" element={<AdminComentarios />} />
 
           <Route path="faqs" element={<AdminFaqs />} />
+
+          <Route path="galeria" element={<AdminImagenes />} />
 
         </Routes>
 
