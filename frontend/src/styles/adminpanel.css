@@ -210,11 +210,7 @@ th, td {
   color: #fff;
 }
 
-/* ACCIONES */
-.acciones {
-  display: flex;
-  gap: 15px;
-}
+
 
 /* ICONOS */
 .edit {
@@ -360,6 +356,7 @@ th, td {
 .acciones {
   display: flex;
   gap: 12px;
+  cursor: pointer;
 }
 
 .edit {
