@@ -25,12 +25,12 @@ exports.updateImagen = catchAsync(async (req, res) => {
     req.body.imagen = '/uploads/' + req.file.filename;
   }
   const data = await service.updateImagen(req.params.id, req.body);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, 'Imagen actualizada correctamente', data);
 });
 
 exports.deleteImagen = catchAsync(async (req, res) => {
   const data = await service.deleteImagen(req.params.id);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, 'Imagen eliminada correctamente', data);
 });
 
 exports.getImagenesPublicas = catchAsync(async (req, res) => {
