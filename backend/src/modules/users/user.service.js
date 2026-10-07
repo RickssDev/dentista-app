@@ -1,6 +1,8 @@
 const repo = require('./user.repository');
 const PasswordHash = require('../../utils/PasswordHash');
 const AppError = require('../../utils/AppError');
+const borrarArchivo = require('../../utils/borrarArchivo');
+
 
 exports.getUsuarios = async () => {
   const usuarios = await repo.getUsuarios();
@@ -54,6 +56,12 @@ exports.createUsuario = async (data) => {
 
 exports.updateUsuario = async (id, data) => {
 
+const exists = await repo.getUsuarioById(id);
+
+  if (!exists) {
+    throw new AppError('Usuario no encontrado', 404);
+  }
+
   const cleanedData = {};
   for (const key in data) {
     if (
@@ -74,12 +82,22 @@ exports.updateUsuario = async (id, data) => {
   }
 
   await repo.updateUsuario(id, cleanedData);
+  if (cleanedData.imagen && cleanedData.imagen !== exists.imagen) {
+    await borrarArchivo(exists.imagen);
+  }
 
-  return { message: 'Usuario actualizado correctamente' };
-};
+  return await repo.getUsuarioById(id);
+  };
 
 exports.deleteUsuario = async (id) => {
-  await repo.deleteUsuario(id);
+  const exists = await repo.getUsuarioById(id);
 
-  return { message: 'Usuario eliminado correctamente' };
+  if (!exists) {
+    throw new AppError('Usuario no encontrado', 404);
+  }
+
+  await repo.deleteUsuario(id);
+  await borrarArchivo(exists.imagen);
+  
+    return { message: 'Imagen eliminada correctamente' };
 };
