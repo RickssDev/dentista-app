@@ -175,7 +175,6 @@ function AdminServicios() {
 
             <div className="modal-header">
               <h2>{editando ? "Editar servicio" : "Nuevo servicio"}</h2>
-              <span className="close" onClick={resetForm}>✖</span>
             </div>
 
             <div className="modal-body">
