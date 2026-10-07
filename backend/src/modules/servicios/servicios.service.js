@@ -1,5 +1,6 @@
 const repo = require("./servicios.repository");
 const AppError = require("../../utils/AppError");
+const borrarArchivo = require("../../utils/borrarArchivo");
 
 exports.getServicios = async () => {
   const servicios = await repo.getServicios();
@@ -53,6 +54,11 @@ exports.createServicio = async (data) => {
 };
 
 exports.updateServicio = async (id, data) => {
+  const exists = await repo.getServicioById(id);
+  
+    if (!exists) {
+      throw new AppError('Servicio no encontrado', 404);
+    }
   const cleanedData = {};
 
   for (const key in data) {
@@ -75,13 +81,22 @@ exports.updateServicio = async (id, data) => {
     throw new AppError("No hay campos para actualizar", 400);
   }
 
-  await repo.updateServicio(id, cleanedData);
-
-  return { message: "Servicio actualizado correctamente" };
+  await repo.updateServicio (id, cleanedData);
+    if (cleanedData.imagen && cleanedData.imagen !== exists.imagen) {
+      await borrarArchivo(exists.imagen);
+    }
+    
+  return await repo.getServicioById(id);
 };
 
 exports.deleteServicio = async (id) => {
+  const exists = await repo.getServicioById(id);
+
+  if (!exists) {
+    throw new AppError('Servicio no encontrado', 404);
+  }
   await repo.deleteServicio(id);
+  await borrarArchivo(exists.imagen);
 
   return { message: "Servicio eliminado correctamente" };
 };

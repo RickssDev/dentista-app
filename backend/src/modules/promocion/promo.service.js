@@ -1,5 +1,6 @@
 const repo = require('./promo.repository');
 const AppError = require('../../utils/AppError');
+const borrarArchivo = require('../../utils/borrarArchivo');
 
 exports.createPromocion = async (data, file) => {
   const {
@@ -60,6 +61,10 @@ exports.updatePromocion = async (id, data, file) => {
     imagen
   });
 
+    if (file && exists.imagen && exists.imagen !== exists.imagen) {
+    await borrarArchivo(exists.imagen);
+  }
+
   return await repo.getPromocionById(id);
 };
 
@@ -71,6 +76,7 @@ exports.deletePromocion = async (id) => {
   }
 
   await repo.deletePromocion(id);
+  await borrarArchivo(exists.imagen);
 
   return {
     message: 'Promoción eliminada correctamente'
