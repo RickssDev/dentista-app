@@ -217,7 +217,6 @@ function AdminPromociones() {
 
             <div className="modal-header">
               <h2>{editando ? "Editar promoción" : "Nueva promoción"}</h2>
-              <span className="close" onClick={resetForm}>✖</span>
             </div>
 
             <div className="modal-body">

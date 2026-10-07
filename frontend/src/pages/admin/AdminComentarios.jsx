@@ -175,7 +175,6 @@ function AdminComentarios() {
 
             <div className="modal-header">
               <h2>Comentario de {seleccionado.nombre_usuario}</h2>
-              <span className="close" onClick={cerrarDetalle}>✖</span>
             </div>
 
             <div className="modal-body">

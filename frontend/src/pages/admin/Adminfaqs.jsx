@@ -127,7 +127,6 @@ function AdminFaqs() {
 
             <div className="modal-header">
               <h2>{editando ? "Editar pregunta" : "Nueva pregunta"}</h2>
-              <span className="close" onClick={resetForm}>✖</span>
             </div>
 
             <div className="modal-body">
