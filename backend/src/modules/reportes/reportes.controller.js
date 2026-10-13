@@ -46,3 +46,55 @@ res.setHeader(
 pdf.pipe(res);
 pdf.end();
 });
+
+exports.getReportePacientes = catchAsync(async (req, res) => {
+  const { fechaInicio, fechaFin } = req.query;
+
+  const data = await service.getReportePacientes(fechaInicio, fechaFin);
+
+  return HandleResponse.success(
+    res,
+    200,
+    "Reporte de pacientes generado correctamente",
+    data,
+  );
+});
+
+exports.exportarPacientesExcel = catchAsync(async (req, res) => {
+  const { fechaInicio, fechaFin } = req.query;
+
+  const workbook = await service.exportarReportePacientesExcel(
+    fechaInicio,
+    fechaFin,
+  );
+
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=reporte-pacientes.xlsx",
+  );
+
+  await workbook.xlsx.write(res);
+  res.end();
+});
+
+exports.exportarPacientesPdf = catchAsync(async (req, res) => {
+  const { fechaInicio, fechaFin } = req.query;
+
+  const pdf = await service.exportarReportePacientesPdf(
+    fechaInicio,
+    fechaFin,
+  );
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=reporte-pacientes.pdf",
+  );
+
+  pdf.pipe(res);
+  pdf.end();
+});

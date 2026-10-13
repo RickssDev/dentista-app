@@ -10,6 +10,7 @@ const pacientesRoutes = require('../modules/pacientes/pacientes.routes');
 const promocionesRoutes = require('../modules/promocion/promo.routes');
 const reportesRoutes = require('../modules/reportes/reportes.routes');
 const serviciosRoutes = require('../modules/servicios/servicios.routes');
+const dashboardRoutes = require('../modules/dashboard/dashboard.routes');
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/pacientes', pacientesRoutes);
 router.use('/promociones', promocionesRoutes);
 router.use('/reportes', reportesRoutes);
 router.use('/servicios', serviciosRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 module.exports = router;

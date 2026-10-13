@@ -27,3 +27,25 @@ exports.getReporteCitasPorRango = async (fechaInicio, fechaFin) => {
 
   return rows;
 };
+
+exports.getReportePacientesPorRango = async (fechaInicio, fechaFin) => {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      p.id_paciente,
+      u.nombre_usuario,
+      u.apellido,
+      u.correo,
+      u.fecha_registro
+    FROM paciente p
+    JOIN usuarios u
+      ON p.id_usuario = u.id_usuario
+    WHERE u.fecha_registro >= ?
+      AND u.fecha_registro < DATE_ADD(?, INTERVAL 1 DAY)
+    ORDER BY u.fecha_registro ASC
+    `,
+    [fechaInicio, fechaFin],
+  );
+
+  return rows;
+};
