@@ -74,7 +74,8 @@ exports.login = async ({ correo, contrasena }) => {
       id: user.id_usuario,
       nombre_usuario: user.nombre_usuario,
       correo: user.correo,
-      rol: user.rol
+      rol: user.rol,
+      imagen: user.imagen
     },
     tienePerfilPaciente
   };
