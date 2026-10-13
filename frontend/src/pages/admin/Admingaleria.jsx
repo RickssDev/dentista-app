@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../styles/AdminPanel.css";
 import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
-import { api } from "../../services/api";
-
-const BASE_IMG_URL = "http://10.0.5.102:3000";
+import { api, getImageUrl } from "../../services/api";
 
 // 5 columnas: Foto | Título | Fecha | Estado | Acciones
 // (si tu .table-header/.table-row no usan grid, ajusta esto o muévelo a tu CSS)
@@ -28,12 +26,6 @@ function AdminImagenes() {
   const [form, setForm] = useState(FORM_VACIO);
   const [editando, setEditando] = useState(false);
   const [imagenId, setImagenId] = useState(null);
-
-  const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/60";
-    if (img.startsWith("http")) return img;
-    return `${BASE_IMG_URL}/${img.replace(/^\/+/, "")}`;
-  };
 
   const obtenerImagenes = async () => {
     try {
