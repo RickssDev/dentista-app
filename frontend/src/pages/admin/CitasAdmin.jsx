@@ -1,4 +1,4 @@
-  import { useEffect, useMemo, useState } from "react";
+  import { useEffect, useMemo, useState, useRef } from "react";
   import "../../styles/CitasAdmin.css";
   import { api } from "../../services/api";
   import {
@@ -7,7 +7,11 @@
     FaCheckCircle
   } from "react-icons/fa";
 
-  function CitasAdmin() {
+  function CitasAdmin({
+  modoModal = false,
+  solicitudAbrirModal = 0,
+  onCerrarModalDashboard,
+}) {
 
     const obtenerFechaHoy = () => {
     const hoy = new Date();
@@ -39,6 +43,7 @@ const fechaMinima = obtenerFechaHoy();
     const [horariosReprogramacion, setHorariosReprogramacion] = useState([]);
     const [diagnostico, setDiagnostico] = useState("");
     const [observaciones, setObservaciones] = useState("");
+    const solicitudProcesada = useRef(false);
 
     const [form, setForm] = useState({
       id_paciente: "",
@@ -132,12 +137,13 @@ const obtenerHorarios = async () => {
   }
 };
 
- useEffect(() => {
+useEffect(() => {
+  if (!modoModal) {
+    obtenerCitas();
+  }
 
-  obtenerCitas();
   obtenerServicios();
-
-}, []);
+}, [modoModal]);
 
 useEffect(() => {
   if (!mostrarModal) return;
@@ -155,6 +161,23 @@ useEffect(() => {
   obtenerHorarios();
 }, [form.fecha_agendada, form.id_servicio, mostrarModal]);
 
+  const cerrarModalCrear = () => {
+  setMostrarModal(false);
+  setBusquedaPaciente("");
+  setPacienteSeleccionado(null);
+
+  setForm({
+    id_paciente: "",
+    fecha_agendada: "",
+    hora: "",
+    id_servicio: "",
+    estado: "pendiente",
+  });
+
+  setHorarios([]);
+  onCerrarModalDashboard?.();
+};
+
   const guardarCita = async () => {
 
     try {
@@ -163,7 +186,7 @@ useEffect(() => {
 
       alert("Cita creada correctamente");
 
-      setMostrarModal(false);
+      cerrarModalCrear()
 
       setForm({
         id_paciente: "",
@@ -189,6 +212,28 @@ useEffect(() => {
 
   obtenerHorariosReprogramacion();
 }, [nuevaFecha, modalAccion, citaSeleccionada]);
+
+useEffect(() => {
+  if (
+    solicitudAbrirModal > 0 &&
+    solicitudAbrirModal !== solicitudProcesada.current
+  ) {
+    solicitudProcesada.current = solicitudAbrirModal;
+
+    setForm({
+      id_paciente: "",
+      fecha_agendada: "",
+      hora: "",
+      id_servicio: "",
+      estado: "pendiente",
+    });
+
+    setBusquedaPaciente("");
+    setPacienteSeleccionado(null);
+    setMostrarModal(true);
+  }
+}, [solicitudAbrirModal]);
+
 const abrirModalAccion = (accion, cita) => {
   setModalAccion(accion);
   setCitaSeleccionada(cita);
@@ -286,6 +331,8 @@ const finalizarCita = async () => {
     return (
 
       <div className="citas-container">
+      {!modoModal && (
+  <>
 
         <h1>Gestión de citas</h1>
 
@@ -347,7 +394,6 @@ const finalizarCita = async () => {
           </div>
 
         </div>
-
         <div className="tabla">
 
           <table>
@@ -475,11 +521,13 @@ const finalizarCita = async () => {
           </table>
 
         </div>
+  </>
+    )}
   {mostrarModal && (
 
   <div
   className="modal-overlay"
-  onClick={() => setMostrarModal(false)}
+  onClick={() => cerrarModalCrear()}
   >
 
   <div
@@ -601,19 +649,14 @@ const finalizarCita = async () => {
 
   <div className="modal-footer">
 
-  <button
+ 
+<button
   className="btn-cancel"
-  onClick={() => {
-  setMostrarModal(false);
-  setBusquedaPaciente("");
-  setPacienteSeleccionado(null);
-}}
-
-  >
-
+  onClick={cerrarModalCrear}
+>
   Cancelar
+</button>
 
-  </button>
 
   <button
   className="btn-save"

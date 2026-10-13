@@ -1,4 +1,6 @@
 const BASE_URL = "http://192.168.11.239:3000/api/v1";
+export const BASE_ORIGIN = new URL(BASE_URL).origin;
+
 export const api = async (
     endpoint,
     method = "GET",
@@ -49,3 +51,31 @@ export const api = async (
 
     return result;
   };
+
+export const apiDescargar = async (ruta) => {
+  const token = localStorage.getItem("token");
+
+  const options = {
+    method: "GET",
+    headers: {}
+  };
+
+  if (token) {
+    options.headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${ruta}`, options);
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || "No se pudo descargar el archivo");
+  }
+
+  return res.blob();
+};
+
+export const getImageUrl = (img, placeholder = "https://via.placeholder.com/60") => {
+  if (!img) return placeholder;
+  if (img.startsWith("http")) return img;
+  return `${BASE_ORIGIN}/${img.replace(/^\/+/, "")}`;
+};

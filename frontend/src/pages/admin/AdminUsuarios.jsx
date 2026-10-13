@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "../../styles/AdminPanel.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { api } from "../../services/api";
+import { api, getImageUrl } from "../../services/api";
 
-const BASE_IMG_URL = "http://10.0.3.217:3000";
-function AdminUsuarios() {
+function AdminUsuarios({
+  modoModal = false,
+  solicitudAbrirModal = 0,
+  onCerrarModalDashboard,
+}) {
   const [usuarios, setUsuarios] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
 
@@ -21,12 +24,7 @@ function AdminUsuarios() {
 
   const [editando, setEditando] = useState(false);
   const [usuarioId, setUsuarioId] = useState(null);
-
-  const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/40";
-    if (img.startsWith("http")) return img;
-    return `${BASE_IMG_URL}/${img.replace(/^\/+/, "")}`;
-  };
+  const solicitudProcesada = useRef(0);
 
   const obtenerUsuarios = async () => {
     try {
@@ -38,8 +36,36 @@ function AdminUsuarios() {
   };
 
   useEffect(() => {
+  if (!modoModal) {
     obtenerUsuarios();
-  }, []);
+  }
+}, [modoModal]);
+
+
+useEffect(() => {
+  if (
+    solicitudAbrirModal > 0 &&
+    solicitudAbrirModal !== solicitudProcesada.current
+  ) {
+    solicitudProcesada.current = solicitudAbrirModal;
+
+    setForm({
+      nombre: "",
+      apellido: "",
+      correo: "",
+      password: "",
+      telefono: "",
+      estado: "activo",
+      id_rol: "",
+      imagen: null,
+    });
+
+    setEditando(false);
+    setUsuarioId(null);
+    setMostrarModal(true);
+  }
+}, [solicitudAbrirModal]);
+
 
   // ➕ CREAR
   const crearUsuario = async () => {
@@ -126,21 +152,26 @@ function AdminUsuarios() {
       id_rol: "",
       imagen: null
     });
-    setEditando(false);
-    setUsuarioId(null);
-    setMostrarModal(false);
-  };
+  setEditando(false);
+  setUsuarioId(null);
+  setMostrarModal(false);
+
+  if (avisarCierre) {
+    onCerrarModalDashboard?.();
+  }
+};
 
   return (
     <div className="usuarios-container">
-
+{!modoModal && (
+  <>
       <div className="usuarios-header">
         <h1>Gestión de usuarios</h1>
 
         <button
           className="btn-add"
           onClick={() => {
-            resetForm();
+            resetForm(true);
             setMostrarModal(true);
           }}
         >
@@ -163,9 +194,9 @@ function AdminUsuarios() {
           <div key={user.id} className="table-row">
 
             <img
-              src={getImageUrl(user.imagen)}
-              alt="avatar"
-              className="avatar"
+            src={getImageUrl(user.imagen, "https://via.placeholder.com/40")}
+            alt="avatar"
+            className="avatar"
             />
 
             <span>{user.nombre} {user.apellido}</span>
@@ -183,9 +214,10 @@ function AdminUsuarios() {
           </div>
         ))}
       </div>
-
+      </>
+)}
       {mostrarModal && (
-        <div className="modal-overlay" onClick={resetForm}>
+        <div className="modal-overlay" onClick={() => resetForm(true)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
 
             <div className="modal-header">
@@ -244,9 +276,12 @@ function AdminUsuarios() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn-cancel" onClick={resetForm}>
-                Cancelar
-              </button>
+              <button
+              className="btn-cancel"
+              onClick={() => resetForm(true)}
+            >
+              Cancelar
+            </button>
 
               <button
                 className="btn-save"

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../styles/AdminPanel.css";
 import { FaSearch, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
-import { api } from "../../services/api";
-
-const BASE_IMG_URL = "http://10.0.5.102:3000";
+import { api, getImageUrl } from "../../services/api";
 
 function AdminPromociones() {
   const [promociones, setPromociones] = useState([]);
@@ -23,13 +21,6 @@ function AdminPromociones() {
 
   const [editando, setEditando] = useState(false);
   const [promoId, setPromoId] = useState(null);
-
-  const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/60";
-    if (img.startsWith("http")) return img;
-    return `${BASE_IMG_URL}/${img.replace(/^\/+/, "")}`;
-  };
-
   const obtenerPromociones = async () => {
     try {
       const data = await api("/promociones");

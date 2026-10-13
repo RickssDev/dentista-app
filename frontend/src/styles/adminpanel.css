@@ -32,8 +32,22 @@
 .avatar {
   width: 40px;
   height: 40px;
-  background: #ccc;
   border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar span {
+  font-weight: 600;
 }
 
 /* STATS */
@@ -812,4 +826,152 @@ th, td {
   padding: 24px;
   text-align: center;
   color: #888;
+}
+
+/* ===== Reportes (agregar al final de AdminPanel.css) ===== */
+
+/* Fechas y botones */
+.reportes-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reportes-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.reportes-campo input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-weight: normal;
+}
+
+.reportes-filtros .btn-add:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Mensaje de error */
+.reportes-error {
+  margin: 15px 0;
+  padding: 10px 14px;
+  color: #b3372b;
+  background: #fdecea;
+  border-radius: 8px;
+}
+
+/* Tarjetas de estadísticas (mismos colores que btn-add, estado.activo y .delete) */
+.reportes-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.reportes-card {
+  background: #f5eeee;
+  border-radius: 15px;
+  padding: 20px;
+  border-top: 4px solid #e94b6a;
+}
+
+.reportes-card.completadas {
+  border-top-color: #8bd46e;
+}
+
+.reportes-card.pendientes {
+  border-top-color: #f4f21b;
+}
+
+.reportes-card.canceladas {
+  border-top-color: #e63946;
+}
+
+.reportes-numero {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.reportes-etiqueta {
+  margin: 0;
+  color: #666;
+}
+
+/* ===== Dashboard (agregar al final de AdminPanel.css) ===== */
+
+/* Tarjetas de estadísticas clicables */
+.stat-card.clickable {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-3px);
+}
+
+/* Contador sobre una acción rápida */
+.action-card {
+  position: relative;
+}
+
+.action-badge {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #e63946;
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Acciones de la tabla de citas de hoy */
+.dashboard-acciones {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.accion-completar,
+.accion-cancelar {
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.accion-completar {
+  color: #2e9e4f;
+}
+
+.accion-cancelar {
+  color: #e63946;
+}
+
+.accion-completar:hover,
+.accion-cancelar:hover {
+  transform: scale(1.2);
+}
+
+.dashboard-vacio {
+  padding: 24px 12px;
+  text-align: center;
+  color: #888;
+}
+
+.dashboard-error {
+  margin: 15px 0;
+  padding: 10px 14px;
+  color: #b3372b;
+  background: #fdecea;
+  border-radius: 8px;
 }
