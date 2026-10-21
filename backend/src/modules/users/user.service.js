@@ -96,8 +96,23 @@ exports.deleteUsuario = async (id) => {
     throw new AppError('Usuario no encontrado', 404);
   }
 
-  await repo.deleteUsuario(id);
+  try {
+    await repo.deleteUsuario(id);
+  } catch (error) {
+    if (error.errno === 1451 || error.code === 'ER_ROW_IS_REFERENCED_2') {
+      await repo.desactivarUsuario(id);
+
+      return {
+        desactivado: true,
+        message:
+          'El usuario tiene información asociada, por lo que se desactivó en lugar de eliminarse.',
+      };
+    }
+
+    throw error;
+  }
+
   await borrarArchivo(exists.imagen);
-  
-    return { message: 'Imagen eliminada correctamente' };
+
+  return { desactivado: false, message: 'Usuario eliminado correctamente' };
 };

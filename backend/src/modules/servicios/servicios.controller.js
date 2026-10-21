@@ -24,12 +24,12 @@ exports.updateServicio = catchAsync(async (req, res) => {
     req.body.imagen = "/uploads/" + req.file.filename;
   }
   const data = await service.updateServicio(req.params.id, req.body);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, "Servicio actualizado", data);
 });
 
 exports.deleteServicio = catchAsync(async (req, res) => {
   const data = await service.deleteServicio(req.params.id);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, data.message, {desactivado: data.desactivado,});
 });
 
 exports.getServiciosPublicos = catchAsync(async (req, res) => {

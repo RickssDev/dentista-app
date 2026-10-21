@@ -25,10 +25,11 @@ exports.updateUsuario = catchAsync(async (req, res) => {
     req.body.imagen = '/uploads/' + req.file.filename;
   }
   const data = await service.updateUsuario(req.params.id, req.body);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, 'Usuario actualizado', data);
 });
 
 exports.deleteUsuario = catchAsync(async (req, res) => {
   const data = await service.deleteUsuario(req.params.id);
-  return HandleResponse.success(res, 200, data.message);
+  return HandleResponse.success(res, 200, data.message, {
+    desactivado: data.desactivado, });
 });

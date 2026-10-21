@@ -66,7 +66,7 @@ exports.updateServicio = async (id, data) => {
   const entries = Object.entries(data).filter(
     ([key, value]) => fieldMap[key] && value !== undefined && value !== "",
   );
-
+  if (entries.length === 0) return;
   const fields = entries.map(([key]) => `${fieldMap[key]} = ?`).join(", ");
   const values = entries.map(([, value]) => value);
 
@@ -92,4 +92,11 @@ exports.getServiciosPublicos = async () => {
   `);
 
   return rows;
+};
+
+exports.desactivarServicio = async (id) => {
+  await pool.query(
+    "UPDATE servicio SET estado = 'inactivo' WHERE id_servicio = ?",
+    [id]
+  );
 };

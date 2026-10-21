@@ -9,7 +9,7 @@ exports.createPromocion = async (data, file) => {
     descripcion,
     fecha_inicio,
     fecha_fin,
-    estado
+    estado = 'activo'
   } = data;
 
   if (!id_servicio || !nombre_promocion || !descripcion || !fecha_inicio || !fecha_fin) {
@@ -52,16 +52,20 @@ exports.updatePromocion = async (id, data, file) => {
     throw new AppError('Promoción no encontrada', 404);
   }
 
-  const imagen = file
-    ? `/uploads/${file.filename}`
-    : exists.imagen;
+  const cambios = { ...data };
+  delete cambios.imagen;
 
-  await repo.updatePromocion(id, {
-    ...data,
-    imagen
-  });
+  if (cambios.estado && !['activo', 'inactivo'].includes(cambios.estado)) {
+    throw new AppError('Estado inválido', 400);
+  }
 
-    if (file && exists.imagen && exists.imagen !== exists.imagen) {
+  if (file) {
+    cambios.imagen = `/uploads/${file.filename}`;
+  }
+
+  await repo.updatePromocion(id, cambios);
+
+  if (file && exists.imagen) {
     await borrarArchivo(exists.imagen);
   }
 

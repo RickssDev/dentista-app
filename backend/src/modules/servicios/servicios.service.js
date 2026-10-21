@@ -95,10 +95,26 @@ exports.deleteServicio = async (id) => {
   if (!exists) {
     throw new AppError('Servicio no encontrado', 404);
   }
-  await repo.deleteServicio(id);
+
+  try {
+    await repo.deleteServicio(id);
+  } catch (error) {
+    if (error.errno === 1451 || error.code === 'ER_ROW_IS_REFERENCED_2') {
+      await repo.desactivarServicio(id);
+
+      return {
+        desactivado: true,
+        message:
+          'El servicio tiene citas o información asociada, por lo que se desactivó en lugar de eliminarse.',
+      };
+    }
+
+    throw error;
+  }
+
   await borrarArchivo(exists.imagen);
 
-  return { message: "Servicio eliminado correctamente" };
+  return { desactivado: false, message: 'Servicio eliminado correctamente' };
 };
 
 exports.getServiciosPublicos = async () => {

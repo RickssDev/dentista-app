@@ -1,6 +1,7 @@
 const JWTFactory = require('../utils/JWTFactory');
+const { pool } = require('../config/db');
 
-exports.verifyToken = (req, res, next) => {
+exports.verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -26,6 +27,18 @@ exports.verifyToken = (req, res, next) => {
       const error = new Error('Token invalido: falta la identidad o el rol del usuario.');
       error.statusCode = 401;
       error.name = 'MissingUserIdentityError';
+      throw error;
+    }
+
+    const [rows] = await pool.query(
+      'SELECT estado FROM usuarios WHERE id_usuario = ?',
+      [decoded.id]
+    );
+
+    if (rows.length === 0 || rows[0].estado === 'inactivo') {
+      const error = new Error('Tu cuenta está desactivada o ya no existe.');
+      error.statusCode = 401;
+      error.name = 'AccountDisabledError';
       throw error;
     }
 
