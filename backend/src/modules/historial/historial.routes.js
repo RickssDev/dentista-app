@@ -4,6 +4,8 @@ const controller = require("./historial.controller");
 const { verifyToken } = require("../../middlewares/verifyToken");
 const { authorizeRoles } = require("../../middlewares/authorizeRoles");
 
+router.get("/servicios", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.getServicios);
+router.post("/registrar-paciente", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.registrarPaciente);
 router.post("/finalizar-cita/:idCita", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.crearDesdeCita);
 router.get("/cita/:idCita", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.obtenerDatosFormulario);
 router.get("/", verifyToken, authorizeRoles("Administrador", "Asistente"), controller.getHistoriales);

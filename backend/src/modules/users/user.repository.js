@@ -54,6 +54,7 @@ exports.updateUsuario = async (id, data) => {
   const fieldMap = {
     nombre: 'nombre_usuario',
     telefono: 'telefono',
+    correo: 'correo',
     email: 'correo',
     apellido: 'apellido',
     password: 'contrasena',
@@ -75,4 +76,11 @@ exports.updateUsuario = async (id, data) => {
 
 exports.deleteUsuario = async (id) => {
   await pool.query(`DELETE FROM usuarios WHERE id_usuario = ?`, [id]);
+};
+
+exports.desactivarUsuario = async (id) => {
+  await pool.query(
+    "UPDATE usuarios SET estado = 'inactivo' WHERE id_usuario = ?",
+    [id]
+  );
 };

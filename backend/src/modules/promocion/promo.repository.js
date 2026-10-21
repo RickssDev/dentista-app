@@ -62,31 +62,31 @@ exports.getPromocionById = async (id) => {
 };
 
 exports.updatePromocion = async (id, data) => {
-  const query = `
-    UPDATE promocion
-    SET
-      id_servicio = ?,
-      imagen = ?,
-      nombre_promocion = ?,
-      descripcion = ?,
-      fecha_inicio = ?,
-      fecha_fin = ?,
-      estado = ?
-    WHERE id_promocion = ?
-  `;
-
-  const values = [
-    data.id_servicio,
-    data.imagen,
-    data.nombre_promocion,
-    data.descripcion,
-    data.fecha_inicio,
-    data.fecha_fin,
-    data.estado,
-    id,
+  const permitidos = [
+    "id_servicio",
+    "nombre_promocion",
+    "descripcion",
+    "fecha_inicio",
+    "fecha_fin",
+    "estado",
+    "imagen",
   ];
 
-  const [result] = await pool.query(query, values);
+  const entries = Object.entries(data).filter(
+    ([key, value]) =>
+      permitidos.includes(key) && value !== undefined && value !== ""
+  );
+
+  if (entries.length === 0) return false;
+
+  const fields = entries.map(([key]) => `${key} = ?`).join(", ");
+  const values = entries.map(([, value]) => value);
+
+  const [result] = await pool.query(
+    `UPDATE promocion SET ${fields} WHERE id_promocion = ?`,
+    [...values, id]
+  );
+
   return result.affectedRows > 0;
 };
 
@@ -99,6 +99,10 @@ exports.deletePromocion = async (id) => {
   return result.affectedRows > 0;
 };
 exports.getPromocionPublicos = async () => {
+  const hoy = new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Mexico_City",
+  });
+
   const query = `
     SELECT
       p.id_promocion,
@@ -112,9 +116,10 @@ exports.getPromocionPublicos = async () => {
     INNER JOIN servicio s
       ON p.id_servicio = s.id_servicio
     WHERE p.estado = 'activo'
+      AND (p.fecha_fin IS NULL OR DATE(p.fecha_fin) >= ?)
     ORDER BY p.id_promocion DESC
   `;
 
-  const [rows] = await pool.query(query);
+  const [rows] = await pool.query(query, [hoy]);
   return rows;
 };

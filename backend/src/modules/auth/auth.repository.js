@@ -21,10 +21,10 @@ exports.createUser = async ({
   id_rol,
 }) => {
   const [result] = await pool.query(
-    `INSERT INTO usuarios (nombre_usuario, telefono, apellido, correo, contrasena, id_rol)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [nombre_usuario, telefono, apellido, correo, contrasena, id_rol],
-  );
+  `INSERT INTO usuarios (nombre_usuario, telefono, apellido, correo, contrasena, id_rol, estado)
+   VALUES (?, ?, ?, ?, ?, ?, 'activo')`,
+  [nombre_usuario, telefono, apellido, correo, contrasena, id_rol],
+);
 
   return {
     id: result.insertId,

@@ -49,11 +49,19 @@ exports.login = async ({ correo, contrasena }) => {
     throw new AppError('Credenciales inválidas', 401);
   }
 
-  const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+    const isMatch = await bcrypt.compare(contrasena, user.contrasena);
 
-  if (!isMatch) {
-    throw new AppError('Credenciales inválidas', 401);
-  }
+    if (!isMatch) {
+      throw new AppError('Credenciales inválidas', 401);
+    }
+
+    if (user.estado === 'inactivo') {
+      throw new AppError(
+        'Tu cuenta está desactivada. Contacta a la clínica.',
+        403
+      );
+    }
+
  let tienePerfilPaciente = null;
 
   if (user.rol === 'Paciente') {
@@ -129,3 +137,4 @@ exports.cambiarContrasena = async (
       'Contraseña actualizada correctamente'
   };
 };
+

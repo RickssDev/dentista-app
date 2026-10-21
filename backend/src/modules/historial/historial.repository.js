@@ -84,19 +84,26 @@ exports.getCitaPendiente = async (idCita, client = pool) => {
 
   return rows[0];
 };
+
 exports.getHistoriales = async () => {
   const query = `
-    SELECT 
+    SELECT
       p.id_paciente,
       u.nombre_usuario,
+      u.apellido,
       MAX(h.fecha) AS ultima_consulta
-    FROM h_clinico h
-    INNER JOIN paciente p
-      ON h.id_paciente = p.id_paciente
+    FROM paciente p
     INNER JOIN usuarios u
       ON p.id_usuario = u.id_usuario
-    GROUP BY p.id_paciente, u.nombre_usuario
-    ORDER BY ultima_consulta DESC
+    INNER JOIN h_clinico h
+      ON h.id_paciente = p.id_paciente
+    GROUP BY
+      p.id_paciente,
+      u.nombre_usuario,
+      u.apellido
+    ORDER BY
+      MAX(h.fecha) DESC,
+      p.id_paciente DESC
   `;
 
   const [rows] = await pool.query(query);
@@ -142,11 +149,75 @@ exports.getPacientePerfil = async (idPaciente, client = pool) => {
   const query = `
     SELECT
       p.id_paciente,
-      u.nombre_usuario
+      u.nombre_usuario,
+      u.apellido
     FROM paciente p
     INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
     WHERE p.id_paciente = ?
   `;
   const [rows] = await client.query(query, [idPaciente]);
   return rows[0];
+};
+
+exports.correoExiste = async (client, correo) => {
+  const [rows] = await client.query(
+    "SELECT 1 FROM usuarios WHERE correo = ? LIMIT 1",
+    [correo]
+  );
+  return rows.length > 0;
+};
+
+exports.getServiciosDisponibles = async () => {
+  const [rows] = await pool.query(
+    "SELECT id_servicio, nombre_servicio FROM servicio WHERE estado = 'activo' ORDER BY nombre_servicio ASC"
+  );
+  return rows;
+};
+
+exports.servicioExiste = async (client, nombreServicio) => {
+  const [rows] = await client.query(
+    "SELECT 1 FROM servicio WHERE nombre_servicio = ? AND estado = 'activo' LIMIT 1",
+    [nombreServicio]
+  );
+  return rows.length > 0;
+};
+
+// AJUSTA si tu tabla de roles se llama distinto (ver nota en la respuesta)
+exports.getIdRolPaciente = async (client) => {
+  const [rows] = await client.query(
+    "SELECT id_rol FROM roles WHERE LOWER(rol) = 'paciente' LIMIT 1"
+  );
+  return rows[0]?.id_rol ?? null;
+};
+
+exports.crearUsuarioPaciente = async (
+  client,
+  { nombre, apellido, telefono, correo, passwordHash, id_rol }
+) => {
+  const [result] = await client.query(
+    `
+    INSERT INTO usuarios
+    (nombre_usuario, telefono, correo, apellido, contrasena, id_rol, estado, imagen)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [nombre, telefono, correo, apellido, passwordHash, id_rol, "activo", null]
+  );
+
+  return result.insertId;
+};
+
+exports.crearPaciente = async (
+  client,
+  { direccion, fecha_nacimiento, genero, id_usuario }
+) => {
+  const [result] = await client.query(
+    `
+    INSERT INTO paciente
+    (direccion, fecha_nacimiento, genero, id_usuario)
+    VALUES (?, ?, ?, ?)
+    `,
+    [direccion, fecha_nacimiento, genero, id_usuario]
+  );
+
+  return result.insertId;
 };

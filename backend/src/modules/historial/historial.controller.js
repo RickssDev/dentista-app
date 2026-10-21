@@ -36,3 +36,13 @@ exports.getHistorialPaciente = catchAsync(async (req, res) => {
   const data = await service.getHistorialPaciente(idPaciente);
   return HandleResponse.success(res, 200, 'Historial del paciente obtenido correctamente', data);
 });
+
+exports.getServicios = catchAsync(async (req, res) => {
+  const data = await service.getServicios();
+  return HandleResponse.success(res, 200, 'Servicios obtenidos correctamente', data);
+});
+
+exports.registrarPaciente = catchAsync(async (req, res) => {
+  const data = await service.registrarPaciente(req.body);
+  return HandleResponse.success(res, 201, 'Paciente registrado correctamente', data);
+});
