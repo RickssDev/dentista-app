@@ -1,11 +1,28 @@
   import { useEffect, useMemo, useState, useRef } from "react";
+  import { useLocation } from "react-router-dom";
   import "../../styles/CitasAdmin.css";
   import { api } from "../../services/api";
+  import FiltrosCard from "../../components/FiltrosCard";
+  import ModalConfirmacion from "../../components/ModalConfirmacion";
+  import EncabezadoModulo from "../../components/EncabezadoModulo";
   import {
     FaCalendarAlt,
     FaTimesCircle,
-    FaCheckCircle
+    FaCheckCircle,
+    FaRegCalendarAlt,
+    FaRegClock,
+    FaTooth,
   } from "react-icons/fa";
+
+  const normalizar = (texto = "") =>
+  texto
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const formatearFecha = (fecha = "") =>
+  fecha.split("T")[0].split("-").reverse().join("/");
 
   function CitasAdmin({
   modoModal = false,
@@ -43,7 +60,11 @@ const fechaMinima = obtenerFechaHoy();
     const [horariosReprogramacion, setHorariosReprogramacion] = useState([]);
     const [diagnostico, setDiagnostico] = useState("");
     const [observaciones, setObservaciones] = useState("");
-    const solicitudProcesada = useRef(false);
+    const solicitudProcesada = useRef(0);
+    const [aviso, setAviso] = useState(null);
+    const location = useLocation();
+    const [soloHoy, setSoloHoy] = useState(!!location.state?.soloHoy);
+    const mostrarAviso = (titulo, mensaje) => setAviso({ titulo, mensaje });
 
     const [form, setForm] = useState({
       id_paciente: "",
@@ -101,10 +122,13 @@ const obtenerHorariosReprogramacion = async () => {
     console.error("Error al cargar horarios:", error);
     setHorariosReprogramacion([]);
     setNuevaHora("");
-
-    alert(error.message || "No se pudieron cargar los horarios");
+    mostrarAviso(
+      "No se pudieron cargar los horarios",
+      error.message || "Intenta de nuevo más tarde."
+    );
   }
 };
+
 const obtenerServicios = async () => {
   try {
     const data = await api("/servicios");
@@ -126,14 +150,17 @@ const obtenerHorarios = async () => {
     const res = await api(
       `/citas/horarios-disponibles?fecha=${form.fecha_agendada}&id_servicio=${form.id_servicio}`
     );
-  
+
     const data = res?.payload ?? res?.data ?? res;
 
     setHorarios(Array.isArray(data) ? data : []);
   } catch (error) {
     console.error("Error al cargar horarios:", error);
     setHorarios([]);
-    alert(error.message || "No se pudieron cargar los horarios");
+    mostrarAviso(
+      "No se pudieron cargar los horarios",
+      error.message || "Intenta de nuevo más tarde."
+    );
   }
 };
 
@@ -178,35 +205,40 @@ useEffect(() => {
   onCerrarModalDashboard?.();
 };
 
+const abrirModalCrear = () => {
+  setMostrarModal(true);
+  setBusquedaPaciente("");
+  setPacienteSeleccionado(null);
+};
+
+const citasFiltradas = useMemo(() => {
+  const q = normalizar(busqueda.trim());
+
+  return citas.filter((cita) => {
+    const coincidePaciente = normalizar(cita.nombre_paciente).includes(q);
+    const coincideEstado = estado === "" || cita.estado === estado;
+    const coincideFecha =
+      !soloHoy || cita.fecha_agendada?.slice(0, 10) === fechaMinima;
+    return coincidePaciente && coincideEstado && coincideFecha;
+  });
+}, [citas, busqueda, estado, soloHoy, fechaMinima]);
+
   const guardarCita = async () => {
+  try {
+    await api("/citas", "POST", form);
 
-    try {
+    cerrarModalCrear();   
+    obtenerCitas();
+    mostrarAviso("Cita creada", "La cita se creó correctamente.");
+  } catch (error) {
+    console.error(error);
+    mostrarAviso(
+      "No se pudo crear la cita",
+      error.message || "Intenta de nuevo."
+    );
+  }
+};
 
-      await api("/citas", "POST", form);
-
-      alert("Cita creada correctamente");
-
-      cerrarModalCrear()
-
-      setForm({
-        id_paciente: "",
-        fecha_agendada: "",
-        hora: "",
-        id_servicio: "",
-        estado: "pendiente"
-      });
-      setHorarios([]);
-      obtenerCitas();
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(error.message);
-
-    }
-
-  };
   useEffect(() => {
   if (modalAccion !== "reprogramar") return;
 
@@ -261,16 +293,18 @@ const reprogramarCita = async () => {
     await api(`/citas/${citaSeleccionada.id}`, "PUT", {
       fecha_agendada: nuevaFecha,
       hora: nuevaHora,
-      motivo
+      motivo,
     });
-
-    alert("Cita reprogramada correctamente");
 
     cerrarModalAccion();
     obtenerCitas();
+    mostrarAviso("Cita reprogramada", "La cita se reprogramó correctamente.");
   } catch (error) {
     console.error(error);
-    alert(error.message);
+    mostrarAviso(
+      "No se pudo reprogramar",
+      error.message || "Intenta de nuevo."
+    );
   }
 };
 
@@ -278,17 +312,17 @@ const cancelarCita = async () => {
   if (!citaSeleccionada) return;
 
   try {
-    await api(`/citas/${citaSeleccionada.id}/cancelar`, "PATCH", {
-      motivo
-    });
-
-    alert("Cita cancelada correctamente");
+    await api(`/citas/${citaSeleccionada.id}/cancelar`, "PATCH", { motivo });
 
     cerrarModalAccion();
     obtenerCitas();
+    mostrarAviso("Cita cancelada", "La cita se canceló correctamente.");
   } catch (error) {
     console.error(error);
-    alert(error.message);
+    mostrarAviso(
+      "No se pudo cancelar",
+      error.message || "Intenta de nuevo."
+    );
   }
 };
 
@@ -298,231 +332,118 @@ const finalizarCita = async () => {
   try {
     await api(`/historial/finalizar-cita/${citaSeleccionada.id}`, "POST", {
       diagnostico,
-      observaciones
+      observaciones,
     });
-
-    alert("Cita finalizada correctamente");
 
     cerrarModalAccion();
     obtenerCitas();
+    mostrarAviso("Cita finalizada", "La cita se finalizó correctamente.");
   } catch (error) {
     console.error(error);
-    alert(error.message);
+    mostrarAviso(
+      "No se pudo finalizar",
+      error.message || "Intenta de nuevo."
+    );
   }
 };
 
-    const citasFiltradas = useMemo(() => {
-
-      return citas.filter((cita) => {
-
-        const paciente = (cita.nombre_paciente || "").toLowerCase();
-
-        const coincidePaciente =
-          paciente.includes(busqueda.toLowerCase());
-
-        const coincideEstado =
-          estado === "" || cita.estado === estado;
-
-        return coincidePaciente && coincideEstado;
-
-      });
-
-    }, [citas, busqueda, estado]);
     return (
 
       <div className="citas-container">
       {!modoModal && (
   <>
+      <EncabezadoModulo
+      titulo="Citas"
+      descripcion="Consulta, reprograma y da seguimiento a las citas de la clínica."
+      textoBoton="Nueva cita"
+      onBoton={abrirModalCrear}
+    />
 
-        <h1>Gestión de citas</h1>
-
-        <div className="citas-card">
-
-          <div className="citas-filtros">
-
-            <div className="filtros-left">
-
-              <input
-                type="text"
-                placeholder="Buscar paciente..."
-                value={busqueda}
-                onChange={(e) =>
-                  setBusqueda(e.target.value)
-                }
-              />
-
-              <select
-                value={estado}
-                onChange={(e) =>
-                  setEstado(e.target.value)
-                }
-              >
-
-                <option value="">
-                  Todos
-                </option>
-
-                <option value="pendiente">
-                  Pendiente
-                </option>
-
-                <option value="completada">
-                  Completada
-                </option>
-
-                <option value="cancelada">
-                  Cancelada
-                </option>
-
-              </select>
-
+    <FiltrosCard
+      placeholder="Buscar paciente..."
+      busqueda={busqueda}
+      onBusquedaChange={setBusqueda}
+      filtro={estado}
+      onFiltroChange={setEstado}
+      opcionesFiltro={[
+        { value: "pendiente", label: "Pendiente" },
+        { value: "completada", label: "Completada" },
+        { value: "cancelada", label: "Cancelada" },
+      ]}
+    />
+      {soloHoy && (
+      <div className="filtro-activo">
+        <span>Mostrando solo las citas de hoy</span>
+        <button type="button" onClick={() => setSoloHoy(false)}>
+          Ver todas
+        </button>
+      </div>
+    )}
+    {citasFiltradas.length === 0 ? (
+      <p className="citas-vacio">
+        {citas.length === 0
+          ? "No hay citas registradas."
+          : "No se encontraron citas con esos filtros."}
+      </p>
+    ) : (
+      <div className="citas-grid">
+        {citasFiltradas.map((cita) => (
+          <article key={cita.id} className="cita-card">
+            <div className="cita-card-top">
+              <h3 className="cita-paciente">{cita.nombre_paciente}</h3>
+              <span className={`cita-estado ${cita.estado}`}>
+                {cita.estado}
+              </span>
             </div>
 
-          <button
-      className="btn-crear"
-      onClick={() => {
-  setMostrarModal(true);
-  setBusquedaPaciente("");
-  setPacienteSeleccionado(null);
-}}
-  >
+            <div className="cita-datos">
+              <div className="cita-dato">
+                <FaRegCalendarAlt />
+                <span>{formatearFecha(cita.fecha_agendada)}</span>
+              </div>
+              <div className="cita-dato">
+                <FaRegClock />
+                <span>{cita.hora?.slice(0, 5)}</span>
+              </div>
+              <div className="cita-dato">
+                <FaTooth />
+                <span title={cita.nombre_servicio}>{cita.nombre_servicio}</span>
+              </div>
+            </div>
 
-      + Crear cita
-
-  </button>
-
-          </div>
-
-        </div>
-        <div className="tabla">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>Paciente</th>
-
-                <th>Fecha</th>
-
-                <th>Hora</th>
-
-                <th>Servicio</th>
-
-                <th>Estado</th>
-
-                <th>Acciones</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {citasFiltradas.length === 0 ? (
-
-                <tr>
-
-                  <td colSpan="6">
-
-                    No hay citas.
-
-                  </td>
-
-                </tr>
-
-              ) : (
-
-                citasFiltradas.map((cita) => (
-
-                  <tr key={cita.id}>
-
-                    <td>
-
-                      {cita.nombre_paciente}
-
-                    </td>
-
-                    <td>
-
-                      {cita.fecha_agendada.split("T")[0].split("-").reverse().join("/")}
-
-                    </td>
-
-                    <td>
-
-                      {cita.hora}
-
-                    </td>
-
-                    <td>
-
-                      {cita.nombre_servicio}
-
-                    </td>
-
-                    <td>
-
-                      <span
-                        className={`estado ${cita.estado}`}
-                      >
-
-                        {cita.estado}
-
-                      </span>
-
-                    </td>
-
-                    <td>
-
-    <div
-      style={{
-        display: "flex",
-        gap: "15px",
-        justifyContent: "center",
-        fontSize: "20px"
-      }}
-    >
-
-      <FaCalendarAlt
-        color="#3b82f6"
-        style={{ cursor: "pointer" }}
-        title="Reprogramar"
-        onClick={() => abrirModalAccion("reprogramar", cita)}
-      />
-
-      <FaTimesCircle
-        color="#ef4444"
-        style={{ cursor: "pointer" }}
-        title="Cancelar"
-        onClick={() => abrirModalAccion("cancelar", cita)}
-      />
-
-      <FaCheckCircle
-        color="#22c55e"
-        style={{ cursor: "pointer" }}
-        title="Finalizar"
-        onClick={() => abrirModalAccion("finalizar", cita)}
-      />
-
-    </div>
-
-  </td>
-
-                  </tr>
-
-                ))
-
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-  </>
+            <div className="cita-acciones">
+              <button
+                className="cita-btn reprogramar"
+                title="Reprogramar"
+                aria-label="Reprogramar cita"
+                onClick={() => abrirModalAccion("reprogramar", cita)}
+              >
+                <FaCalendarAlt />
+              </button>
+              <button
+                className="cita-btn cancelar"
+                title="Cancelar"
+                aria-label="Cancelar cita"
+                onClick={() => abrirModalAccion("cancelar", cita)}
+              >
+                <FaTimesCircle />
+              </button>
+              <button
+                className="cita-btn finalizar"
+                title="Finalizar"
+                aria-label="Finalizar cita"
+                onClick={() => abrirModalAccion("finalizar", cita)}
+              >
+                <FaCheckCircle />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
     )}
+  </>
+)}
+  
   {mostrarModal && (
 
   <div
@@ -597,14 +518,13 @@ const finalizarCita = async () => {
 >
   <option value="">Seleccionar servicio</option>
 
-  {servicios.map((servicio) => (
-    <option
-      key={servicio.id}
-      value={servicio.id}
-    >
-      {servicio.nombre}
-    </option>
-  ))}
+    {servicios
+    .filter((servicio) => servicio.estado === "activo")
+    .map((servicio) => (
+      <option key={servicio.id} value={servicio.id}>
+        {servicio.nombre}
+      </option>
+    ))}
 </select>
 
   <input
@@ -800,6 +720,14 @@ const finalizarCita = async () => {
     </div>
   </div>
 )}
+<ModalConfirmacion
+  abierto={!!aviso}
+  titulo={aviso?.titulo}
+  mensaje={aviso?.mensaje}
+  textoCancelar={null}
+  textoConfirmar="Aceptar"
+  onConfirmar={() => setAviso(null)}
+/>
       </div>
 
     );

@@ -1,14 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/AdminPanel.css";
-import { FaSearch, FaPlus } from "react-icons/fa";
+import { FaRegCalendarAlt } from "react-icons/fa";
 import { api } from "../../services/api";
+import { normalizar } from "../../api/normalize";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+import FiltrosCard from "../../components/FiltrosCard";
+import ModalRegistrarPaciente from "../../components/ModalRegistrarPaciente";
+
+const formatearFecha = (fecha) => {
+  if (!fecha) return "Sin fecha";
+
+  const f = new Date(fecha);
+
+  if (Number.isNaN(f.getTime())) {
+    return "Fecha no válida";
+  }
+
+  return f.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+};
 
 function AdminHistorial() {
   const [historial, setHistorial] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [aviso, setAviso] = useState("");
 
   const navigate = useNavigate();
 
@@ -31,110 +54,116 @@ function AdminHistorial() {
     obtenerHistorial();
   }, []);
 
-  const formatearFecha = (fecha) => {
-    if (!fecha) return "Sin fecha";
+  // El aviso de éxito se oculta solo
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(""), 5000);
+    return () => clearTimeout(t);
+  }, [aviso]);
 
-    const f = new Date(fecha);
+  const historialFiltrado = useMemo(() => {
+  const q = normalizar(busqueda.trim());
 
-    if (Number.isNaN(f.getTime())) {
-      return "Fecha no válida";
-    }
+  return historial.filter((item) => {
+    const nombreCompleto = normalizar(
+      `${item.nombre_usuario || ""} ${item.apellido || ""}`
+    );
 
-    return f.toLocaleDateString("es-MX", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  };
-
-  const historialFiltrado = historial.filter((item) =>
-    (item.nombre_usuario || "")
-      .toLowerCase()
-      .includes(busqueda.toLowerCase())
-  );
+    return nombreCompleto.includes(q);
+  });
+}, [historial, busqueda]);
 
   const verHistorial = (idPaciente) => {
     navigate(`/admin/historial/${idPaciente}`);
   };
 
+  const alRegistrar = (resultado) => {
+    setBusqueda("");
+    setAviso(
+      resultado?.id_historial
+        ? "Paciente registrado con su consulta."
+        : "Paciente registrado correctamente."
+    );
+    obtenerHistorial();
+  };
+
   return (
-    <div className="servicios-container historial-page">
-      <div className="topbar">
-        <h2>Historial Clínico</h2>
+    <div className="usuarios-container">
+      <EncabezadoModulo
+        titulo="Historial clínico"
+        descripcion="Consulta el historial de consultas de cada paciente."
+        textoBoton="Nuevo registro"
+        onBoton={() => setModalAbierto(true)}
+      />
 
-        <div className="historial-actions">
-          <div className="search-bar">
-            <FaSearch />
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
+      <FiltrosCard
+        placeholder="Buscar paciente..."
+        busqueda={busqueda}
+        onBusquedaChange={setBusqueda}
+      />
 
-          {/* Pendiente: implementar creación de registros */}
-          <button
-            type="button"
-            className="btn-add"
-            disabled
-            title="Funcionalidad pendiente"
-          >
-            <FaPlus /> Nuevo registro
-          </button>
+      {aviso && (
+        <p className="rp-aviso" role="status">
+          {aviso}
+        </p>
+      )}
+
+      {error && <p className="mensaje-error">{error}</p>}
+
+      {cargando ? (
+        <p className="usuarios-vacio">Cargando historiales...</p>
+      ) : historialFiltrado.length === 0 ? (
+        <p className="usuarios-vacio">
+          {busqueda
+            ? "No se encontraron pacientes."
+            : "Todavía no hay pacientes registrados."}
+        </p>
+      ) : (
+        <div className="paciente-cards">
+          {historialFiltrado.map((item) => (
+            <article key={item.id_paciente} className="paciente-card">
+              <div className="paciente-card-top">
+                <div className="paciente-avatar">
+                  {(item.nombre_usuario || "?").charAt(0).toUpperCase()}
+                </div>
+
+                <div className="paciente-info">
+                <h3 className="paciente-nombre">
+                  {item.nombre_usuario} {item.apellido}
+                </h3>
+
+                <p className="paciente-rol">Paciente</p>
+              </div>
+              </div>
+
+              <div className="paciente-dato">
+                <FaRegCalendarAlt />
+                <span>
+                  {item.ultima_consulta
+                    ? `Última consulta: ${formatearFecha(item.ultima_consulta)}`
+                    : "Sin consultas todavía"}
+                </span>
+              </div>
+
+              <div className="paciente-acciones">
+                <button
+                  type="button"
+                  className="btn-card-edit"
+                  onClick={() => verHistorial(item.id_paciente)}
+                >
+                  Ver historial
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
-      </div>
+      )}
 
-      {error && <p className="historial-error">{error}</p>}
-
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre del paciente</th>
-              <th>Última consulta</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {cargando ? (
-              <tr>
-                <td colSpan="3" className="historial-empty">
-                  Cargando historiales...
-                </td>
-              </tr>
-            ) : historialFiltrado.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="historial-empty">
-                  {busqueda
-                    ? "No se encontraron pacientes."
-                    : "Todavía no hay historiales clínicos."}
-                </td>
-              </tr>
-            ) : (
-              historialFiltrado.map((item) => (
-                <tr key={item.id_paciente}>
-                  <td>{item.nombre_usuario}</td>
-
-                  <td>{formatearFecha(item.ultima_consulta)}</td>
-
-                  <td>
-                    <button
-                      type="button"
-                      className="btn-link"
-                      onClick={() => verHistorial(item.id_paciente)}
-                    >
-                      Ver historial
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ModalRegistrarPaciente
+        abierto={modalAbierto}
+        onCerrar={() => setModalAbierto(false)}
+        onRegistrado={alRegistrar}
+      />
     </div>
   );
 }

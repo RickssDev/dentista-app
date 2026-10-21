@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.11.239:3000/api/v1";
+const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1").replace(/\/+$/, "");
 export const BASE_ORIGIN = new URL(BASE_URL).origin;
 
 export const api = async (

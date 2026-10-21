@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/AdminPanel.css";
+import { FaRegCalendarAlt } from "react-icons/fa";
 import { api } from "../../services/api";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
 
 const formatearFecha = (fecha) => {
   if (!fecha) return "Sin fecha";
@@ -24,209 +26,210 @@ function AdminHistorialPaciente() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
-  const [abierta, setAbierta] = useState(null);
-  const [editando, setEditando] = useState(null);
-  const [form, setForm] = useState({});
+  const [consultaEditando, setConsultaEditando] = useState(null);
+  const [form, setForm] = useState({
+    servicio: "",
+    diagnostico: "",
+    observaciones: "",
+  });
   const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState("");
 
-  const cargar = useCallback(async () => {
-    try {
-      setCargando(true);
-      setError("");
-      const data = await api(`/historial/paciente/${idPaciente}`);
-      setPaciente(data.payload?.paciente || null);
-      setConsultas(data.payload?.consultas || []);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "No se pudo cargar el perfil clínico.");
-    } finally {
-      setCargando(false);
-    }
-  }, [idPaciente]);
+  // mostrarCarga=false recarga en segundo plano, sin reemplazar la pantalla
+  const cargar = useCallback(
+    async (mostrarCarga = true) => {
+      try {
+        if (mostrarCarga) setCargando(true);
+        setError("");
+        const data = await api(`/historial/paciente/${idPaciente}`);
+        setPaciente(data.payload?.paciente || null);
+        setConsultas(data.payload?.consultas || []);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "No se pudo cargar el perfil clínico.");
+      } finally {
+        setCargando(false);
+      }
+    },
+    [idPaciente]
+  );
 
   useEffect(() => {
     cargar();
   }, [cargar]);
 
-  const iniciarEdicion = (c) => {
-    setAbierta(c.id_historial);
-    setEditando(c.id_historial);
+  const abrirEdicion = (c) => {
+    setConsultaEditando(c);
     setForm({
       servicio: c.servicio || "",
       diagnostico: c.diagnostico || "",
       observaciones: c.observaciones || "",
     });
+    setErrorForm("");
+  };
+
+  const cerrarEdicion = () => {
+    setConsultaEditando(null);
+    setErrorForm("");
   };
 
   const guardar = async () => {
-  const datos = {
-    servicio: (form.servicio || "").trim(),
-    diagnostico: (form.diagnostico || "").trim(),
-    observaciones: (form.observaciones || "").trim(),
+    const datos = {
+      servicio: (form.servicio || "").trim(),
+      diagnostico: (form.diagnostico || "").trim(),
+      observaciones: (form.observaciones || "").trim(),
+    };
+
+    if (!datos.servicio || !datos.diagnostico) {
+      setErrorForm("El servicio y el diagnóstico son obligatorios.");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+      setErrorForm("");
+      await api(`/historial/${consultaEditando.id_historial}`, "PATCH", datos);
+      cerrarEdicion();
+      await cargar(false);
+    } catch (err) {
+      console.error(err);
+      setErrorForm(err.message || "No se pudo actualizar la consulta.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  if (!datos.servicio || !datos.diagnostico) {
-    setError("El servicio y el diagnóstico son obligatorios.");
-    return;
-  }
-
-  try {
-    setGuardando(true);
-    setError("");
-    await api(`/historial/${editando}`, "PATCH", datos);
-    setEditando(null);
-    await cargar();
-  } catch (err) {
-    console.error(err);
-    setError(err.message || "No se pudo actualizar la consulta.");
-  } finally {
-    setGuardando(false);
-  }
-};
+  const cambiarCampo = (campo) => (e) =>
+    setForm({ ...form, [campo]: e.target.value });
 
   return (
-    <div className="servicios-container historial-page">
-      <button
-        type="button"
-        className="btn-back"
-        onClick={() => navigate("/admin/historial")}
-      >
-        ← Regresar
-      </button>
+    <div className="usuarios-container">
+      <EncabezadoModulo
+        titulo="Perfil clínico"
+        descripcion="Consulta y edita el historial de consultas del paciente."
+        onVolver={() => navigate("/admin/historial")}
+        textoVolver="Volver al historial"
+      />
 
-      {error && <p className="historial-error">{error}</p>}
+      {error && <p className="mensaje-error">{error}</p>}
 
       {cargando ? (
-        <p>Cargando perfil clínico...</p>
+        <p className="usuarios-vacio">Cargando perfil clínico...</p>
       ) : !paciente ? (
-        <p>No se encontró el paciente.</p>
+        <p className="usuarios-vacio">No se encontró el paciente.</p>
       ) : (
         <>
-          <div className="table-container perfil-card">
-            <h2>Perfil Clínico</h2>
-            <div className="perfil-grid">
-              <div className="perfil-item">
-                <span className="perfil-label">Paciente</span>
-                <span className="perfil-valor">{paciente.nombre_usuario}</span>
+          <section className="clinico-card">
+            <h2 className="clinico-titulo">Datos del paciente</h2>
+
+            <div className="clinico-grid">
+              <div className="clinico-item">
+                <span className="clinico-label">Paciente</span>
+                <span className="clinico-valor">{paciente.nombre_usuario} {paciente.apellido}</span>
               </div>
-              <div className="perfil-item">
-                <span className="perfil-label">ID de paciente</span>
-                <span className="perfil-valor">{paciente.id_paciente}</span>
+              <div className="clinico-item">
+                <span className="clinico-label">ID de paciente</span>
+                <span className="clinico-valor">{paciente.id_paciente}</span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="table-container">
-            <h2>Historial de consultas</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Servicio</th>
-                  <th>Diagnóstico</th>
-                  <th>Observaciones</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultas.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="historial-empty">
-                      Este paciente aún no tiene consultas registradas.
-                    </td>
-                  </tr>
-                ) : (
-                  consultas.map((c) => (
-                    <FilaConsulta
-                      key={c.id_historial}
-                      c={c}
-                      abierta={abierta === c.id_historial}
-                      editando={editando === c.id_historial}
-                      form={form}
-                      setForm={setForm}
-                      guardando={guardando}
-                      onDetalles={() =>
-                        setAbierta(abierta === c.id_historial ? null : c.id_historial)
-                      }
-                      onEditar={() => iniciarEdicion(c)}
-                      onCancelar={() => setEditando(null)}
-                      onGuardar={guardar}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <h2 className="clinico-seccion">Historial de consultas</h2>
+
+          {consultas.length === 0 ? (
+            <p className="usuarios-vacio">
+              Este paciente aún no tiene consultas registradas.
+            </p>
+          ) : (
+            <div className="consulta-lista">
+              {consultas.map((c) => (
+                <article key={c.id_historial} className="consulta-card">
+                  <div className="consulta-card-top">
+                    <div className="consulta-fecha">
+                      <FaRegCalendarAlt />
+                      <span>{formatearFecha(c.fecha)}</span>
+                    </div>
+                    <span className="consulta-servicio">{c.servicio}</span>
+                  </div>
+
+                  <div className="consulta-campo">
+                    <span className="consulta-label">Diagnóstico</span>
+                    <p className="consulta-texto">{c.diagnostico}</p>
+                  </div>
+
+                  <div className="consulta-campo">
+                    <span className="consulta-label">Observaciones</span>
+                    <p className="consulta-texto">
+                      {c.observaciones || "Sin observaciones"}
+                    </p>
+                  </div>
+
+                  <div className="consulta-acciones">
+                    <button
+                      type="button"
+                      className="btn-card-edit"
+                      onClick={() => abrirEdicion(c)}
+                    >
+                      Editar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </>
       )}
-    </div>
-  );
-}
 
-function FilaConsulta({
-  c, abierta, editando, form, setForm, guardando,
-  onDetalles, onEditar, onCancelar, onGuardar,
-}) {
-  const campo = (name, label) => (
-    <label className="form-campo">
-      {label}
-      <input
-        value={form[name] ?? ""}
-        onChange={(e) => setForm({ ...form, [name]: e.target.value })}
-      />
-    </label>
-  );
+      {consultaEditando && (
+        <div className="modal-overlay" onClick={cerrarEdicion}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar consulta</h2>
+            </div>
 
-  return (
-    <>
-      <tr>
-        <td>{formatearFecha(c.fecha)}</td>
-        <td>{c.servicio}</td>
-        <td>{c.diagnostico}</td>
-        <td>{c.observaciones}</td>
-        <td>
-          <button type="button" className="btn-link" onClick={onDetalles}>
-            Ver detalles
-          </button>
-          <button type="button" className="btn-link" onClick={onEditar}>
-            Editar
-          </button>
-        </td>
-      </tr>
+            <div className="modal-body">
+              <label className="modal-label">Servicio</label>
+              <input
+                value={form.servicio}
+                placeholder="Servicio"
+                onChange={cambiarCampo("servicio")}
+              />
 
-      {abierta && (
-        <tr className="detalle-fila">
-          <td colSpan="5">
-            {editando ? (
-              <div>
-                {campo("servicio", "Servicio")}
-                {campo("diagnostico", "Diagnóstico")}
-                {campo("observaciones", "Observaciones")}
-                <div className="form-acciones">
-                  <button
-                    type="button"
-                    className="btn-guardar"
-                    onClick={onGuardar}
-                    disabled={guardando}
-                  >
-                    {guardando ? "Guardando..." : "Guardar cambios"}
-                  </button>
-                  <button type="button" className="btn-cancelar" onClick={onCancelar}>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="detalle-item"><strong>Servicio:</strong> {c.servicio}</p>
-                <p className="detalle-item"><strong>Diagnóstico:</strong> {c.diagnostico}</p>
-                <p className="detalle-item"><strong>Observaciones:</strong> {c.observaciones}</p>
-              </div>
-            )}
-          </td>
-        </tr>
+              <label className="modal-label">Diagnóstico</label>
+              <textarea
+                value={form.diagnostico}
+                placeholder="Diagnóstico"
+                rows={3}
+                onChange={cambiarCampo("diagnostico")}
+              />
+
+              <label className="modal-label">Observaciones</label>
+              <textarea
+                value={form.observaciones}
+                placeholder="Observaciones"
+                rows={3}
+                onChange={cambiarCampo("observaciones")}
+              />
+
+              {errorForm && <p className="modal-error">{errorForm}</p>}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={cerrarEdicion}>
+                Cancelar
+              </button>
+              <button
+                className="btn-save"
+                onClick={guardar}
+                disabled={guardando}
+              >
+                {guardando ? "Guardando..." : "Guardar cambios"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
