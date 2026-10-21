@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../../styles/AdminPanel.css";
-import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  FaRegEye,
+  FaRegEyeSlash,
+  FaRegTrashAlt,
+  FaRegImage,
+  FaRegCalendarAlt,
+} from "react-icons/fa";
 import { api, getImageUrl } from "../../services/api";
-
-// 5 columnas: Foto | Título | Fecha | Estado | Acciones
-// (si tu .table-header/.table-row no usan grid, ajusta esto o muévelo a tu CSS)
-const COLUMNAS = { gridTemplateColumns: "0.7fr 2fr 1fr 1fr 1fr" };
+import { normalizar } from "../../api/normalize";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+import FiltrosCard from "../../components/FiltrosCard";
+import ModalConfirmacion from "../../components/ModalConfirmacion";
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -20,12 +26,36 @@ const formatFecha = (fecha) => {
 // visible va como "1" / "0" para que MySQL lo reciba como tinyint
 const FORM_VACIO = { titulo: "", visible: "1", imagen: null };
 
+/* Miniatura; si no hay imagen (o falla la carga) muestra un icono */
+function ImagenMiniatura({ img }) {
+  const [falloImagen, setFalloImagen] = useState(false);
+
+  return (
+    <div className="imagen-wrap">
+      {img.imagen && !falloImagen ? (
+        <img
+          src={getImageUrl(img.imagen)}
+          alt={img.titulo}
+          onError={() => setFalloImagen(true)}
+        />
+      ) : (
+        <FaRegImage />
+      )}
+    </div>
+  );
+}
+
 function AdminImagenes() {
   const [imagenes, setImagenes] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [form, setForm] = useState(FORM_VACIO);
   const [editando, setEditando] = useState(false);
   const [imagenId, setImagenId] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroVisible, setFiltroVisible] = useState("");
+  const [imagenAEliminar, setImagenAEliminar] = useState(null);
+  const [aviso, setAviso] = useState(null);
+  const [errorForm, setErrorForm] = useState("");
 
   const obtenerImagenes = async () => {
     try {
@@ -40,15 +70,29 @@ function AdminImagenes() {
     obtenerImagenes();
   }, []);
 
-  const resetForm = () => {
-    setForm(FORM_VACIO);
+  const imagenesFiltradas = useMemo(() => {
+    const q = normalizar(busqueda.trim());
+
+    return imagenes.filter((img) => {
+      const visible = Number(img.visible) === 1 ? "1" : "0";
+      const coincideEstado = !filtroVisible || visible === filtroVisible;
+      return coincideEstado && normalizar(img.titulo).includes(q);
+    });
+  }, [imagenes, busqueda, filtroVisible]);
+
+  const cerrarModal = () => {
+    setForm({ ...FORM_VACIO });
     setEditando(false);
     setImagenId(null);
+    setErrorForm("");
     setMostrarModal(false);
   };
 
   const abrirNueva = () => {
-    resetForm();
+    setForm({ ...FORM_VACIO });
+    setEditando(false);
+    setImagenId(null);
+    setErrorForm("");
     setMostrarModal(true);
   };
 
@@ -57,10 +101,11 @@ function AdminImagenes() {
     setForm({
       titulo: img.titulo || "",
       visible: Number(img.visible) === 1 ? "1" : "0",
-      imagen: img.imagen || null
+      imagen: img.imagen || null,
     });
     setImagenId(img.id_imagen);
     setEditando(true);
+    setErrorForm("");
     setMostrarModal(true);
   };
 
@@ -68,12 +113,12 @@ function AdminImagenes() {
     const hayArchivoNuevo = form.imagen instanceof File;
 
     if (!form.titulo.trim()) {
-      alert("El título es obligatorio");
+      setErrorForm("El título es obligatorio");
       return;
     }
 
     if (!editando && !hayArchivoNuevo) {
-      alert("Selecciona una imagen");
+      setErrorForm("Selecciona una imagen");
       return;
     }
 
@@ -90,13 +135,14 @@ function AdminImagenes() {
         await api("/imagenes", "POST", formData, true);
       }
       obtenerImagenes();
-      resetForm();
+      cerrarModal();
     } catch (error) {
       console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la imagen");
     }
   };
 
-  // Mostrar u ocultar desde la tabla sin abrir el modal
+  // Mostrar u ocultar desde la card sin abrir el modal
   const cambiarVisibilidad = async (img) => {
     const formData = new FormData();
     formData.append("visible", Number(img.visible) === 1 ? "0" : "1");
@@ -106,84 +152,119 @@ function AdminImagenes() {
       obtenerImagenes();
     } catch (error) {
       console.error(error);
+      setAviso({
+        titulo: "No se pudo cambiar la visibilidad",
+        mensaje: "Ocurrió un error al actualizar la imagen. Intenta de nuevo.",
+      });
     }
   };
 
-  const eliminarImagen = async (id) => {
-    if (!confirm("¿Eliminar imagen?")) return;
+  const confirmarEliminar = async () => {
+    const id = imagenAEliminar.id_imagen;
+    setImagenAEliminar(null);
 
     try {
       await api(`/imagenes/${id}`, "DELETE");
       obtenerImagenes();
     } catch (error) {
       console.error(error);
+      setAviso({
+        titulo: "No se pudo eliminar",
+        mensaje: "Ocurrió un error al eliminar la imagen. Intenta de nuevo.",
+      });
     }
   };
 
   return (
     <div className="usuarios-container">
+      <EncabezadoModulo
+        titulo="Galería"
+        descripcion="Administra las imágenes que se muestran en el sitio público de la clínica."
+        textoBoton="Nueva imagen"
+        onBoton={abrirNueva}
+      />
 
-      <div className="usuarios-header">
-        <h1>Gestión de imágenes</h1>
+      <FiltrosCard
+        placeholder="Buscar por título..."
+        busqueda={busqueda}
+        onBusquedaChange={setBusqueda}
+        filtro={filtroVisible}
+        onFiltroChange={setFiltroVisible}
+        opcionesFiltro={[
+          { value: "1", label: "Visible" },
+          { value: "0", label: "Oculta" },
+        ]}
+      />
 
-        <button className="btn-add" onClick={abrirNueva}>
-          + Registrar imagen
-        </button>
-      </div>
+      {imagenesFiltradas.length === 0 ? (
+        <p className="usuarios-vacio">
+          {imagenes.length === 0
+            ? "No hay imágenes registradas."
+            : "No se encontraron imágenes con esos filtros."}
+        </p>
+      ) : (
+        <div className="imagen-cards">
+          {imagenesFiltradas.map((img) => {
+            const esVisible = Number(img.visible) === 1;
 
-      <div className="usuarios-table">
-        <div className="table-header" style={COLUMNAS}>
-          <span>Foto</span>
-          <span>Título</span>
-          <span>Fecha</span>
-          <span>Estado</span>
-          <span>Acciones</span>
+            return (
+              <article
+                key={img.id_imagen}
+                className={`imagen-card${esVisible ? "" : " oculta"}`}
+              >
+                <ImagenMiniatura img={img} />
+
+                <div className="imagen-card-top">
+                  <h3 className="imagen-titulo">{img.titulo}</h3>
+                  <span
+                    className={`imagen-estado ${esVisible ? "visible" : "oculta"}`}
+                  >
+                    {esVisible ? "Visible" : "Oculta"}
+                  </span>
+                </div>
+
+                <div className="imagen-fecha">
+                  <FaRegCalendarAlt />
+                  <span>{formatFecha(img.fecha_publicada)}</span>
+                </div>
+
+                <div className="imagen-acciones">
+                  <button
+                    className="btn-card-edit"
+                    onClick={() => abrirEditar(img)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="btn-card-icon"
+                    title={esVisible ? "Ocultar" : "Mostrar"}
+                    aria-label={esVisible ? "Ocultar imagen" : "Mostrar imagen"}
+                    onClick={() => cambiarVisibilidad(img)}
+                  >
+                    {esVisible ? <FaRegEyeSlash /> : <FaRegEye />}
+                  </button>
+                  <button
+                    className="btn-card-delete"
+                    aria-label="Eliminar imagen"
+                    onClick={() => setImagenAEliminar(img)}
+                  >
+                    <FaRegTrashAlt />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
-
-        {imagenes.map((img) => {
-          const esVisible = Number(img.visible) === 1;
-
-          return (
-            <div key={img.id_imagen} className="table-row" style={COLUMNAS}>
-
-              <img
-                src={getImageUrl(img.imagen)}
-                alt={img.titulo}
-                className="avatar"
-              />
-
-              <span>{img.titulo}</span>
-              <span>{formatFecha(img.fecha_publicada)}</span>
-
-              <span className={`estado ${esVisible ? "activo" : "inactivo"}`}>
-                {esVisible ? "Visible" : "Oculta"}
-              </span>
-
-              <div className="acciones">
-                {esVisible ? (
-                  <FaEye title="Ocultar" onClick={() => cambiarVisibilidad(img)} />
-                ) : (
-                  <FaEyeSlash title="Mostrar" onClick={() => cambiarVisibilidad(img)} />
-                )}
-                <FaEdit title="Editar" onClick={() => abrirEditar(img)} />
-                <FaTrash title="Eliminar" onClick={() => eliminarImagen(img.id_imagen)} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      )}
 
       {mostrarModal && (
-        <div className="modal-overlay" onClick={resetForm}>
+        <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-
             <div className="modal-header">
               <h2>{editando ? "Editar imagen" : "Nueva imagen"}</h2>
-              
             </div>
 
             <div className="modal-body">
-
               {form.imagen && (
                 <img
                   src={
@@ -191,7 +272,7 @@ function AdminImagenes() {
                       ? getImageUrl(form.imagen)
                       : URL.createObjectURL(form.imagen)
                   }
-                  alt="preview"
+                  alt="Vista previa"
                   className="preview-img"
                 />
               )}
@@ -218,22 +299,43 @@ function AdminImagenes() {
                 }
               />
 
+              {errorForm && <p className="modal-error">{errorForm}</p>}
             </div>
 
             <div className="modal-footer">
-              <button className="btn-cancel" onClick={resetForm}>
+              <button className="btn-cancel" onClick={cerrarModal}>
                 Cancelar
               </button>
-
               <button className="btn-save" onClick={guardarImagen}>
                 {editando ? "Actualizar" : "Crear"}
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      <ModalConfirmacion
+        abierto={!!imagenAEliminar}
+        titulo="Eliminar imagen"
+        mensaje={
+          imagenAEliminar
+            ? `¿Seguro que quieres eliminar "${imagenAEliminar.titulo}"? Esta acción no se puede deshacer.`
+            : ""
+        }
+        textoConfirmar="Eliminar"
+        peligro
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setImagenAEliminar(null)}
+      />
+
+      <ModalConfirmacion
+        abierto={!!aviso}
+        titulo={aviso?.titulo}
+        mensaje={aviso?.mensaje}
+        textoCancelar={null}
+        textoConfirmar="Entendido"
+        onConfirmar={() => setAviso(null)}
+      />
     </div>
   );
 }

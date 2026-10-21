@@ -1,112 +1,152 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../styles/AdminPanel.css";
+import { FaFileExcel, FaFilePdf } from "react-icons/fa";
 import { api, apiDescargar } from "../../services/api";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+
+const MAX_DIAS = 366;
 
 // "en-CA" devuelve YYYY-MM-DD en hora local
-const hoy = () => new Date().toLocaleDateString("en-CA");
+const formatoISO = (fecha) => fecha.toLocaleDateString("en-CA");
+const hoy = () => formatoISO(new Date());
 
-const primerDiaMes = () => {
-  const d = new Date();
-  return new Date(
-    d.getFullYear(),
-    d.getMonth(),
-    1,
-  ).toLocaleDateString("en-CA");
+const formatearFecha = (fecha) =>
+  fecha ? fecha.slice(0, 10).split("-").reverse().join("/") : "";
+
+// Cada rango devuelve [fechaInicio, fechaFin]
+const RANGOS = [
+  { id: "hoy", label: "Hoy", calcular: () => [hoy(), hoy()] },
+  {
+    id: "7dias",
+    label: "Últimos 7 días",
+    calcular: () => {
+      const d = new Date();
+      d.setDate(d.getDate() - 6);
+      return [formatoISO(d), hoy()];
+    },
+  },
+  {
+    id: "mes",
+    label: "Este mes",
+    calcular: () => {
+      const d = new Date();
+      return [formatoISO(new Date(d.getFullYear(), d.getMonth(), 1)), hoy()];
+    },
+  },
+  {
+    id: "anio",
+    label: "Este año",
+    calcular: () => [
+      formatoISO(new Date(new Date().getFullYear(), 0, 1)),
+      hoy(),
+    ],
+  },
+];
+
+// Para agregar un tipo de reporte nuevo, basta con añadir una entrada aquí
+const TIPOS = {
+  citas: {
+    nombre: "Reporte de citas",
+    descripcion: "Estadísticas de las citas de la clínica en el periodo seleccionado.",
+    tarjetas: [
+      { key: "total", label: "Total de citas" },
+      { key: "completadas", label: "Completadas" },
+      { key: "pendientes", label: "Pendientes" },
+      { key: "canceladas", label: "Canceladas" },
+    ],
+  },
+  pacientes: {
+    nombre: "Reporte de pacientes nuevos",
+    descripcion: "Pacientes nuevos registrados en el periodo seleccionado.",
+    tarjetas: [{ key: "total", label: "Total de pacientes nuevos" }],
+  },
 };
-
-const TARJETAS_CITAS = [
-  { key: "total", label: "Total de citas" },
-  { key: "completadas", label: "Completadas" },
-  { key: "pendientes", label: "Pendientes" },
-  { key: "canceladas", label: "Canceladas" },
-];
-
-const TARJETAS_PACIENTES = [
-  { key: "total", label: "Total de pacientes nuevos" },
-];
 
 const EXTENSIONES = { excel: "xlsx", pdf: "pdf" };
 
+const validarFechas = (inicio, fin) => {
+  if (!inicio || !fin) return "Selecciona la fecha inicial y la fecha final";
+  if (inicio > fin) return "La fecha inicial no puede ser mayor a la fecha final";
+
+  const dias = (new Date(fin) - new Date(inicio)) / 86400000;
+  if (dias > MAX_DIAS) return "El rango máximo es de un año (366 días)";
+
+  return "";
+};
+
 function AdminReportes() {
-  const [fechaInicio, setFechaInicio] = useState(primerDiaMes());
-  const [fechaFin, setFechaFin] = useState(hoy());
+  const [tipo, setTipo] = useState("citas");
+  const [fechaInicio, setFechaInicio] = useState(() => RANGOS[2].calcular()[0]);
+  const [fechaFin, setFechaFin] = useState(() => RANGOS[2].calcular()[1]);
   const [reporte, setReporte] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [descargando, setDescargando] = useState("");
   const [error, setError] = useState("");
-  const [tipoReporte, setTipoReporte] = useState("citas");
 
-  const validarFechas = () => {
-    if (!fechaInicio || !fechaFin) {
-      return "Selecciona la fecha inicial y la fecha final";
-    }
+  const errorFechas = validarFechas(fechaInicio, fechaFin);
+  const mensajeError = errorFechas || error;
 
-    if (fechaInicio > fechaFin) {
-      return "La fecha inicial no puede ser mayor a la fecha final";
-    }
+  // Rango rápido seleccionado (si las fechas coinciden con alguno)
+  const rangoActivo = RANGOS.find((r) => {
+    const [inicio, fin] = r.calcular();
+    return inicio === fechaInicio && fin === fechaFin;
+  })?.id;
 
-    return "";
+  // Genera el reporte solo, al abrir y cada vez que cambia el tipo o las fechas
+  useEffect(() => {
+    if (errorFechas) return;
+
+    let cancelado = false;
+
+    const generar = async () => {
+      setCargando(true);
+      setError("");
+
+      try {
+        const data = await api(
+          `/reportes/${tipo}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+        );
+        if (!cancelado) setReporte({ ...data.payload, tipo });
+      } catch (err) {
+        if (cancelado) return;
+        console.error(err);
+        setReporte(null);
+        setError(err.message || "No se pudo generar el reporte");
+      } finally {
+        if (!cancelado) setCargando(false);
+      }
+    };
+
+    generar();
+
+    // Si cambian los filtros antes de terminar, se ignora la respuesta vieja
+    return () => {
+      cancelado = true;
+    };
+  }, [tipo, fechaInicio, fechaFin, errorFechas]);
+
+  const aplicarRango = (rango) => {
+    const [inicio, fin] = rango.calcular();
+    setFechaInicio(inicio);
+    setFechaFin(fin);
   };
 
-  const cambiarFecha = (setter) => (e) => {
-    setter(e.target.value);
-    setReporte(null);
-    setError("");
-  };
-
-  const cambiarTipoReporte = (e) => {
-    setTipoReporte(e.target.value);
-    setReporte(null);
-    setError("");
-  };
-
-  const generarReporte = async () => {
-    const mensaje = validarFechas();
-
-    if (mensaje) {
-      setError(mensaje);
-      return;
-    }
+  const descargar = async (formato) => {
+    if (errorFechas) return;
 
     setError("");
-    setCargando(true);
-
-    try {
-      const data = await api(
-        `/reportes/${tipoReporte}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
-      );
-
-      setReporte(data.payload);
-    } catch (err) {
-      console.error(err);
-      setReporte(null);
-      setError(err.message || "No se pudo generar el reporte");
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const descargar = async (tipo) => {
-    const mensaje = validarFechas();
-
-    if (mensaje) {
-      setError(mensaje);
-      return;
-    }
-
-    setError("");
-    setDescargando(tipo);
+    setDescargando(formato);
 
     try {
       const blob = await apiDescargar(
-        `/reportes/${tipoReporte}/exportar/${tipo}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
+        `/reportes/${tipo}/exportar/${formato}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
       );
 
       const url = URL.createObjectURL(blob);
       const enlace = document.createElement("a");
 
       enlace.href = url;
-      enlace.download = `reporte-${tipoReporte}_${fechaInicio}_${fechaFin}.${EXTENSIONES[tipo]}`;
+      enlace.download = `reporte-${tipo}_${fechaInicio}_${fechaFin}.${EXTENSIONES[formato]}`;
 
       document.body.appendChild(enlace);
       enlace.click();
@@ -121,113 +161,116 @@ function AdminReportes() {
     }
   };
 
-  const tarjetas =
-    tipoReporte === "citas" ? TARJETAS_CITAS : TARJETAS_PACIENTES;
+  const deshabilitarDescarga = descargando !== "" || !!errorFechas;
 
   return (
     <div className="usuarios-container">
-      <div className="usuarios-header">
-        <h1>
-          {tipoReporte === "citas"
-            ? "Reportes de citas"
-            : "Reportes de pacientes nuevos"}
-        </h1>
-      </div>
+      <EncabezadoModulo
+        titulo="Reportes"
+        descripcion={TIPOS[tipo].descripcion}
+        acciones={
+          <>
+            <button
+              className="encabezado-btn"
+              onClick={() => descargar("excel")}
+              disabled={deshabilitarDescarga}
+            >
+              <FaFileExcel />
+              {descargando === "excel" ? "Descargando..." : "Descargar Excel"}
+            </button>
 
-      {/* Selector del tipo de reporte */}
-      <div className="reportes-filtros">
-        <div className="reportes-campo">
+            <button
+              className="encabezado-btn"
+              onClick={() => descargar("pdf")}
+              disabled={deshabilitarDescarga}
+            >
+              <FaFilePdf />
+              {descargando === "pdf" ? "Descargando..." : "Descargar PDF"}
+            </button>
+          </>
+        }
+      />
+
+      <div className="filtros-card reporte-filtros">
+        <div className="reporte-campo">
           <label htmlFor="tipoReporte">Tipo de reporte</label>
-
           <select
             id="tipoReporte"
-            value={tipoReporte}
-            onChange={cambiarTipoReporte}
+            className="filtros-card-select"
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
           >
-            <option value="citas">Reporte de citas</option>
-            <option value="pacientes">Reporte de pacientes nuevos</option>
+            {Object.entries(TIPOS).map(([clave, t]) => (
+              <option key={clave} value={clave}>
+                {t.nombre}
+              </option>
+            ))}
           </select>
         </div>
-      </div>
 
-      {/* Filtros y descargas */}
-      <div className="reportes-filtros">
-        <div className="reportes-campo">
-          <label htmlFor="fechaInicio">Fecha inicial</label>
-
+        <div className="reporte-campo">
+          <label htmlFor="fechaInicio">Desde</label>
           <input
             id="fechaInicio"
             type="date"
+            className="filtros-card-select"
             value={fechaInicio}
             max={fechaFin || undefined}
-            onChange={cambiarFecha(setFechaInicio)}
+            onChange={(e) => setFechaInicio(e.target.value)}
           />
         </div>
 
-        <div className="reportes-campo">
-          <label htmlFor="fechaFin">Fecha final</label>
-
+        <div className="reporte-campo">
+          <label htmlFor="fechaFin">Hasta</label>
           <input
             id="fechaFin"
             type="date"
+            className="filtros-card-select"
             value={fechaFin}
             min={fechaInicio || undefined}
-            onChange={cambiarFecha(setFechaFin)}
+            onChange={(e) => setFechaFin(e.target.value)}
           />
         </div>
 
-        <button
-          className="btn-add"
-          onClick={generarReporte}
-          disabled={cargando}
-        >
-          {cargando ? "Generando..." : "Generar reporte"}
-        </button>
-
-        <button
-          className="btn-add"
-          onClick={() => descargar("excel")}
-          disabled={descargando !== ""}
-        >
-          {descargando === "excel" ? "Descargando..." : "Descargar Excel"}
-        </button>
-
-        <button
-          className="btn-add"
-          onClick={() => descargar("pdf")}
-          disabled={descargando !== ""}
-        >
-          {descargando === "pdf" ? "Descargando..." : "Descargar PDF"}
-        </button>
+        <div className="reporte-rangos">
+          {RANGOS.map((rango) => (
+            <button
+              key={rango.id}
+              type="button"
+              className={`reporte-rango${rangoActivo === rango.id ? " activo" : ""}`}
+              onClick={() => aplicarRango(rango)}
+            >
+              {rango.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {error && <p className="reportes-error">{error}</p>}
+      {mensajeError && <p className="mensaje-error">{mensajeError}</p>}
 
-      {/* Resultado del reporte */}
+      {!reporte && cargando && (
+        <p className="usuarios-vacio">Generando reporte...</p>
+      )}
+
       {reporte && (
-        <>
-          <p>
+        <section className={`reporte-resultado${cargando ? " cargando" : ""}`}>
+          <p className="reporte-periodo">
             <strong>{reporte.clinica}</strong> · Periodo:{" "}
-            {reporte.periodo.fechaInicio} al {reporte.periodo.fechaFin}
+            {formatearFecha(reporte.periodo?.fechaInicio)} al{" "}
+            {formatearFecha(reporte.periodo?.fechaFin)}
           </p>
 
-          <div className="reportes-tarjetas">
-            {tarjetas.map((tarjeta) => (
-              <div
-                key={tarjeta.key}
-                className={`reportes-card ${tarjeta.key}`}
-              >
-                <p className="reportes-numero">
+          <div className="reporte-tarjetas">
+            {TIPOS[reporte.tipo].tarjetas.map((tarjeta) => (
+              <div key={tarjeta.key} className={`reporte-card ${tarjeta.key}`}>
+                <p className="reporte-numero">
                   {reporte.estadisticas[tarjeta.key]}
                 </p>
-
-                <p className="reportes-etiqueta">{tarjeta.label}</p>
+                <p className="reporte-etiqueta">{tarjeta.label}</p>
               </div>
             ))}
           </div>
-
-          
-        </>
+        </section>
       )}
     </div>
   );

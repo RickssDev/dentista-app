@@ -1,18 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../../styles/AdminPanel.css";
-import { FaEye, FaEyeSlash, FaCheckCircle, FaTrash } from "react-icons/fa";
+import {
+  FaStar,
+  FaCheck,
+  FaRegCalendarAlt,
+  FaRegEyeSlash,
+  FaRegCheckCircle,
+  FaRegTrashAlt,
+} from "react-icons/fa";
 import { api } from "../../services/api";
+import { normalizar } from "../../api/normalize";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+import FiltrosCard from "../../components/FiltrosCard";
+import ModalConfirmacion from "../../components/ModalConfirmacion";
 
-// Backend: "visible" / "oculto"  ->  Diseño: "Aprobado" / "Pendiente"
-const TABS = [
-  { key: "todos", label: "Todos" },
-  { key: "oculto", label: "Pendientes" },
-  { key: "visible", label: "Aprobados" }
-];
 
 const ESTADO_LABEL = {
   visible: "Aprobado",
-  oculto: "Pendiente"
+  oculto: "Pendiente",
 };
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -25,12 +31,29 @@ const formatFecha = (fecha) => {
   return `${dia}/${MESES[d.getMonth()]}/${d.getFullYear()}`;
 };
 
+function Estrellas({ valor }) {
+  const calificacion = Math.round(Number(valor)) || 0;
+
+  return (
+    <div className="comentario-estrellas" aria-label={`${calificacion} de 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <FaStar key={n} className={n <= calificacion ? "llena" : ""} />
+      ))}
+    </div>
+  );
+}
+
 function AdminComentarios() {
   const [comentarios, setComentarios] = useState([]);
   const [tab, setTab] = useState("todos");
-
+  const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
   const [respuesta, setRespuesta] = useState("");
+  const [errorForm, setErrorForm] = useState("");
+  const location = useLocation();
+  const [filtroEstado, setFiltroEstado] = useState(location.state?.filtroEstado || "");
+  const [comentarioAEliminar, setComentarioAEliminar] = useState(null);
+  const [aviso, setAviso] = useState(null);
 
   const obtenerComentarios = async () => {
     try {
@@ -45,149 +68,221 @@ function AdminComentarios() {
     obtenerComentarios();
   }, []);
 
+  const contadores = useMemo(
+    () => ({
+      todos: comentarios.length,
+      oculto: comentarios.filter((c) => c.estado === "oculto").length,
+      visible: comentarios.filter((c) => c.estado === "visible").length,
+    }),
+    [comentarios]
+  );
+
+  const filtrados = useMemo(() => {
+  const q = normalizar(busqueda.trim());
+
+  return comentarios.filter((c) => {
+    const coincideEstado = !filtroEstado || c.estado === filtroEstado;
+    const texto = normalizar(
+      `${c.nombre_usuario} ${c.apellido} ${c.nombre_servicio} ${c.comentario}`
+    );
+    return coincideEstado && texto.includes(q);
+  });
+}, [comentarios, filtroEstado, busqueda]);
+
   // Aprobar (oculto -> visible) u ocultar (visible -> oculto)
   const cambiarEstado = async (comentario) => {
     const nuevoEstado = comentario.estado === "visible" ? "oculto" : "visible";
 
     try {
       await api(`/comentarios/${comentario.id_comentario}/estado`, "PATCH", {
-        estado: nuevoEstado
+        estado: nuevoEstado,
       });
       obtenerComentarios();
     } catch (error) {
       console.error(error);
+      setAviso({
+        titulo: "No se pudo cambiar el estado",
+        mensaje: "Ocurrió un error al actualizar el comentario. Intenta de nuevo.",
+      });
     }
   };
 
-  const eliminarComentario = async (id) => {
-    if (!confirm("¿Eliminar comentario?")) return;
+  const confirmarEliminar = async () => {
+    const id = comentarioAEliminar.id_comentario;
+    setComentarioAEliminar(null);
 
     try {
       await api(`/comentarios/${id}`, "DELETE");
       obtenerComentarios();
     } catch (error) {
       console.error(error);
+      setAviso({
+        titulo: "No se pudo eliminar",
+        mensaje: "Ocurrió un error al eliminar el comentario. Intenta de nuevo.",
+      });
     }
   };
 
   const abrirDetalle = (comentario) => {
     setSeleccionado(comentario);
     setRespuesta(comentario.respuesta_admin || "");
+    setErrorForm("");
   };
 
   const cerrarDetalle = () => {
     setSeleccionado(null);
     setRespuesta("");
+    setErrorForm("");
   };
 
   const guardarRespuesta = async () => {
     try {
       await api(`/comentarios/${seleccionado.id_comentario}/respuesta`, "PATCH", {
-        respuesta_admin: respuesta
+        respuesta_admin: respuesta,
       });
       obtenerComentarios();
       cerrarDetalle();
     } catch (error) {
       console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la respuesta");
     }
   };
 
-  const filtrados =
-    tab === "todos"
-      ? comentarios
-      : comentarios.filter((c) => c.estado === tab);
-
   return (
     <div className="usuarios-container">
+      <EncabezadoModulo
+        titulo="Comentarios"
+        descripcion="Modera las opiniones de los pacientes y responde a ellas."
+      />
 
-      <div className="usuarios-header">
-        <h1>Sección de Comentarios</h1>
-      </div>
+      <FiltrosCard
+      placeholder="Buscar por usuario o comentario..."
+      busqueda={busqueda}
+      onBusquedaChange={setBusqueda}
+      filtro={filtroEstado}
+      onFiltroChange={setFiltroEstado}
+      textoTodos={`Todos (${contadores.todos})`}
+      opcionesFiltro={[
+        { value: "oculto", label: `Pendientes (${contadores.oculto})` },
+        { value: "visible", label: `Aprobados (${contadores.visible})` },
+      ]}
+    />
 
-      <div className="comentarios-tabs">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            className={tab === t.key ? "active" : ""}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {filtrados.length === 0 ? (
+        <p className="usuarios-vacio">
+          {comentarios.length === 0
+            ? "Aún no hay comentarios."
+            : "No hay comentarios que coincidan con tu búsqueda en esta sección."}
+        </p>
+      ) : (
+        <div className="comentario-cards">
+          {filtrados.map((c) => {
+            const aprobado = c.estado === "visible";
 
-      <div className="usuarios-table comentarios-table">
-        <div className="table-header">
-          <span>Usuario</span>
-          <span>Comentario (Previe W)</span>
-          <span>Fecha de envío</span>
-          <span>Estado</span>
-          <span>Acciones</span>
+            return (
+              <article key={c.id_comentario} className="comentario-card">
+                <div className="comentario-card-top">
+                  <div className="comentario-usuario">
+                    <h3 className="comentario-nombre">
+                      {c.nombre_usuario} {c.apellido}
+                    </h3>
+                    {c.nombre_servicio && (
+                      <p className="comentario-servicio">{c.nombre_servicio}</p>
+                    )}
+                  </div>
+
+                  <span
+                    className={`comentario-estado ${aprobado ? "aprobado" : "pendiente"}`}
+                  >
+                    {ESTADO_LABEL[c.estado] || c.estado}
+                  </span>
+                </div>
+
+                <Estrellas valor={c.calificacion} />
+
+                <p
+                  className="comentario-texto"
+                  onClick={() => abrirDetalle(c)}
+                  title="Ver comentario completo"
+                >
+                  {c.comentario}
+                </p>
+
+                <div className="comentario-meta">
+                  <span className="comentario-fecha">
+                    <FaRegCalendarAlt />
+                    {formatFecha(c.fecha)}
+                  </span>
+
+                  {c.respuesta_admin && (
+                    <span className="comentario-respondido">
+                      <FaCheck />
+                      Respondido
+                    </span>
+                  )}
+                </div>
+
+                <div className="comentario-acciones">
+                  <button
+                    className="btn-card-edit"
+                    onClick={() => abrirDetalle(c)}
+                  >
+                    Ver y responder
+                  </button>
+
+                  <button
+                    className={`btn-card-icon${aprobado ? "" : " aprobar"}`}
+                    title={aprobado ? "Ocultar comentario" : "Aprobar y publicar"}
+                    aria-label={aprobado ? "Ocultar comentario" : "Aprobar y publicar comentario"}
+                    onClick={() => cambiarEstado(c)}
+                  >
+                    {aprobado ? <FaRegEyeSlash /> : <FaRegCheckCircle />}
+                  </button>
+
+                  <button
+                    className="btn-card-delete"
+                    title="Eliminar"
+                    aria-label="Eliminar comentario"
+                    onClick={() => setComentarioAEliminar(c)}
+                  >
+                    <FaRegTrashAlt />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
-
-        {filtrados.length === 0 && (
-          <p className="comentarios-vacio">No hay comentarios en esta sección.</p>
-        )}
-
-        {filtrados.map((c) => (
-          <div key={c.id_comentario} className="table-row">
-
-            <span>{c.nombre_usuario} {c.apellido}</span>
-
-            <span
-              className="comentario-preview"
-              onClick={() => abrirDetalle(c)}
-              title="Ver comentario completo"
-            >
-              {c.comentario}
-            </span>
-
-            <span>{formatFecha(c.fecha)}</span>
-
-            <span>
-              <span className={`estado-badge ${c.estado === "visible" ? "aprobado" : "pendiente"}`}>
-                {ESTADO_LABEL[c.estado] || c.estado}
-              </span>
-            </span>
-
-            <div className="acciones">
-              {c.estado === "visible" ? (
-                <>
-                  <FaEye title="Ocultar comentario" onClick={() => cambiarEstado(c)} />
-                  <FaCheckCircle title="Aprobado" />
-                </>
-              ) : (
-                <FaEyeSlash title="Aprobar y publicar" onClick={() => cambiarEstado(c)} />
-              )}
-              <FaTrash
-                className="icono-eliminar"
-                title="Eliminar"
-                onClick={() => eliminarComentario(c.id_comentario)}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
+      )}
 
       {seleccionado && (
         <div className="modal-overlay" onClick={cerrarDetalle}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-
             <div className="modal-header">
               <h2>Comentario de {seleccionado.nombre_usuario}</h2>
             </div>
 
             <div className="modal-body">
-              <p><strong>Servicio:</strong> {seleccionado.nombre_servicio}</p>
-              <p><strong>Calificación:</strong> {seleccionado.calificacion} / 5</p>
-              <p>{seleccionado.comentario}</p>
+              <p>
+                <strong>Servicio:</strong> {seleccionado.nombre_servicio}
+              </p>
 
+              <div className="comentario-modal-linea">
+                <strong>Calificación:</strong>
+                <Estrellas valor={seleccionado.calificacion} />
+                <span>{seleccionado.calificacion} / 5</span>
+              </div>
+
+              <p className="comentario-completo">{seleccionado.comentario}</p>
+
+              <label className="modal-label">Respuesta del administrador</label>
               <textarea
                 value={respuesta}
-                placeholder="Respuesta del administrador"
+                placeholder="Escribe una respuesta"
                 rows={4}
                 onChange={(e) => setRespuesta(e.target.value)}
               />
+
+              {errorForm && <p className="modal-error">{errorForm}</p>}
             </div>
 
             <div className="modal-footer">
@@ -198,11 +293,32 @@ function AdminComentarios() {
                 Guardar respuesta
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      <ModalConfirmacion
+        abierto={!!comentarioAEliminar}
+        titulo="Eliminar comentario"
+        mensaje={
+          comentarioAEliminar
+            ? `¿Seguro que quieres eliminar el comentario de ${comentarioAEliminar.nombre_usuario}? Esta acción no se puede deshacer.`
+            : ""
+        }
+        textoConfirmar="Eliminar"
+        peligro
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setComentarioAEliminar(null)}
+      />
+
+      <ModalConfirmacion
+        abierto={!!aviso}
+        titulo={aviso?.titulo}
+        mensaje={aviso?.mensaje}
+        textoCancelar={null}
+        textoConfirmar="Entendido"
+        onConfirmar={() => setAviso(null)}
+      />
     </div>
   );
 }
