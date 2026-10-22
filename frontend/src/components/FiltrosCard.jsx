@@ -6,8 +6,9 @@ function FiltrosCard({
   onBusquedaChange,
   filtro,
   onFiltroChange,
-  opcionesFiltro = [],     // [{ value: "activo", label: "Activo" }, ...]
+  opcionesFiltro = [],
   textoTodos = "Todos",
+  children,
 }) {
   return (
     <div className="filtros-card">
@@ -33,6 +34,8 @@ function FiltrosCard({
           ))}
         </select>
       )}
+
+      {children}
     </div>
   );
 }

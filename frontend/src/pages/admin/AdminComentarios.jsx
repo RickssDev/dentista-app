@@ -14,6 +14,7 @@ import { normalizar } from "../../api/normalize";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
+import ModalFormulario from "../../components/ModalFormulario";
 
 
 const ESTADO_LABEL = {
@@ -54,6 +55,7 @@ function AdminComentarios() {
   const [filtroEstado, setFiltroEstado] = useState(location.state?.filtroEstado || "");
   const [comentarioAEliminar, setComentarioAEliminar] = useState(null);
   const [aviso, setAviso] = useState(null);
+  const [guardando, setGuardando] = useState(false);
 
   const obtenerComentarios = async () => {
     try {
@@ -136,17 +138,28 @@ function AdminComentarios() {
   };
 
   const guardarRespuesta = async () => {
-    try {
-      await api(`/comentarios/${seleccionado.id_comentario}/respuesta`, "PATCH", {
+  setErrorForm("");
+
+  try {
+    setGuardando(true);
+
+    await api(
+      `/comentarios/${seleccionado.id_comentario}/respuesta`,
+      "PATCH",
+      {
         respuesta_admin: respuesta,
-      });
-      obtenerComentarios();
-      cerrarDetalle();
-    } catch (error) {
-      console.error(error);
-      setErrorForm(error.message || "No se pudo guardar la respuesta");
-    }
-  };
+      }
+    );
+
+    obtenerComentarios();
+    cerrarDetalle();
+  } catch (error) {
+    console.error(error);
+    setErrorForm(error.message || "No se pudo guardar la respuesta");
+  } finally {
+    setGuardando(false);
+  }
+};
 
   return (
     <div className="usuarios-container">
@@ -254,48 +267,57 @@ function AdminComentarios() {
         </div>
       )}
 
+      <ModalFormulario
+      abierto={!!seleccionado}
+      titulo={
+        seleccionado
+          ? `Comentario de ${seleccionado.nombre_usuario}`
+          : "Comentario"
+      }
+      subtitulo="Consulta la opinión del paciente y responde desde aquí."
+      onCerrar={cerrarDetalle}
+      onSubmit={guardarRespuesta}
+      enviando={guardando}
+      error={errorForm}
+      textoEnviar="Guardar respuesta"
+      textoCancelar="Cerrar"
+      ancho={560}
+    >
       {seleccionado && (
-        <div className="modal-overlay" onClick={cerrarDetalle}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Comentario de {seleccionado.nombre_usuario}</h2>
-            </div>
+        <div className="mf-grid">
+          <div className="mf-campo mf-ancho">
+            <span>Servicio</span>
+            <p>{seleccionado.nombre_servicio || "Sin servicio"}</p>
+          </div>
 
-            <div className="modal-body">
-              <p>
-                <strong>Servicio:</strong> {seleccionado.nombre_servicio}
-              </p>
+          <div className="mf-campo mf-ancho">
+            <span>Calificación</span>
 
-              <div className="comentario-modal-linea">
-                <strong>Calificación:</strong>
-                <Estrellas valor={seleccionado.calificacion} />
-                <span>{seleccionado.calificacion} / 5</span>
-              </div>
-
-              <p className="comentario-completo">{seleccionado.comentario}</p>
-
-              <label className="modal-label">Respuesta del administrador</label>
-              <textarea
-                value={respuesta}
-                placeholder="Escribe una respuesta"
-                rows={4}
-                onChange={(e) => setRespuesta(e.target.value)}
-              />
-
-              {errorForm && <p className="modal-error">{errorForm}</p>}
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cerrarDetalle}>
-                Cerrar
-              </button>
-              <button className="btn-save" onClick={guardarRespuesta}>
-                Guardar respuesta
-              </button>
+            <div className="comentario-modal-linea">
+              <Estrellas valor={seleccionado.calificacion} />
+              <span>{seleccionado.calificacion} / 5</span>
             </div>
           </div>
+
+          <div className="mf-campo mf-ancho">
+            <span>Comentario</span>
+            <p className="comentario-completo">
+              {seleccionado.comentario}
+            </p>
+          </div>
+
+          <label className="mf-campo mf-ancho">
+            <span>Respuesta del administrador</span>
+            <textarea
+              value={respuesta}
+              placeholder="Escribe una respuesta"
+              rows={4}
+              onChange={(e) => setRespuesta(e.target.value)}
+            />
+          </label>
         </div>
       )}
+    </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!comentarioAEliminar}

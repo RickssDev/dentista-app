@@ -1,47 +1,50 @@
-import "../styles/AdminPanel.css";
+import { useState } from "react";
+import ModalFormulario from "./ModalFormulario";
 
+/**
+ * Confirmaciones y avisos con el mismo diseño que los formularios.
+ * Mantiene las props de siempre:
+ *  abierto, titulo, mensaje, textoConfirmar, textoCancelar (null = solo un
+ *  botón, para avisos), peligro, onConfirmar, onCancelar
+ */
 function ModalConfirmacion({
   abierto,
   titulo,
   mensaje,
-  textoConfirmar = "Confirmar",
-  textoCancelar = "Cancelar",   // null → modo aviso (solo un botón)
+  textoConfirmar = "Aceptar",
+  textoCancelar = "Cancelar",
   peligro = false,
   onConfirmar,
   onCancelar,
 }) {
-  if (!abierto) return null;
+  const [procesando, setProcesando] = useState(false);
+
+  // Si onConfirmar es async, los botones se bloquean hasta que termine
+  const confirmar = async () => {
+    try {
+      setProcesando(true);
+      await onConfirmar?.();
+    } finally {
+      setProcesando(false);
+    }
+  };
 
   return (
-    <div
-    className="modal-overlay modal-overlay-superior"
-    onClick={textoCancelar ? onCancelar : onConfirmar}
+    <ModalFormulario
+      abierto={abierto}
+      titulo={titulo}
+      onCerrar={onCancelar || onConfirmar}
+      onSubmit={confirmar}
+      enviando={procesando}
+      textoEnviar={textoConfirmar}
+      textoEnviando={textoConfirmar}
+      textoCancelar={textoCancelar}
+      peligro={peligro}
+      ancho={420}
+      superior
     >
-      <div
-        className="modal-box modal-confirmacion"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <h2>{titulo}</h2>
-        </div>
-
-        <p className="modal-mensaje">{mensaje}</p>
-
-        <div className="modal-footer">
-          {textoCancelar && (
-            <button className="btn-cancel" onClick={onCancelar}>
-              {textoCancelar}
-            </button>
-          )}
-          <button
-            className={peligro ? "btn-save btn-peligro" : "btn-save"}
-            onClick={onConfirmar}
-          >
-            {textoConfirmar}
-          </button>
-        </div>
-      </div>
-    </div>
+      <p className="mf-mensaje">{mensaje}</p>
+    </ModalFormulario>
   );
 }
 

@@ -4,6 +4,7 @@ import { FaRegEnvelope, FaRegTrashAlt } from "react-icons/fa";
 import { api, getImageUrl } from "../../services/api";
 import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
+import ModalFormulario from "../../components/ModalFormulario";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 
 const FORM_INICIAL = {
@@ -60,6 +61,8 @@ function AdminUsuarios({
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [errorForm, setErrorForm] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
 
   const obtenerUsuarios = async () => {
     try {
@@ -85,10 +88,27 @@ function AdminUsuarios({
     }
   }, [solicitudAbrirModal]);
 
+  // Vista previa de la imagen: URL del servidor o archivo recién elegido.
+  // El objeto temporal se libera al cambiar de imagen o cerrar.
+  useEffect(() => {
+    if (!form.imagen) {
+      setVistaPrevia(null);
+      return;
+    }
+    if (typeof form.imagen === "string") {
+      setVistaPrevia(getImageUrl(form.imagen));
+      return;
+    }
+    const url = URL.createObjectURL(form.imagen);
+    setVistaPrevia(url);
+    return () => URL.revokeObjectURL(url);
+  }, [form.imagen]);
+
   const abrirModalNuevo = () => {
     setForm({ ...FORM_INICIAL });
     setEditando(false);
     setUsuarioId(null);
+    setErrorForm("");
     setMostrarModal(true);
   };
 
@@ -96,6 +116,7 @@ function AdminUsuarios({
     setForm({ ...FORM_INICIAL });
     setEditando(false);
     setUsuarioId(null);
+    setErrorForm("");
     setMostrarModal(false);
     if (modoModal) onCerrarModalDashboard?.();
   };
@@ -111,21 +132,6 @@ function AdminUsuarios({
     });
     return formData;
   };
-
-  const crearUsuario = async () => {
-  if (!form.id_rol) {
-    setErrorForm("Selecciona un rol");
-    return;
-  }
-  try {
-    await api("/usuarios", "POST", construirFormData(), true);
-    obtenerUsuarios();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo crear el usuario");
-  }
-};
 
   const obtenerUsuarioPorId = async (id) => {
     try {
@@ -145,84 +151,107 @@ function AdminUsuarios({
 
       setUsuarioId(id);
       setEditando(true);
+      setErrorForm("");
       setMostrarModal(true);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const editarUsuario = async () => {
-  try {
-    await api(`/usuarios/${usuarioId}`, "PUT", construirFormData(), true);
-    obtenerUsuarios();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo actualizar el usuario");
-  }
-};
+  // Crear y editar comparten el mismo envío
+  const guardar = async () => {
+    setErrorForm("");
+
+    if (!editando && !form.id_rol) {
+      setErrorForm("Selecciona un rol");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+
+      if (editando) {
+        await api(`/usuarios/${usuarioId}`, "PUT", construirFormData(), true);
+      } else {
+        await api("/usuarios", "POST", construirFormData(), true);
+      }
+
+      obtenerUsuarios();
+      cerrarModal();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(
+        error.message ||
+          (editando
+            ? "No se pudo actualizar el usuario"
+            : "No se pudo crear el usuario")
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   const confirmarEliminar = async () => {
-  const id = usuarioAEliminar.id;
-  setUsuarioAEliminar(null);
+    const id = usuarioAEliminar.id;
+    setUsuarioAEliminar(null);
 
-  try {
-    const respuesta = await api(`/usuarios/${id}`, "DELETE");
-    obtenerUsuarios();
+    try {
+      const respuesta = await api(`/usuarios/${id}`, "DELETE");
+      obtenerUsuarios();
 
-    if (respuesta?.payload?.desactivado) {
+      if (respuesta?.payload?.desactivado) {
+        setAviso({
+          titulo: "Usuario desactivado",
+          mensaje:
+            "Tenía información asociada (perfil de paciente, citas o historial), así que se desactivó en lugar de eliminarse.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
       setAviso({
-        titulo: "Usuario desactivado",
-        mensaje:
-          "Tenía información asociada (perfil de paciente, citas o historial), así que se desactivó en lugar de eliminarse.",
+        titulo: "No se pudo eliminar",
+        mensaje: "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
       });
     }
-  } catch (error) {
-    console.error(error);
-    setAviso({
-      titulo: "No se pudo eliminar",
-      mensaje: "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
-    });
-  }
-};
+  };
 
   const cambiarCampo = (campo) => (e) =>
     setForm({ ...form, [campo]: e.target.value });
 
   const usuariosFiltrados = useMemo(() => {
-  const q = normalizar(busqueda.trim());
+    const q = normalizar(busqueda.trim());
 
-  return usuarios.filter((u) => {
-    const coincideEstado = !filtroEstado || u.estado === filtroEstado;
-    const texto = normalizar(
-      `${u.nombre} ${u.apellido} ${u.email} ${u.rol?.nombre || ""}`
-    );
-    return coincideEstado && texto.includes(q);
-  });
-}, [usuarios, busqueda, filtroEstado]);
+    return usuarios.filter((u) => {
+      const coincideEstado = !filtroEstado || u.estado === filtroEstado;
+      const texto = normalizar(
+        `${u.nombre} ${u.apellido} ${u.email} ${u.rol?.nombre || ""}`
+      );
+      return coincideEstado && texto.includes(q);
+    });
+  }, [usuarios, busqueda, filtroEstado]);
 
   return (
-          <div className="usuarios-container">
-                  {!modoModal && (
-              <>
-                <EncabezadoModulo
-        titulo="Usuarios"
-        descripcion="Administra las cuentas de acceso y los roles del sistema."
-        textoBoton="Nuevo usuario"
-        onBoton={abrirModalNuevo}
-      />
+    <div className="usuarios-container">
+      {!modoModal && (
+        <>
+          <EncabezadoModulo
+            titulo="Usuarios"
+            descripcion="Administra las cuentas de acceso y los roles del sistema."
+            textoBoton="Nuevo usuario"
+            onBoton={abrirModalNuevo}
+          />
 
-      <FiltrosCard
-        placeholder="Buscar usuario..."
-        busqueda={busqueda}
-        onBusquedaChange={setBusqueda}
-        filtro={filtroEstado}
-        onFiltroChange={setFiltroEstado}
-        opcionesFiltro={[
-          { value: "activo", label: "Activo" },
-          { value: "inactivo", label: "Inactivo" },
-        ]}
-      />
+          <FiltrosCard
+            placeholder="Buscar usuario..."
+            busqueda={busqueda}
+            onBusquedaChange={setBusqueda}
+            filtro={filtroEstado}
+            onFiltroChange={setFiltroEstado}
+            opcionesFiltro={[
+              { value: "activo", label: "Activo" },
+              { value: "inactivo", label: "Inactivo" },
+            ]}
+          />
 
           {usuariosFiltrados.length === 0 ? (
             <p className="usuarios-vacio">
@@ -276,86 +305,133 @@ function AdminUsuarios({
         </>
       )}
 
-      {mostrarModal && (
-        <div className="modal-overlay" onClick={cerrarModal}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editando ? "Editar usuario" : "Nuevo usuario"}</h2>
-            </div>
+      {/* Crear / editar */}
+      <ModalFormulario
+        abierto={mostrarModal}
+        titulo={editando ? "Editar usuario" : "Nuevo usuario"}
+        subtitulo={
+          editando
+            ? "Actualiza los datos de la cuenta."
+            : "Crea una cuenta de acceso al sistema."
+        }
+        onCerrar={cerrarModal}
+        onSubmit={guardar}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar={editando ? "Guardar cambios" : "Crear usuario"}
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo">
+            <span>Nombre</span>
+            <input
+              value={form.nombre}
+              onChange={cambiarCampo("nombre")}
+              required
+            />
+          </label>
 
-            <div className="modal-body">
-              {form.imagen && (
-                <img
-                  src={
-                    typeof form.imagen === "string"
-                      ? getImageUrl(form.imagen)
-                      : URL.createObjectURL(form.imagen)
-                  }
-                  alt="Vista previa"
-                  className="preview-img"
-                />
-              )}
+          <label className="mf-campo">
+            <span>Apellido</span>
+            <input
+              value={form.apellido}
+              onChange={cambiarCampo("apellido")}
+              required
+            />
+          </label>
 
-              <input value={form.nombre} placeholder="Nombre" onChange={cambiarCampo("nombre")} />
-              <input value={form.apellido} placeholder="Apellido" onChange={cambiarCampo("apellido")} />
-              <input value={form.correo} placeholder="Correo" onChange={cambiarCampo("correo")} />
-              <input value={form.password} type="password" placeholder="Password" onChange={cambiarCampo("password")} />
-              <input value={form.telefono} placeholder="Teléfono" onChange={cambiarCampo("telefono")} />
+          <label className="mf-campo">
+            <span>Correo</span>
+            <input
+              type="email"
+              value={form.correo}
+              onChange={cambiarCampo("correo")}
+              required
+            />
+          </label>
 
-              <select value={form.id_rol} onChange={cambiarCampo("id_rol")}>
-                <option value="">Selecciona un rol</option>
-                <option value="1">Administrador</option>
-                <option value="2">Asistente</option>
-                <option value="3">Paciente</option>
-              </select>
+          <label className="mf-campo">
+            <span>{editando ? "Nueva contraseña (opcional)" : "Contraseña"}</span>
+            <input
+              type="password"
+              value={form.password}
+              onChange={cambiarCampo("password")}
+              required={!editando}
+              autoComplete="new-password"
+            />
+          </label>
 
-              <select value={form.estado} onChange={cambiarCampo("estado")}>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-              </select>
+          <label className="mf-campo">
+            <span>Teléfono</span>
+            <input
+              type="tel"
+              value={form.telefono}
+              onChange={cambiarCampo("telefono")}
+            />
+          </label>
 
+          <label className="mf-campo">
+            <span>Rol</span>
+            <select
+              value={form.id_rol}
+              onChange={cambiarCampo("id_rol")}
+              required={!editando}
+            >
+              <option value="">Selecciona un rol</option>
+              <option value="1">Administrador</option>
+              <option value="2">Asistente</option>
+              <option value="3">Paciente</option>
+            </select>
+          </label>
+
+          <label className="mf-campo">
+            <span>Estado</span>
+            <select value={form.estado} onChange={cambiarCampo("estado")}>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </label>
+
+          <div className="mf-archivo mf-ancho">
+            {vistaPrevia && (
+              <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
+            )}
+            <label className="mf-campo">
+              <span>Imagen (opcional)</span>
               <input
                 type="file"
-                onChange={(e) => setForm({ ...form, imagen: e.target.files[0] })}
+                accept="image/*"
+                onChange={(e) =>
+                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                }
               />
-            </div>
-                {errorForm && <p className="modal-error">{errorForm}</p>}
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cerrarModal}>
-                Cancelar
-              </button>
-              <button
-                className="btn-save"
-                onClick={editando ? editarUsuario : crearUsuario}
-              >
-                {editando ? "Actualizar" : "Crear"}
-              </button>
-            </div>
+            </label>
           </div>
         </div>
-      )}
-      <ModalConfirmacion
-  abierto={!!usuarioAEliminar}
-  titulo="Eliminar usuario"
-  mensaje={
-    usuarioAEliminar
-      ? `¿Seguro que quieres eliminar a ${usuarioAEliminar.nombre} ${usuarioAEliminar.apellido}? Esta acción no se puede deshacer.`
-      : ""
-  }
-  textoConfirmar="Eliminar"
-  peligro
-  onConfirmar={confirmarEliminar}
-  onCancelar={() => setUsuarioAEliminar(null)}
-/>
+      </ModalFormulario>
 
-<ModalConfirmacion
-  abierto={!!aviso}
-  titulo={aviso?.titulo}
-  mensaje={aviso?.mensaje}
-  textoCancelar={null}
-  textoConfirmar="Entendido"
-  onConfirmar={() => setAviso(null)}
-/>
+      <ModalConfirmacion
+        abierto={!!usuarioAEliminar}
+        titulo="Eliminar usuario"
+        mensaje={
+          usuarioAEliminar
+            ? `¿Seguro que quieres eliminar a ${usuarioAEliminar.nombre} ${usuarioAEliminar.apellido}? Esta acción no se puede deshacer.`
+            : ""
+        }
+        textoConfirmar="Eliminar"
+        peligro
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setUsuarioAEliminar(null)}
+      />
+
+      <ModalConfirmacion
+        abierto={!!aviso}
+        titulo={aviso?.titulo}
+        mensaje={aviso?.mensaje}
+        textoCancelar={null}
+        textoConfirmar="Entendido"
+        onConfirmar={() => setAviso(null)}
+      />
     </div>
   );
 }
