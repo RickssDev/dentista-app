@@ -103,7 +103,7 @@ function AdminHistorial() {
       />
 
       {aviso && (
-        <p className="rp-aviso" role="status">
+        <p className="mf-aviso" role="status">
           {aviso}
         </p>
       )}

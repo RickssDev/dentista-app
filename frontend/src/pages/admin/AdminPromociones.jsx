@@ -13,6 +13,7 @@ import { normalizar } from "../../api/normalize";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
+import ModalFormulario from "../../components/ModalFormulario";
 
 const FORM_INICIAL = {
   nombre_promocion: "",
@@ -76,6 +77,8 @@ function AdminPromociones() {
   const [aviso, setAviso] = useState(null);
   const [errorForm, setErrorForm] = useState("");
   const hoy = obtenerFechaHoy();
+  const [guardando, setGuardando] = useState(false);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
 
   const obtenerPromociones = async () => {
     try {
@@ -99,6 +102,20 @@ function AdminPromociones() {
     obtenerPromociones();
     obtenerServicios();
   }, []);
+
+  useEffect(() => {
+  if (!form.imagen) {
+    setVistaPrevia(null);
+    return;
+  }
+  if (typeof form.imagen === "string") {
+    setVistaPrevia(getImageUrl(form.imagen));
+    return;
+  }
+  const url = URL.createObjectURL(form.imagen);
+  setVistaPrevia(url);
+  return () => URL.revokeObjectURL(url);
+}, [form.imagen]);
 
   const promocionesFiltradas = useMemo(() => {
   const q = normalizar(busqueda.trim());
@@ -166,25 +183,32 @@ function AdminPromociones() {
 };
 
   const guardarPromocion = async () => {
-    const mensajeError = validar();
-    if (mensajeError) {
-      setErrorForm(mensajeError);
-      return;
+  const mensajeError = validar();
+  if (mensajeError) {
+    setErrorForm(mensajeError);
+    return;
+  }
+
+  setErrorForm("");
+
+  try {
+    setGuardando(true);
+
+    if (editando) {
+      await api(`/promociones/${promoId}`, "PUT", construirFormData(), true);
+    } else {
+      await api("/promociones", "POST", construirFormData(), true);
     }
 
-    try {
-      if (editando) {
-        await api(`/promociones/${promoId}`, "PUT", construirFormData(), true);
-      } else {
-        await api("/promociones", "POST", construirFormData(), true);
-      }
-      obtenerPromociones();
-      cerrarModal();
-    } catch (error) {
-      console.error(error);
-      setErrorForm(error.message || "No se pudo guardar la promoción");
-    }
-  };
+    obtenerPromociones();
+    cerrarModal();
+  } catch (error) {
+    console.error(error);
+    setErrorForm(error.message || "No se pudo guardar la promoción");
+  } finally {
+    setGuardando(false);
+  }
+};
 
   const obtenerPromocionPorId = async (id) => {
     try {
@@ -347,86 +371,103 @@ function AdminPromociones() {
         </div>
       )}
 
-      {mostrarModal && (
-        <div className="modal-overlay" onClick={cerrarModal}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editando ? "Editar promoción" : "Nueva promoción"}</h2>
-            </div>
+        <ModalFormulario
+    abierto={mostrarModal}
+    titulo={editando ? "Editar promoción" : "Nueva promoción"}
+    subtitulo={
+      editando
+        ? "Actualiza los datos de la promoción."
+        : "Crea una oferta para uno de tus servicios."
+    }
+    onCerrar={cerrarModal}
+    onSubmit={guardarPromocion}
+    enviando={guardando}
+    error={errorForm}
+    textoEnviar={editando ? "Guardar cambios" : "Crear promoción"}
+    ancho={560}
+  >
+    <div className="mf-grid">
+      <label className="mf-campo mf-ancho">
+        <span>Título</span>
+        <input
+          value={form.nombre_promocion}
+          onChange={cambiarCampo("nombre_promocion")}
+          required={!editando}
+        />
+      </label>
 
-            <div className="modal-body">
-              {form.imagen && (
-                <img
-                  src={
-                    typeof form.imagen === "string"
-                      ? getImageUrl(form.imagen)
-                      : URL.createObjectURL(form.imagen)
-                  }
-                  alt="Vista previa"
-                  className="preview-img"
-                />
-              )}
+      <label className="mf-campo mf-ancho">
+        <span>Descripción</span>
+        <textarea
+          rows={3}
+          value={form.descripcion}
+          onChange={cambiarCampo("descripcion")}
+          required={!editando}
+        />
+      </label>
 
-              <input
-                value={form.nombre_promocion}
-                placeholder="Título"
-                onChange={cambiarCampo("nombre_promocion")}
-              />
+      <label className="mf-campo">
+        <span>Servicio</span>
+        <select
+          value={form.id_servicio}
+          onChange={cambiarCampo("id_servicio")}
+          required={!editando}
+        >
+          <option value="">Selecciona servicio</option>
+          {serviciosDisponibles.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nombre}
+            </option>
+          ))}
+        </select>
+      </label>
 
-              <input
-                value={form.descripcion}
-                placeholder="Descripción"
-                onChange={cambiarCampo("descripcion")}
-              />
+      <label className="mf-campo">
+        <span>Estado</span>
+        <select value={form.estado} onChange={cambiarCampo("estado")}>
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </label>
 
-              <select value={form.id_servicio} onChange={cambiarCampo("id_servicio")}>
-                <option value="">Selecciona servicio</option>
-                {serviciosDisponibles.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nombre}
-                  </option>
-                ))}
-              </select>
+      <label className="mf-campo">
+        <span>Fecha de inicio</span>
+        <input
+          type="date"
+          value={form.fecha_inicio}
+          onChange={cambiarCampo("fecha_inicio")}
+          required={!editando}
+        />
+      </label>
 
-              <label className="modal-label">Fecha de inicio</label>
-              <input
-                type="date"
-                value={form.fecha_inicio}
-                onChange={cambiarCampo("fecha_inicio")}
-              />
+      <label className="mf-campo">
+        <span>Fecha de fin</span>
+        <input
+          type="date"
+          min={form.fecha_inicio || undefined}
+          value={form.fecha_fin}
+          onChange={cambiarCampo("fecha_fin")}
+          required={!editando}
+        />
+      </label>
 
-              <label className="modal-label">Fecha de fin</label>
-              <input
-                type="date"
-                value={form.fecha_fin}
-                onChange={cambiarCampo("fecha_fin")}
-              />
-
-              <select value={form.estado} onChange={cambiarCampo("estado")}>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-              </select>
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setForm({ ...form, imagen: e.target.files[0] })}
-              />
-
-              {errorForm && <p className="modal-error">{errorForm}</p>}
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cerrarModal}>
-                Cancelar
-              </button>
-              <button className="btn-save" onClick={guardarPromocion}>
-                {editando ? "Actualizar" : "Crear"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="mf-archivo mf-ancho">
+        {vistaPrevia && (
+          <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
+        )}
+        <label className="mf-campo">
+          <span>Imagen </span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+            }
+          />
+        </label>
+      </div>
+    </div>
+  </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!promoAEliminar}

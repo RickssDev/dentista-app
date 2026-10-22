@@ -5,6 +5,7 @@
   import FiltrosCard from "../../components/FiltrosCard";
   import ModalConfirmacion from "../../components/ModalConfirmacion";
   import EncabezadoModulo from "../../components/EncabezadoModulo";
+  import ModalFormulario from "../../components/ModalFormulario";
   import {
     FaCalendarAlt,
     FaTimesCircle,
@@ -12,7 +13,11 @@
     FaRegCalendarAlt,
     FaRegClock,
     FaTooth,
+    FaListUl, 
+    FaPlus,
   } from "react-icons/fa";
+  import CalendarioMes from "../../components/CalendarioMes";
+  import { hoyClave, fechaLarga } from "../../utils/fechas";
 
   const normalizar = (texto = "") =>
   texto
@@ -21,26 +26,30 @@
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-const formatearFecha = (fecha = "") =>
-  fecha.split("T")[0].split("-").reverse().join("/");
-
-  function CitasAdmin({
-  modoModal = false,
-  solicitudAbrirModal = 0,
-  onCerrarModalDashboard,
-}) {
-
-    const obtenerFechaHoy = () => {
-    const hoy = new Date();
-
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, "0");
-    const day = String(hoy.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
+  const FORM_CITA_VACIO = {
+  id_paciente: "",
+  fecha_agendada: "",
+  hora: "",
+  id_servicio: "",
+  estado: "pendiente",
   };
 
-const fechaMinima = obtenerFechaHoy();
+const ACCIONES = {
+  reprogramar: { titulo: "Reprogramar cita", enviar: "Reprogramar" },
+  cancelar: { titulo: "Cancelar cita", enviar: "Cancelar cita" },
+  finalizar: { titulo: "Finalizar cita", enviar: "Finalizar cita" },
+};
+
+  const formatearFecha = (fecha = "") =>
+    fecha.split("T")[0].split("-").reverse().join("/");
+
+    function CitasAdmin({
+    modoModal = false,
+    solicitudAbrirModal = 0,
+    onCerrarModalDashboard,
+  }) {
+
+const fechaMinima = hoyClave();
 
 
     const [citas, setCitas] = useState([]);
@@ -63,8 +72,10 @@ const fechaMinima = obtenerFechaHoy();
     const solicitudProcesada = useRef(0);
     const [aviso, setAviso] = useState(null);
     const location = useLocation();
-    const [soloHoy, setSoloHoy] = useState(!!location.state?.soloHoy);
+    const [vista, setVista] = useState(location.state?.vista === "calendario" ? "calendario" : "lista");
+    const [diaSeleccionado, setDiaSeleccionado] = useState(fechaMinima);
     const mostrarAviso = (titulo, mensaje) => setAviso({ titulo, mensaje });
+    const [guardando, setGuardando] = useState(false);
 
     const [form, setForm] = useState({
       id_paciente: "",
@@ -205,10 +216,11 @@ useEffect(() => {
   onCerrarModalDashboard?.();
 };
 
-const abrirModalCrear = () => {
-  setMostrarModal(true);
+const abrirModalCrear = (fecha = "") => {
+  setForm({ ...FORM_CITA_VACIO, fecha_agendada: fecha });
   setBusquedaPaciente("");
   setPacienteSeleccionado(null);
+  setMostrarModal(true);
 };
 
 const citasFiltradas = useMemo(() => {
@@ -217,25 +229,37 @@ const citasFiltradas = useMemo(() => {
   return citas.filter((cita) => {
     const coincidePaciente = normalizar(cita.nombre_paciente).includes(q);
     const coincideEstado = estado === "" || cita.estado === estado;
-    const coincideFecha =
-      !soloHoy || cita.fecha_agendada?.slice(0, 10) === fechaMinima;
-    return coincidePaciente && coincideEstado && coincideFecha;
+    return coincidePaciente && coincideEstado;
   });
-}, [citas, busqueda, estado, soloHoy, fechaMinima]);
+}, [citas, busqueda, estado]);
+
+// Citas del día seleccionado en el calendario, ordenadas por hora
+const citasDelDia = useMemo(
+  () =>
+    citasFiltradas
+      .filter((cita) => cita.fecha_agendada?.slice(0, 10) === diaSeleccionado)
+      .sort((a, b) => (a.hora || "").localeCompare(b.hora || "")),
+  [citasFiltradas, diaSeleccionado]
+);
 
   const guardarCita = async () => {
+  if (!form.id_paciente) {
+    mostrarAviso("Falta el paciente", "Busca y selecciona un paciente de la lista.");
+    return;
+  }
+
   try {
+    setGuardando(true);
     await api("/citas", "POST", form);
 
-    cerrarModalCrear();   
+    cerrarModalCrear();
     obtenerCitas();
     mostrarAviso("Cita creada", "La cita se creó correctamente.");
   } catch (error) {
     console.error(error);
-    mostrarAviso(
-      "No se pudo crear la cita",
-      error.message || "Intenta de nuevo."
-    );
+    mostrarAviso("No se pudo crear la cita", error.message || "Intenta de nuevo.");
+  } finally {
+    setGuardando(false);
   }
 };
 
@@ -347,16 +371,33 @@ const finalizarCita = async () => {
   }
 };
 
+const confirmarAccion = async () => {
+  setGuardando(true);
+  try {
+    if (modalAccion === "reprogramar") await reprogramarCita();
+    if (modalAccion === "cancelar") await cancelarCita();
+    if (modalAccion === "finalizar") await finalizarCita();
+  } finally {
+    setGuardando(false);
+  }
+};
+const accion = ACCIONES[modalAccion];
     return (
 
       <div className="citas-container">
-      {!modoModal && (
+        {!modoModal && (
   <>
-      <EncabezadoModulo
+    <EncabezadoModulo
       titulo="Citas"
       descripcion="Consulta, reprograma y da seguimiento a las citas de la clínica."
       textoBoton="Nueva cita"
-      onBoton={abrirModalCrear}
+      onBoton={() =>
+        abrirModalCrear(
+          vista === "calendario" && diaSeleccionado >= fechaMinima
+            ? diaSeleccionado
+            : ""
+        )
+      }
     />
 
     <FiltrosCard
@@ -370,16 +411,104 @@ const finalizarCita = async () => {
         { value: "completada", label: "Completada" },
         { value: "cancelada", label: "Cancelada" },
       ]}
-    />
-      {soloHoy && (
-      <div className="filtro-activo">
-        <span>Mostrando solo las citas de hoy</span>
-        <button type="button" onClick={() => setSoloHoy(false)}>
-          Ver todas
+    >
+      <div className="vista-toggle" role="group" aria-label="Tipo de vista">
+        <button
+          type="button"
+          className={vista === "lista" ? "activo" : ""}
+          aria-pressed={vista === "lista"}
+          onClick={() => setVista("lista")}
+        >
+          <FaListUl /> Lista
+        </button>
+        <button
+          type="button"
+          className={vista === "calendario" ? "activo" : ""}
+          aria-pressed={vista === "calendario"}
+          onClick={() => setVista("calendario")}
+        >
+          <FaRegCalendarAlt /> Calendario
         </button>
       </div>
-    )}
-    {citasFiltradas.length === 0 ? (
+    </FiltrosCard>
+
+    {vista === "calendario" ? (
+      <div className="cal-layout">
+        <CalendarioMes
+          citas={citasFiltradas}
+          diaSeleccionado={diaSeleccionado}
+          onSeleccionarDia={setDiaSeleccionado}
+          hoy={fechaMinima}
+        />
+
+        <section className="cal-panel">
+          <div className="cal-panel-cabecera">
+            <h2 className="cal-panel-titulo">{fechaLarga(diaSeleccionado)}</h2>
+            <span className="cal-panel-total">
+              {citasDelDia.length} {citasDelDia.length === 1 ? "cita" : "citas"}
+            </span>
+          </div>
+
+          {citasDelDia.length === 0 ? (
+            <p className="citas-vacio">No hay citas este día.</p>
+          ) : (
+            <ul className="cal-citas">
+              {citasDelDia.map((cita) => (
+                <li key={cita.id} className="cal-cita">
+                  <div className="cal-cita-cabecera">
+                    <span className="agenda-hora">{cita.hora?.slice(0, 5)}</span>
+                    <span className={`cita-estado ${cita.estado}`}>{cita.estado}</span>
+                  </div>
+
+                  <p className="cal-cita-paciente">{cita.nombre_paciente}</p>
+                  <p className="cal-cita-servicio">{cita.nombre_servicio}</p>
+
+                  <div className="cal-cita-acciones">
+                    <button
+                      type="button"
+                      className="agenda-btn reprogramar"
+                      title="Reprogramar"
+                      aria-label="Reprogramar cita"
+                      onClick={() => abrirModalAccion("reprogramar", cita)}
+                    >
+                      <FaCalendarAlt />
+                    </button>
+                    <button
+                      type="button"
+                      className="agenda-btn cancelar"
+                      title="Cancelar"
+                      aria-label="Cancelar cita"
+                      onClick={() => abrirModalAccion("cancelar", cita)}
+                    >
+                      <FaTimesCircle />
+                    </button>
+                    <button
+                      type="button"
+                      className="agenda-btn finalizar"
+                      title="Finalizar"
+                      aria-label="Finalizar cita"
+                      onClick={() => abrirModalAccion("finalizar", cita)}
+                    >
+                      <FaCheckCircle />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {diaSeleccionado >= fechaMinima && (
+            <button
+              type="button"
+              className="btn-card-edit cal-nueva"
+              onClick={() => abrirModalCrear(diaSeleccionado)}
+            >
+              <FaPlus /> Nueva cita este día
+            </button>
+          )}
+        </section>
+      </div>
+    ) : citasFiltradas.length === 0 ? (
       <p className="citas-vacio">
         {citas.length === 0
           ? "No hay citas registradas."
@@ -391,9 +520,7 @@ const finalizarCita = async () => {
           <article key={cita.id} className="cita-card">
             <div className="cita-card-top">
               <h3 className="cita-paciente">{cita.nombre_paciente}</h3>
-              <span className={`cita-estado ${cita.estado}`}>
-                {cita.estado}
-              </span>
+              <span className={`cita-estado ${cita.estado}`}>{cita.estado}</span>
             </div>
 
             <div className="cita-datos">
@@ -443,283 +570,217 @@ const finalizarCita = async () => {
     )}
   </>
 )}
-  
-  {mostrarModal && (
-
-  <div
-  className="modal-overlay"
-  onClick={() => cerrarModalCrear()}
-  >
-
-  <div
-  className="modal-box"
-  onClick={(e) => e.stopPropagation()}
-  >
-
-  <div className="modal-header">
-
-  <h2>Nueva cita</h2>
-   
-  </div>
-
-  <div className="modal-body">
-
- <input
-  type="text"
-  placeholder="Buscar paciente..."
-  value={busquedaPaciente}
-  onChange={(e) => {
-    setBusquedaPaciente(e.target.value);
-    setPacienteSeleccionado(null);
-
-    setForm({
-      ...form,
-      id_paciente: ""
-    });
-  }}
-/>
-
-{busquedaPaciente && !pacienteSeleccionado && (
-  <div className="resultados-pacientes">
-    {pacientes.length > 0 ? (
-      pacientes.map((paciente) => (
-        <div
-          key={paciente.id_paciente}
-          className="resultado-paciente"
-          onClick={() => {
-            setPacienteSeleccionado(paciente);
-
-            setForm({
-              ...form,
-              id_paciente: paciente.id_paciente
-            });
-
-            setBusquedaPaciente(paciente.nombre);
-          }}
-        >
-          {paciente.nombre}
-        </div>
-      ))
-    ) : (
-      <div className="sin-resultados">
-        No se encontraron pacientes
-      </div>
-    )}
-  </div>
-)}
-<select
-  value={form.id_servicio}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      id_servicio: e.target.value
-    })
-  }
+      {/* Nueva cita */}
+<ModalFormulario
+  abierto={mostrarModal}
+  titulo="Nueva cita"
+  subtitulo="Agenda una cita para un paciente registrado."
+  onCerrar={cerrarModalCrear}
+  onSubmit={guardarCita}
+  enviando={guardando}
+  textoEnviar="Guardar cita"
+  ancho={560}
 >
-  <option value="">Seleccionar servicio</option>
+  <div className="mf-grid">
+    <div className="mf-campo mf-ancho">
+      <span>Paciente</span>
+      <input
+        type="text"
+        placeholder="Escribe para buscar..."
+        aria-label="Buscar paciente"
+        autoComplete="off"
+        value={busquedaPaciente}
+        onChange={(e) => {
+          setBusquedaPaciente(e.target.value);
+          setPacienteSeleccionado(null);
+          setForm({ ...form, id_paciente: "" });
+        }}
+        required
+      />
 
-    {servicios
-    .filter((servicio) => servicio.estado === "activo")
-    .map((servicio) => (
-      <option key={servicio.id} value={servicio.id}>
-        {servicio.nombre}
-      </option>
-    ))}
-</select>
-
-  <input
-  type="date"
-  min={fechaMinima}
-  value={form.fecha_agendada}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      fecha_agendada: e.target.value,
-      hora: ""
-    })
-  }
-/>
-
-  <select
-  value={form.hora}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      hora: e.target.value
-    })
-  }
-  disabled={!form.fecha_agendada || !form.id_servicio}
->
-  <option value="">
-    {!form.fecha_agendada
-      ? "Primero selecciona una fecha"
-      : !form.id_servicio
-        ? "Primero selecciona un servicio"
-        : "Seleccionar horario"}
-  </option>
-
-  {horarios.map((horario) => (
-    <option key={horario} value={horario}>
-      {horario}
-    </option>
-  ))}
-</select>
-
-  </div>
-
-  <div className="modal-footer">
-
- 
-<button
-  className="btn-cancel"
-  onClick={cerrarModalCrear}
->
-  Cancelar
-</button>
-
-
-  <button
-  className="btn-save"
-  onClick={guardarCita}
-  >
-
-  Guardar
-
-  </button>
-
-  </div>
-
-  </div>
-
-  </div>
-
-  )}
-   {modalAccion && (
-  <div
-    className="modal-overlay"
-    onClick={cerrarModalAccion}
-  >
-    <div
-      className="modal-box"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="modal-header">
-        <h2>
-          {modalAccion === "reprogramar" && "Reprogramar cita"}
-          {modalAccion === "cancelar" && "Cancelar cita"}
-          {modalAccion === "finalizar" && "Finalizar cita"}
-        </h2>
-      </div>
-
-      <div className="modal-body">
-
-        {modalAccion === "reprogramar" && (
-          <>
-            <label>Nueva fecha</label>
-
-            <input
-              type="date"
-              min={fechaMinima}
-              value={nuevaFecha}
-              onChange={(e) => setNuevaFecha(e.target.value)}
-            />
-
-            <label>Nueva hora</label>
-
-            <select
-              value={nuevaHora}
-              onChange={(e) => setNuevaHora(e.target.value)}
-              disabled={!nuevaFecha}
-            >
-              <option value="">
-                {!nuevaFecha
-                  ? "Primero selecciona una fecha"
-                  : "Selecciona un horario"}
-              </option>
-
-              {horariosReprogramacion.map((horario) => (
-                <option key={horario} value={horario}>
-                  {horario}
-                </option>
-              ))}
-            </select>
-
-            <label>Motivo</label>
-
-            <textarea
-              placeholder="Motivo de la reprogramación"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-            />
-          </>
-        )}
-
-        {modalAccion === "cancelar" && (
-          <>
-            <label>Motivo</label>
-
-            <textarea
-              placeholder="Motivo de la cancelación"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-            />
-          </>
-        )}
-
-        {modalAccion === "finalizar" && (
-          <>
-            <label>Diagnóstico</label>
-
-            <textarea
-              placeholder="Diagnóstico"
-              value={diagnostico}
-              onChange={(e) => setDiagnostico(e.target.value)}
-            />
-
-            <label>Observaciones</label>
-
-            <textarea
-              placeholder="Observaciones"
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-            />
-          </>
-        )}
-
-      </div>
-
-      <div className="modal-footer">
-
-        <button
-          className="btn-cancel"
-          onClick={cerrarModalAccion}
-        >
-          Cancelar
-        </button>
-
-        <button
-          className="btn-save"
-          onClick={() => {
-            if (modalAccion === "reprogramar") {
-              reprogramarCita();
-            }
-
-            if (modalAccion === "cancelar") {
-              cancelarCita();
-            }
-
-            if (modalAccion === "finalizar") {
-              finalizarCita();
-            }
-          }}
-        >
-          Confirmar
-        </button>
-
-      </div>
+      {busquedaPaciente && !pacienteSeleccionado && (
+        <ul className="mf-resultados">
+          {pacientes.length > 0 ? (
+            pacientes.map((paciente) => (
+              <li key={paciente.id_paciente}>
+                <button
+                  type="button"
+                  className="mf-resultado"
+                  onClick={() => {
+                    setPacienteSeleccionado(paciente);
+                    setForm({ ...form, id_paciente: paciente.id_paciente });
+                    setBusquedaPaciente(paciente.nombre);
+                  }}
+                >
+                  {paciente.nombre}
+                </button>
+              </li>
+            ))
+          ) : (
+            <li className="mf-sin-resultados">No se encontraron pacientes</li>
+          )}
+        </ul>
+      )}
     </div>
+
+    <label className="mf-campo mf-ancho">
+      <span>Servicio</span>
+      <select
+        value={form.id_servicio}
+        onChange={(e) => setForm({ ...form, id_servicio: e.target.value })}
+        required
+      >
+        <option value="">Seleccionar servicio</option>
+        {servicios
+          .filter((servicio) => servicio.estado === "activo")
+          .map((servicio) => (
+            <option key={servicio.id} value={servicio.id}>
+              {servicio.nombre}
+            </option>
+          ))}
+      </select>
+    </label>
+
+    <label className="mf-campo">
+      <span>Fecha</span>
+      <input
+        type="date"
+        min={fechaMinima}
+        value={form.fecha_agendada}
+        onChange={(e) =>
+          setForm({ ...form, fecha_agendada: e.target.value, hora: "" })
+        }
+        required
+      />
+    </label>
+
+    <label className="mf-campo">
+      <span>Hora</span>
+      <select
+        value={form.hora}
+        onChange={(e) => setForm({ ...form, hora: e.target.value })}
+        disabled={!form.fecha_agendada || !form.id_servicio}
+        required
+      >
+        <option value="">
+          {!form.fecha_agendada
+            ? "Primero selecciona una fecha"
+            : !form.id_servicio
+              ? "Primero selecciona un servicio"
+              : "Seleccionar horario"}
+        </option>
+        {horarios.map((horario) => (
+          <option key={horario} value={horario}>
+            {horario}
+          </option>
+        ))}
+      </select>
+    </label>
   </div>
-)}
+</ModalFormulario>
+
+{/* Reprogramar / cancelar / finalizar */}
+<ModalFormulario
+  abierto={!!modalAccion}
+  titulo={accion?.titulo || ""}
+  subtitulo={
+    citaSeleccionada
+      ? `${citaSeleccionada.nombre_paciente} · ${formatearFecha(
+          citaSeleccionada.fecha_agendada
+        )} · ${citaSeleccionada.hora?.slice(0, 5)}`
+      : ""
+  }
+  onCerrar={cerrarModalAccion}
+  onSubmit={confirmarAccion}
+  enviando={guardando}
+  textoEnviar={accion?.enviar || "Confirmar"}
+  textoCancelar={modalAccion === "cancelar" ? "Volver" : "Cancelar"}
+  peligro={modalAccion === "cancelar"}
+  ancho={500}
+>
+  {modalAccion === "reprogramar" && (
+    <div className="mf-grid">
+      <label className="mf-campo">
+        <span>Nueva fecha</span>
+        <input
+          type="date"
+          min={fechaMinima}
+          value={nuevaFecha}
+          onChange={(e) => setNuevaFecha(e.target.value)}
+          required
+        />
+      </label>
+
+      <label className="mf-campo">
+        <span>Nueva hora</span>
+        <select
+          value={nuevaHora}
+          onChange={(e) => setNuevaHora(e.target.value)}
+          disabled={!nuevaFecha}
+          required
+        >
+          <option value="">
+            {!nuevaFecha ? "Primero selecciona una fecha" : "Selecciona un horario"}
+          </option>
+          {horariosReprogramacion.map((horario) => (
+            <option key={horario} value={horario}>
+              {horario}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="mf-campo mf-ancho">
+        <span>Motivo</span>
+        <textarea
+          rows={3}
+          placeholder="Motivo de la reprogramación"
+          value={motivo}
+          onChange={(e) => setMotivo(e.target.value)}
+        />
+      </label>
+    </div>
+  )}
+
+  {modalAccion === "cancelar" && (
+    <label className="mf-campo">
+      <span>Motivo</span>
+      <textarea
+        rows={3}
+        placeholder="Motivo de la cancelación"
+        value={motivo}
+        onChange={(e) => setMotivo(e.target.value)}
+      />
+    </label>
+  )}
+
+  {modalAccion === "finalizar" && (
+    <>
+      <label className="mf-campo">
+        <span>Diagnóstico</span>
+        <textarea
+          rows={3}
+          value={diagnostico}
+          onChange={(e) => setDiagnostico(e.target.value)}
+          required
+        />
+      </label>
+
+      <label className="mf-campo">
+        <span>Observaciones (opcional)</span>
+        <textarea
+          rows={2}
+          value={observaciones}
+          onChange={(e) => setObservaciones(e.target.value)}
+        />
+      </label>
+
+      <p className="mf-mensaje">
+        Se guardará en el historial clínico del paciente.
+      </p>
+    </>
+  )}
+</ModalFormulario>
 <ModalConfirmacion
   abierto={!!aviso}
   titulo={aviso?.titulo}

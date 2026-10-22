@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
 import { api } from "../services/api";
-import "../styles/adminpanel.css";
+import ModalFormulario from "./ModalFormulario";
 
 // Fecha de hoy en hora local (YYYY-MM-DD), sin saltos por zona horaria
 const hoy = () => {
@@ -76,28 +75,13 @@ function ModalRegistrarPaciente({ abierto, onCerrar, onRegistrado }) {
     };
   }, [abierto]);
 
-  // Escape cierra (salvo mientras se guarda)
-  useEffect(() => {
-    if (!abierto) return;
-    const alPresionar = (e) => {
-      if (e.key === "Escape" && !enviando) onCerrar();
-    };
-    document.addEventListener("keydown", alPresionar);
-    return () => document.removeEventListener("keydown", alPresionar);
-  }, [abierto, enviando, onCerrar]);
-
-  if (!abierto) return null;
-
   const cambiar = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const cambiarConsulta = (e) =>
     setConsulta((c) => ({ ...c, [e.target.name]: e.target.value }));
 
-  const enviar = async (e) => {
-    e.preventDefault();
-    if (enviando) return;
-
+  const enviar = async () => {
     const payload = {
       nombre: form.nombre.trim(),
       apellido: form.apellido.trim(),
@@ -132,220 +116,172 @@ function ModalRegistrarPaciente({ abierto, onCerrar, onRegistrado }) {
   };
 
   return (
-    <div
-      className="rp-fondo"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !enviando) onCerrar();
-      }}
+    <ModalFormulario
+      abierto={abierto}
+      titulo="Registrar paciente"
+      subtitulo="Para pacientes que llegan directo a la clínica."
+      onCerrar={onCerrar}
+      onSubmit={enviar}
+      enviando={enviando}
+      error={error}
+      textoEnviar="Registrar paciente"
     >
-      <div
-        className="rp-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rp-titulo"
-      >
-        <div className="rp-header">
-          <div>
-            <h2 id="rp-titulo" className="rp-titulo">
-              Registrar paciente
-            </h2>
-            <p className="rp-subtitulo">
-              Para pacientes que llegan directo a la clínica.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="rp-cerrar"
-            onClick={onCerrar}
-            disabled={enviando}
-            aria-label="Cerrar"
-          >
-            <FaTimes />
-          </button>
-        </div>
+      <div className="mf-grid">
+        <label className="mf-campo">
+          <span>Nombre</span>
+          <input
+            name="nombre"
+            value={form.nombre}
+            onChange={cambiar}
+            maxLength={55}
+            required
+          />
+        </label>
 
-        <form className="rp-form" onSubmit={enviar}>
-          <div className="rp-cuerpo">
-          <div className="rp-grid">
-            <label className="rp-campo">
-              <span>Nombre</span>
-              <input
-                name="nombre"
-                value={form.nombre}
-                onChange={cambiar}
-                maxLength={55}
-                required
-                autoFocus
-              />
-            </label>
+        <label className="mf-campo">
+          <span>Apellido</span>
+          <input
+            name="apellido"
+            value={form.apellido}
+            onChange={cambiar}
+            maxLength={55}
+            required
+          />
+        </label>
 
-            <label className="rp-campo">
-              <span>Apellido</span>
-              <input
-                name="apellido"
-                value={form.apellido}
-                onChange={cambiar}
-                maxLength={55}
-                required
-              />
-            </label>
+        <label className="mf-campo">
+          <span>Correo</span>
+          <input
+            type="email"
+            name="correo"
+            value={form.correo}
+            onChange={cambiar}
+            maxLength={100}
+            required
+          />
+        </label>
 
-            <label className="rp-campo">
-              <span>Correo</span>
-              <input
-                type="email"
-                name="correo"
-                value={form.correo}
-                onChange={cambiar}
-                maxLength={100}
-                required
-              />
-            </label>
+        <label className="mf-campo">
+          <span>Teléfono</span>
+          <input
+            type="tel"
+            name="telefono"
+            value={form.telefono}
+            onChange={cambiar}
+            maxLength={20}
+          />
+        </label>
 
-            <label className="rp-campo">
-              <span>Teléfono</span>
-              <input
-                type="tel"
-                name="telefono"
-                value={form.telefono}
-                onChange={cambiar}
-                maxLength={20}
-              />
-            </label>
+        <label className="mf-campo">
+          <span>Fecha de nacimiento</span>
+          <input
+            type="date"
+            name="fecha_nacimiento"
+            value={form.fecha_nacimiento}
+            onChange={cambiar}
+            max={hoy()}
+          />
+        </label>
 
-            <label className="rp-campo">
-              <span>Fecha de nacimiento</span>
-              <input
-                type="date"
-                name="fecha_nacimiento"
-                value={form.fecha_nacimiento}
-                onChange={cambiar}
-                max={hoy()}
-              />
-            </label>
+        <label className="mf-campo">
+          <span>Género</span>
+          <select name="genero" value={form.genero} onChange={cambiar}>
+            <option value="">Sin especificar</option>
+            <option value="femenino">Femenino</option>
+            <option value="masculino">Masculino</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
 
-            <label className="rp-campo">
-              <span>Género</span>
-              <select name="genero" value={form.genero} onChange={cambiar}>
-                <option value="">Sin especificar</option>
-                <option value="femenino">Femenino</option>
-                <option value="masculino">Masculino</option>
-                <option value="otro">Otro</option>
-              </select>
-            </label>
+        <label className="mf-campo mf-ancho">
+          <span>Dirección</span>
+          <input
+            name="direccion"
+            value={form.direccion}
+            onChange={cambiar}
+            maxLength={400}
+          />
+        </label>
+      </div>
 
-            <label className="rp-campo rp-ancho">
-              <span>Dirección</span>
-              <input
-                name="direccion"
-                value={form.direccion}
-                onChange={cambiar}
-                maxLength={400}
-              />
-            </label>
-          </div>
+      <label className="mf-toggle">
+        <input
+          type="checkbox"
+          checked={incluirConsulta}
+          onChange={(e) => setIncluirConsulta(e.target.checked)}
+        />
+        <span>
+          <strong>Registrar también su consulta</strong>
+          <small>
+            Actívalo si ya fue atendido. Si no, quedará sin consultas y su
+            historial se irá llenando al finalizar sus citas.
+          </small>
+        </span>
+      </label>
 
-          <label className="rp-toggle">
+      {incluirConsulta && (
+        <div className="mf-grid">
+          <label className="mf-campo">
+            <span>Fecha de la consulta</span>
             <input
-              type="checkbox"
-              checked={incluirConsulta}
-              onChange={(e) => setIncluirConsulta(e.target.checked)}
+              type="date"
+              name="fecha"
+              value={consulta.fecha}
+              onChange={cambiarConsulta}
+              max={hoy()}
+              required
             />
-            <span>
-              <strong>Registrar también su consulta</strong>
-              <small>
-                Actívalo si ya fue atendido. Si no, quedará sin consultas y su
-                historial se irá llenando al finalizar sus citas.
-              </small>
-            </span>
           </label>
 
-          {incluirConsulta && (
-            <div className="rp-grid rp-consulta">
-              <label className="rp-campo">
-                <span>Fecha de la consulta</span>
-                <input
-                  type="date"
-                  name="fecha"
-                  value={consulta.fecha}
-                  onChange={cambiarConsulta}
-                  max={hoy()}
-                  required
-                />
-              </label>
-
-              <label className="rp-campo">
-                <span>Servicio realizado</span>
-                <select
-                  name="servicio"
-                  value={consulta.servicio}
-                  onChange={cambiarConsulta}
-                  disabled={cargandoServicios || servicios.length === 0}
-                  required
-                >
-                  <option value="">
-                    {cargandoServicios
-                      ? "Cargando servicios..."
-                      : errorServicios
-                        ? "No se pudieron cargar los servicios"
-                        : servicios.length === 0
-                          ? "No hay servicios registrados"
-                          : "Selecciona un servicio"}
-                  </option>
-                  {servicios.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="rp-campo rp-ancho">
-                <span>Diagnóstico</span>
-                <textarea
-                  name="diagnostico"
-                  value={consulta.diagnostico}
-                  onChange={cambiarConsulta}
-                  rows={3}
-                  required
-                />
-              </label>
-
-              <label className="rp-campo rp-ancho">
-                <span>Observaciones (opcional)</span>
-                <textarea
-                  name="observaciones"
-                  value={consulta.observaciones}
-                  onChange={cambiarConsulta}
-                  rows={2}
-                />
-              </label>
-            </div>
-          )}
-
-          {error && (
-            <p className="rp-error" role="alert">
-              {error}
-            </p>
-          )}
-          </div>
-
-          <div className="rp-acciones">
-            <button
-              type="button"
-              className="rp-btn rp-btn-sec"
-              onClick={onCerrar}
-              disabled={enviando}
+          <label className="mf-campo">
+            <span>Servicio realizado</span>
+            <select
+              name="servicio"
+              value={consulta.servicio}
+              onChange={cambiarConsulta}
+              disabled={cargandoServicios || servicios.length === 0}
+              required
             >
-              Cancelar
-            </button>
-            <button type="submit" className="rp-btn rp-btn-prin" disabled={enviando}>
-              {enviando ? "Guardando..." : "Registrar paciente"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <option value="">
+                {cargandoServicios
+                  ? "Cargando servicios..."
+                  : errorServicios
+                    ? "No se pudieron cargar los servicios"
+                    : servicios.length === 0
+                      ? "No hay servicios registrados"
+                      : "Selecciona un servicio"}
+              </option>
+              {servicios.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="mf-campo mf-ancho">
+            <span>Diagnóstico</span>
+            <textarea
+              name="diagnostico"
+              value={consulta.diagnostico}
+              onChange={cambiarConsulta}
+              rows={3}
+              required
+            />
+          </label>
+
+          <label className="mf-campo mf-ancho">
+            <span>Observaciones (opcional)</span>
+            <textarea
+              name="observaciones"
+              value={consulta.observaciones}
+              onChange={cambiarConsulta}
+              rows={2}
+            />
+          </label>
+        </div>
+      )}
+    </ModalFormulario>
   );
 }
 

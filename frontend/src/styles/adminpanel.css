@@ -1881,10 +1881,13 @@
   }
 }
 
-/* Modal "Registrar paciente" y aviso de éxito del módulo Historial.
-   Todas las clases llevan el prefijo rp- para no chocar con otros estilos. */
+/* =========================================================
+   6b. Modales de formulario y confirmación (ModalFormulario)
+   Diseño compartido: crear, editar, eliminar y avisos.
+   Prefijo mf- para no chocar con los .modal-* de la sección 6.
+   ========================================================= */
 
-.rp-fondo {
+.mf-fondo {
   position: fixed;
   inset: 0;
   z-index: 999;
@@ -1895,11 +1898,15 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
-.rp-modal {
+/* Confirmaciones y avisos que van encima de otro modal */
+.mf-fondo-superior {
+  z-index: 1000;
+}
+
+.mf-modal {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 640px;
   max-height: calc(100dvh - 32px);
   overflow: hidden;
   background: #fff;
@@ -1908,7 +1915,7 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
-.rp-header {
+.mf-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1918,18 +1925,23 @@
   border-bottom: 1px solid #ead9d7;
 }
 
-.rp-titulo {
+/* Sin subtítulo (confirmaciones): título y botón X alineados al centro */
+.mf-header:not(:has(.mf-subtitulo)) {
+  align-items: center;
+}
+
+.mf-titulo {
   margin: 0;
   font-size: 1.25rem;
 }
 
-.rp-subtitulo {
+.mf-subtitulo {
   margin: 2px 0 0;
   color: #6b7280;
   font-size: 0.9rem;
 }
 
-.rp-cerrar {
+.mf-cerrar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1944,25 +1956,25 @@
   transition: 0.2s;
 }
 
-.rp-cerrar:hover:not(:disabled) {
+.mf-cerrar:hover:not(:disabled) {
   border-color: #e94b6a;
   color: #e94b6a;
 }
 
-.rp-cerrar:disabled {
+.mf-cerrar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Solo el cuerpo hace scroll; los botones quedan siempre visibles abajo */
-.rp-form {
+.mf-form {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
 
-.rp-cuerpo {
+.mf-cuerpo {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -1972,31 +1984,42 @@
   overflow-y: auto;
 }
 
-.rp-grid {
+/* ===== Piezas para armar el formulario ===== */
+
+/* Texto de las confirmaciones y avisos */
+.mf-mensaje {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.mf-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px 16px;
 }
 
-.rp-ancho {
+/* Un campo que ocupa toda la fila dentro de .mf-grid */
+.mf-ancho {
   grid-column: 1 / -1;
 }
 
-.rp-campo {
+.mf-campo {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
 
-.rp-campo > span {
+.mf-campo > span {
   font-size: 0.85rem;
   font-weight: 600;
 }
 
-.rp-campo input,
-.rp-campo select,
-.rp-campo textarea {
+.mf-campo input,
+.mf-campo select,
+.mf-campo textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
@@ -2008,20 +2031,63 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.rp-campo textarea {
+.mf-campo textarea {
   resize: vertical;
 }
 
-.rp-campo input:focus,
-.rp-campo select:focus,
-.rp-campo textarea:focus {
+.mf-campo input:focus,
+.mf-campo select:focus,
+.mf-campo textarea:focus {
   border-color: #e94b6a;
   outline: none;
   box-shadow: 0 0 0 3px #fde8ec;
 }
 
-/* Interruptor para incluir la consulta */
-.rp-toggle {
+/* Subir imagen / archivo */
+.mf-campo input[type="file"] {
+  padding: 6px;
+  cursor: pointer;
+}
+
+.mf-campo input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 7px 14px;
+  background: #fde8ec;
+  border: none;
+  border-radius: 10px;
+  color: #9d2b4a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mf-campo input[type="file"]::file-selector-button:hover {
+  background: #fbd3db;
+}
+
+/* Vista previa + selector de imagen en la misma fila */
+.mf-archivo {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.mf-archivo .mf-campo {
+  flex: 1;
+}
+
+.mf-preview {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid #ead9d7;
+  border-radius: 16px;
+}
+
+/* Interruptor con descripción (checkbox) */
+.mf-toggle {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -2032,7 +2098,7 @@
   cursor: pointer;
 }
 
-.rp-toggle input {
+.mf-toggle input {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -2041,19 +2107,19 @@
   cursor: pointer;
 }
 
-.rp-toggle span {
+.mf-toggle span {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.rp-toggle small {
+.mf-toggle small {
   color: #6b7280;
   font-size: 0.85rem;
   line-height: 1.35;
 }
 
-.rp-error {
+.mf-error {
   margin: 0;
   padding: 10px 14px;
   background: #fef2f2;
@@ -2063,7 +2129,9 @@
   font-size: 0.9rem;
 }
 
-.rp-acciones {
+/* ===== Botones ===== */
+
+.mf-acciones {
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
@@ -2072,7 +2140,7 @@
   border-top: 1px solid #ead9d7;
 }
 
-.rp-btn {
+.mf-btn {
   padding: 11px 20px;
   border-radius: 12px;
   font: inherit;
@@ -2081,42 +2149,54 @@
   transition: 0.2s;
 }
 
-.rp-btn:disabled {
+.mf-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.rp-btn-sec {
+.mf-btn-sec {
   background: #fff;
   border: 1px solid #cbd5e1;
   color: #4b5563;
 }
 
-.rp-btn-sec:hover:not(:disabled) {
+.mf-btn-sec:hover:not(:disabled) {
   border-color: #e94b6a;
   color: #e94b6a;
 }
 
-.rp-btn-prin {
+.mf-btn-prin {
   background: linear-gradient(135deg, #e94b6a, #f0708a);
   border: 1px solid transparent;
   box-shadow: 0 6px 16px rgba(233, 75, 106, 0.3);
   color: #fff;
 }
 
-.rp-btn-prin:hover:not(:disabled) {
+.mf-btn-prin:hover:not(:disabled) {
   box-shadow: 0 10px 22px rgba(233, 75, 106, 0.4);
   transform: translateY(-2px);
 }
 
-.rp-btn:focus-visible,
-.rp-cerrar:focus-visible {
+.mf-btn-peligro {
+  background: #e63946;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.28);
+  color: #fff;
+}
+
+.mf-btn-peligro:hover:not(:disabled) {
+  background: #c1121f;
+  transform: translateY(-2px);
+}
+
+.mf-btn:focus-visible,
+.mf-cerrar:focus-visible {
   outline: 2px solid #e94b6a;
   outline-offset: 2px;
 }
 
-/* Aviso de éxito (se usa en AdminHistorial) */
-.rp-aviso {
+/* Aviso de éxito en las páginas (después de guardar) */
+.mf-aviso {
   margin: 0 0 16px;
   padding: 12px 16px;
   background: #ecfdf3;
@@ -2126,37 +2206,437 @@
   font-weight: 600;
 }
 
+/* Buscador con lista de resultados (pacientes en Nueva cita) */
+.mf-resultados {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ead9d7;
+  border-radius: 12px;
+  list-style: none;
+}
+
+.mf-resultado {
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mf-resultado:hover,
+.mf-resultado:focus-visible {
+  background: #fff1f4;
+  outline: none;
+}
+
+.mf-sin-resultados {
+  padding: 10px 12px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
 @media (max-width: 640px) {
-  .rp-header,
-  .rp-cuerpo,
-  .rp-acciones {
+  .mf-header,
+  .mf-cuerpo,
+  .mf-acciones {
     padding-left: 18px;
     padding-right: 18px;
   }
 
-  .rp-grid {
+  .mf-grid {
     grid-template-columns: 1fr;
   }
 
-  .rp-acciones {
+  .mf-acciones {
     flex-direction: column-reverse;
   }
 
-  .rp-btn {
+  .mf-btn {
     width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rp-btn,
-  .rp-cerrar,
-  .rp-campo input,
-  .rp-campo select,
-  .rp-campo textarea {
+  .mf-btn,
+  .mf-cerrar,
+  .mf-campo input,
+  .mf-campo select,
+  .mf-campo textarea {
     transition: none;
   }
 
-  .rp-btn-prin:hover:not(:disabled) {
+  .mf-btn-prin:hover:not(:disabled),
+  .mf-btn-peligro:hover:not(:disabled) {
     transform: none;
   }
+}
+
+
+
+/* ===== Selector de vista (lista / calendario) dentro de la card de filtros ===== */
+
+.vista-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #fde8ec;
+  border-radius: 12px;
+}
+
+.vista-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  color: #9d2b4a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.vista-toggle button.activo {
+  background: #e94b6a;
+  color: #fff;
+}
+
+/* ===== Calendario de citas ===== */
+
+.cal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.cal-card,
+.cal-panel {
+  min-width: 0;
+  padding: 22px 24px;
+  background: #fff;
+  border: 1px solid #ead9d7;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.cal-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cal-titulo {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.cal-titulo::first-letter,
+.cal-panel-titulo::first-letter {
+  text-transform: uppercase;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-hoy,
+.cal-flecha {
+  height: 36px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: #4b5563;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cal-hoy {
+  padding: 0 14px;
+}
+
+.cal-flecha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+}
+
+.cal-hoy:hover,
+.cal-flecha:hover {
+  border-color: #e94b6a;
+  color: #e94b6a;
+}
+
+.cal-semana,
+.cal-rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.cal-semana {
+  margin-bottom: 6px;
+  color: #8c8c8c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cal-dia {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 64px;
+  padding: 6px 2px;
+  background: #fff;
+  border: 1px solid #f0e2e0;
+  border-radius: 14px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cal-dia:hover {
+  background: #fdf2f4;
+  border-color: #e94b6a;
+}
+
+.cal-dia:focus-visible {
+  outline: 2px solid #e94b6a;
+  outline-offset: 2px;
+}
+
+.cal-dia.fuera {
+  opacity: 0.4;
+}
+
+.cal-dia.hoy {
+  border: 2px solid #e94b6a;
+  font-weight: 700;
+}
+
+.cal-dia.seleccionado {
+  background: #e94b6a;
+  border-color: #e94b6a;
+  color: #fff;
+}
+
+.cal-numero {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.cal-total {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #fde8ec;
+  border-radius: 999px;
+  color: #9d2b4a;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cal-dia.seleccionado .cal-total {
+  background: #fff;
+  color: #e94b6a;
+}
+
+.cal-puntos {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+}
+
+/* Mismos colores que las etiquetas de estado de las citas */
+.cal-punto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.cal-punto.pendiente {
+  background: #f29bb1;
+}
+
+.cal-punto.completada {
+  background: #3aa80e;
+}
+
+.cal-punto.cancelada {
+  background: #ef4444;
+}
+
+.cal-dia.seleccionado .cal-punto {
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+.cal-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.cal-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Panel del día --- */
+
+.cal-panel-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cal-panel-titulo {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.cal-panel-total {
+  color: #6b7280;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.cal-nueva {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .cal-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .vista-toggle {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .vista-toggle button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .cal-card,
+  .cal-panel {
+    padding: 16px;
+  }
+
+  .cal-semana,
+  .cal-rejilla {
+    gap: 4px;
+  }
+
+  .cal-dia {
+    min-height: 46px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+
+  /* En celular solo se ven los puntos de color */
+  .cal-total {
+    display: none;
+  }
+}
+
+
+/* Citas del día: tarjetas verticales, el texto usa todo el ancho */
+.cal-citas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cal-cita {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 16px;
+}
+
+.cal-cita-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cal-cita-paciente {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: break-word; /* solo parte una palabra si ella sola no cabe */
+}
+
+.cal-cita-servicio {
+  margin: -6px 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+  overflow-wrap: break-word;
+}
+
+.cal-cita-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.cal-cita-acciones .agenda-btn {
+  flex: 1;
 }

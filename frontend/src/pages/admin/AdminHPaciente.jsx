@@ -4,6 +4,7 @@ import "../../styles/AdminPanel.css";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { api } from "../../services/api";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
+import ModalFormulario from "../../components/ModalFormulario";
 
 const formatearFecha = (fecha) => {
   if (!fecha) return "Sin fecha";
@@ -74,30 +75,36 @@ function AdminHistorialPaciente() {
   };
 
   const guardar = async () => {
-    const datos = {
-      servicio: (form.servicio || "").trim(),
-      diagnostico: (form.diagnostico || "").trim(),
-      observaciones: (form.observaciones || "").trim(),
-    };
-
-    if (!datos.servicio || !datos.diagnostico) {
-      setErrorForm("El servicio y el diagnóstico son obligatorios.");
-      return;
-    }
-
-    try {
-      setGuardando(true);
-      setErrorForm("");
-      await api(`/historial/${consultaEditando.id_historial}`, "PATCH", datos);
-      cerrarEdicion();
-      await cargar(false);
-    } catch (err) {
-      console.error(err);
-      setErrorForm(err.message || "No se pudo actualizar la consulta.");
-    } finally {
-      setGuardando(false);
-    }
+  const datos = {
+    servicio: (form.servicio || "").trim(),
+    diagnostico: (form.diagnostico || "").trim(),
+    observaciones: (form.observaciones || "").trim(),
   };
+
+  if (!datos.servicio || !datos.diagnostico) {
+    setErrorForm("El servicio y el diagnóstico son obligatorios.");
+    return;
+  }
+
+  try {
+    setGuardando(true);
+    setErrorForm("");
+
+    await api(
+      `/historial/${consultaEditando.id_historial}`,
+      "PATCH",
+      datos
+    );
+
+    cerrarEdicion();
+    await cargar(false);
+  } catch (err) {
+    console.error(err);
+    setErrorForm(err.message || "No se pudo actualizar la consulta.");
+  } finally {
+    setGuardando(false);
+  }
+};
 
   const cambiarCampo = (campo) => (e) =>
     setForm({ ...form, [campo]: e.target.value });
@@ -180,55 +187,47 @@ function AdminHistorialPaciente() {
         </>
       )}
 
-      {consultaEditando && (
-        <div className="modal-overlay" onClick={cerrarEdicion}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Editar consulta</h2>
-            </div>
+      <ModalFormulario
+      abierto={!!consultaEditando}
+      titulo="Editar consulta"
+      subtitulo="Actualiza la información de la consulta del paciente."
+      onCerrar={cerrarEdicion}
+      onSubmit={guardar}
+      enviando={guardando}
+      error={errorForm}
+      textoEnviar="Guardar cambios"
+      ancho={560}
+    >
+      <div className="mf-grid">
+        <label className="mf-campo mf-ancho">
+          <span>Servicio</span>
+          <input
+            value={form.servicio}
+            onChange={cambiarCampo("servicio")}
+            required
+          />
+        </label>
 
-            <div className="modal-body">
-              <label className="modal-label">Servicio</label>
-              <input
-                value={form.servicio}
-                placeholder="Servicio"
-                onChange={cambiarCampo("servicio")}
-              />
+        <label className="mf-campo mf-ancho">
+          <span>Diagnóstico</span>
+          <textarea
+            value={form.diagnostico}
+            rows={3}
+            onChange={cambiarCampo("diagnostico")}
+            required
+          />
+        </label>
 
-              <label className="modal-label">Diagnóstico</label>
-              <textarea
-                value={form.diagnostico}
-                placeholder="Diagnóstico"
-                rows={3}
-                onChange={cambiarCampo("diagnostico")}
-              />
-
-              <label className="modal-label">Observaciones</label>
-              <textarea
-                value={form.observaciones}
-                placeholder="Observaciones"
-                rows={3}
-                onChange={cambiarCampo("observaciones")}
-              />
-
-              {errorForm && <p className="modal-error">{errorForm}</p>}
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cerrarEdicion}>
-                Cancelar
-              </button>
-              <button
-                className="btn-save"
-                onClick={guardar}
-                disabled={guardando}
-              >
-                {guardando ? "Guardando..." : "Guardar cambios"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <label className="mf-campo mf-ancho">
+          <span>Observaciones</span>
+          <textarea
+            value={form.observaciones}
+            rows={3}
+            onChange={cambiarCampo("observaciones")}
+          />
+        </label>
+      </div>
+    </ModalFormulario>
     </div>
   );
 }

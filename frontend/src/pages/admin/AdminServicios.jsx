@@ -10,6 +10,7 @@ import {
 import { api, getImageUrl } from "../../services/api";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
+import ModalFormulario from "../../components/ModalFormulario";
 
 const FORM_INICIAL = {
   nombre: "",
@@ -47,7 +48,8 @@ function AdminServicios() {
   const [servicioAEliminar, setServicioAEliminar] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [errorForm, setErrorForm] = useState("");
-
+  const [guardando, setGuardando] = useState(false);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
   const obtenerServicios = async () => {
     try {
       const data = await api("/servicios");
@@ -60,6 +62,20 @@ function AdminServicios() {
   useEffect(() => {
     obtenerServicios();
   }, []);
+
+  useEffect(() => {
+  if (!form.imagen) {
+    setVistaPrevia(null);
+    return;
+  }
+  if (typeof form.imagen === "string") {
+    setVistaPrevia(getImageUrl(form.imagen));
+    return;
+  }
+  const url = URL.createObjectURL(form.imagen);
+  setVistaPrevia(url);
+  return () => URL.revokeObjectURL(url);
+}, [form.imagen]);
 
   const abrirModalNuevo = () => {
     setForm({ ...FORM_INICIAL });
@@ -89,49 +105,54 @@ function AdminServicios() {
     return formData;
   };
 
-  const crearServicio = async () => {
-    try {
-      await api("/servicios", "POST", construirFormData(), true);
-      obtenerServicios();
-      cerrarModal();
-    } catch (error) {
-      console.error(error);
-      setErrorForm(error.message || "No se pudo crear el servicio");
-    }
-  };
+const guardar = async () => {
+  setErrorForm("");
 
-  const obtenerServicioPorId = async (id) => {
-    try {
-      const data = await api(`/servicios/${id}`);
-      const s = data.payload;
+  try {
+    setGuardando(true);
 
-      setForm({
-        nombre: s.nombre || "",
-        descripcion: s.descripcion || "",
-        duracion: s.duracion || "",
-        estado: s.estado || "activo",
-        imagen: s.imagen || null,
-      });
-
-      setServicioId(id);
-      setEditando(true);
-      setErrorForm("");
-      setMostrarModal(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const editarServicio = async () => {
-    try {
+    if (editando) {
       await api(`/servicios/${servicioId}`, "PUT", construirFormData(), true);
-      obtenerServicios();
-      cerrarModal();
-    } catch (error) {
-      console.error(error);
-      setErrorForm(error.message || "No se pudo actualizar el servicio");
+    } else {
+      await api("/servicios", "POST", construirFormData(), true);
     }
-  };
+
+    obtenerServicios();
+    cerrarModal();
+  } catch (error) {
+    console.error(error);
+    setErrorForm(
+      error.message ||
+        (editando
+          ? "No se pudo actualizar el servicio"
+          : "No se pudo crear el servicio")
+    );
+  } finally {
+    setGuardando(false);
+  }
+};
+
+const obtenerServicioPorId = async (id) => {
+  try {
+    const data = await api(`/servicios/${id}`);
+    const s = data.payload;
+
+    setForm({
+      nombre: s.nombre || "",
+      descripcion: s.descripcion || "",
+      duracion: s.duracion || "",
+      estado: s.estado || "activo",
+      imagen: s.imagen || null,
+    });
+
+    setServicioId(id);
+    setEditando(true);
+    setErrorForm("");
+    setMostrarModal(true);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const confirmarEliminar = async () => {
   const id = servicioAEliminar.id;
@@ -260,58 +281,74 @@ function AdminServicios() {
         </div>
       )}
 
-      {mostrarModal && (
-        <div className="modal-overlay" onClick={cerrarModal}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editando ? "Editar servicio" : "Nuevo servicio"}</h2>
-            </div>
+      <ModalFormulario
+  abierto={mostrarModal}
+  titulo={editando ? "Editar servicio" : "Nuevo servicio"}
+  subtitulo={
+    editando
+      ? "Actualiza los datos del servicio."
+      : "Agrega un servicio al catálogo de la clínica."
+  }
+  onCerrar={cerrarModal}
+  onSubmit={guardar}
+  enviando={guardando}
+  error={errorForm}
+  textoEnviar={editando ? "Guardar cambios" : "Crear servicio"}
+  ancho={560}
+>
+  <div className="mf-grid">
+    <label className="mf-campo mf-ancho">
+      <span>Nombre</span>
+      <input
+        value={form.nombre}
+        onChange={cambiarCampo("nombre")}
+        required
+      />
+    </label>
 
-            <div className="modal-body">
-              {form.imagen && (
-                <img
-                  src={
-                    typeof form.imagen === "string"
-                      ? getImageUrl(form.imagen)
-                      : URL.createObjectURL(form.imagen)
-                  }
-                  alt="Vista previa"
-                  className="preview-img"
-                />
-              )}
+    <label className="mf-campo mf-ancho">
+      <span>Descripción</span>
+      <textarea
+        rows={3}
+        value={form.descripcion}
+        onChange={cambiarCampo("descripcion")}
+      />
+    </label>
 
-              <input value={form.nombre} placeholder="Nombre" onChange={cambiarCampo("nombre")} />
-              <input value={form.descripcion} placeholder="Descripción" onChange={cambiarCampo("descripcion")} />
-              <input value={form.duracion} placeholder="Duración" onChange={cambiarCampo("duracion")} />
+    <label className="mf-campo">
+      <span>Duración</span>
+      <input
+        value={form.duracion}
+        onChange={cambiarCampo("duracion")}
+        required
+      />
+    </label>
 
-              <select value={form.estado} onChange={cambiarCampo("estado")}>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-              </select>
+    <label className="mf-campo">
+      <span>Estado</span>
+      <select value={form.estado} onChange={cambiarCampo("estado")}>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </label>
 
-              <input
-                type="file"
-                onChange={(e) => setForm({ ...form, imagen: e.target.files[0] })}
-              />
-
-              {errorForm && <p className="modal-error">{errorForm}</p>}
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cerrarModal}>
-                Cancelar
-              </button>
-
-              <button
-                className="btn-save"
-                onClick={editando ? editarServicio : crearServicio}
-              >
-                {editando ? "Actualizar" : "Crear"}
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="mf-archivo mf-ancho">
+      {vistaPrevia && (
+        <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
       )}
+      <label className="mf-campo">
+        <span>Imagen (opcional)</span>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+          }
+        />
+      </label>
+    </div>
+  </div>
+</ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!servicioAEliminar}
