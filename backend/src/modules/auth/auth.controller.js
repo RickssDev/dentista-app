@@ -17,3 +17,13 @@ exports.cambiarContrasena = catchAsync(async (req, res) => {
   const data = await service.cambiarContrasena(idUsuario, req.body);
   return HandleResponse.success(res, 200, "Contraseña actualizada correctamente", data, );
 });
+
+exports.googleLogin = catchAsync(async (req, res) => {
+  const data = await service.googleLogin(req.body);
+  return HandleResponse.success(res, 200, "Login exitoso", data);
+});
+
+exports.googleRegister = catchAsync(async (req, res) => {
+  const data = await service.googleRegister(req.body);
+  return HandleResponse.created(res, 201, "Cuenta creada con Google. Ahora inicia sesión.", data);
+});

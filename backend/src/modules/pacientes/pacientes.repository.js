@@ -105,3 +105,10 @@ exports.getPacientesSelect = async (busqueda = "") => {
 
     return rows;
 };
+
+exports.updateTelefono = async (idUsuario, telefono) => {
+  await pool.query(
+    `UPDATE usuarios SET telefono = ? WHERE id_usuario = ?`,
+    [telefono, idUsuario]
+  );
+};
