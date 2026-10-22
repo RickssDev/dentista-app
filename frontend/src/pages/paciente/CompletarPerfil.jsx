@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import "../../styles/CompletarPerfil.css";
@@ -7,6 +7,7 @@ function CompletarPerfil() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
+    telefono: "",
     direccion: "",
     fecha_nacimiento: "",
     genero: "",
@@ -32,6 +33,7 @@ function CompletarPerfil() {
 
     try {
       await api("/pacientes", "POST", {
+        telefono: form.telefono,
         direccion: form.direccion,
         fecha_nacimiento: form.fecha_nacimiento,
         genero: form.genero,
@@ -50,6 +52,17 @@ function CompletarPerfil() {
     }
   };
 
+  useEffect(() => {
+  api("/pacientes/perfil")
+    .then((res) => {
+      const perfil = res?.payload || res?.data || res;
+      if (perfil?.telefono) {
+        setForm((f) => ({ ...f, telefono: perfil.telefono }));
+      }
+    })
+    .catch(() => {});
+}, []);
+
   return (
     <div className="completar-perfil-page">
       <div className="completar-perfil-card">
@@ -60,6 +73,18 @@ function CompletarPerfil() {
         {error && <div className="completar-perfil-error">{error}</div>}
 
         <form className="completar-perfil-form" onSubmit={handleSubmit}>
+          <div className="completar-perfil-field">
+            <label>Teléfono</label>
+            <input
+              type="tel"
+              name="telefono"
+              value={form.telefono}
+              onChange={handleChange}
+              placeholder="10 dígitos"
+              required
+            />
+          </div>
+
           <div className="completar-perfil-field">
             <label>Dirección</label>
 
