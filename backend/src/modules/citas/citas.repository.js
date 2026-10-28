@@ -108,17 +108,31 @@ exports.createCita = async (data) => {
   return result.insertId;
 };
 
+const COLUMNAS_ACTUALIZABLES = [
+  "fecha_agendada",
+  "hora",
+  "motivo",
+  "estado",
+  "recordatorio_enviado",
+];
+ 
 exports.updateCita = async (id, data) => {
-  const fields = Object.keys(data)
-    .map((key) => `${key} = ?`)
-    .join(", ");
-  const values = Object.values(data);
-  const [result] = await pool.query(
-    `
-    UPDATE citas SET ${fields} WHERE id_cita = ?
-`,
-    [...values, id],
+  const campos = Object.keys(data).filter((campo) =>
+    COLUMNAS_ACTUALIZABLES.includes(campo),
   );
+ 
+  if (campos.length === 0) {
+    return { affectedRows: 0 };
+  }
+ 
+  const asignaciones = campos.map((campo) => `${campo} = ?`).join(", ");
+  const valores = campos.map((campo) => data[campo]);
+ 
+  const [result] = await pool.query(
+    `UPDATE citas SET ${asignaciones} WHERE id_cita = ?`,
+    [...valores, id],
+  );
+ 
   return result;
 };
 
@@ -180,7 +194,10 @@ exports.getMisCitas = async (id_paciente) => {
       c.hora,
       c.estado,
       c.motivo,
-      s.nombre_servicio
+      s.nombre_servicio,
+      EXISTS (
+        SELECT 1 FROM comentarios co WHERE co.id_cita = c.id_cita
+      ) AS comentado
     FROM citas c
     JOIN servicio s
       ON c.id_servicio = s.id_servicio
@@ -189,7 +206,7 @@ exports.getMisCitas = async (id_paciente) => {
     `,
     [id_paciente]
   );
-
+ 
   return rows;
 };
 
