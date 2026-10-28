@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import "../styles/AdminPanel.css";
+import "../styles/adminpanel.css";
 import { aClave, mesDe, MESES } from "../utils/fechas";
 
 const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -49,7 +49,7 @@ function CalendarioMes({ citas, diaSeleccionado, onSeleccionarDia, hoy }) {
 
   const celdas = useMemo(
     () => celdasDelMes(vistaMes.anio, vistaMes.mes),
-    [vistaMes]
+    [vistaMes],
   );
 
   const moverMes = (delta) =>
@@ -131,7 +131,10 @@ function CalendarioMes({ citas, diaSeleccionado, onSeleccionarDia, hoy }) {
                   <span className="cal-total">{total}</span>
                   <span className="cal-puntos">
                     {ESTADOS.map(
-                      (e) => conteo[e] > 0 && <i key={e} className={`cal-punto ${e}`} />
+                      (e) =>
+                        conteo[e] > 0 && (
+                          <i key={e} className={`cal-punto ${e}`} />
+                        ),
                     )}
                   </span>
                 </>
@@ -145,7 +148,11 @@ function CalendarioMes({ citas, diaSeleccionado, onSeleccionarDia, hoy }) {
         {ESTADOS.map((e) => (
           <li key={e}>
             <i className={`cal-punto ${e}`} />
-            {e === "pendiente" ? "Pendiente" : e === "completada" ? "Completada" : "Cancelada"}
+            {e === "pendiente"
+              ? "Pendiente"
+              : e === "completada"
+                ? "Completada"
+                : "Cancelada"}
           </li>
         ))}
       </ul>

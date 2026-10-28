@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ModalFormulario from "../../components/ModalFormulario";
 import { api } from "../../services/api";
 import { hoyClave } from "../../utils/fechas";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import "../../styles/MisCitas.css";
 
 const FORM_VACIO = {

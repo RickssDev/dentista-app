@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { api } from "../../services/api";
 import { normalizar } from "../../api/normalize";
@@ -62,16 +62,16 @@ function AdminHistorial() {
   }, [aviso]);
 
   const historialFiltrado = useMemo(() => {
-  const q = normalizar(busqueda.trim());
+    const q = normalizar(busqueda.trim());
 
-  return historial.filter((item) => {
-    const nombreCompleto = normalizar(
-      `${item.nombre_usuario || ""} ${item.apellido || ""}`
-    );
+    return historial.filter((item) => {
+      const nombreCompleto = normalizar(
+        `${item.nombre_usuario || ""} ${item.apellido || ""}`,
+      );
 
-    return nombreCompleto.includes(q);
-  });
-}, [historial, busqueda]);
+      return nombreCompleto.includes(q);
+    });
+  }, [historial, busqueda]);
 
   const verHistorial = (idPaciente) => {
     navigate(`/admin/historial/${idPaciente}`);
@@ -82,7 +82,7 @@ function AdminHistorial() {
     setAviso(
       resultado?.id_historial
         ? "Paciente registrado con su consulta."
-        : "Paciente registrado correctamente."
+        : "Paciente registrado correctamente.",
     );
     obtenerHistorial();
   };
@@ -128,12 +128,12 @@ function AdminHistorial() {
                 </div>
 
                 <div className="paciente-info">
-                <h3 className="paciente-nombre">
-                  {item.nombre_usuario} {item.apellido}
-                </h3>
+                  <h3 className="paciente-nombre">
+                    {item.nombre_usuario} {item.apellido}
+                  </h3>
 
-                <p className="paciente-rol">Paciente</p>
-              </div>
+                  <p className="paciente-rol">Paciente</p>
+                </div>
               </div>
 
               <div className="paciente-dato">

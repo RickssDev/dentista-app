@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import { FaRegEnvelope, FaRegTrashAlt } from "react-icons/fa";
 import { api, getImageUrl } from "../../services/api";
 import FiltrosCard from "../../components/FiltrosCard";
@@ -184,7 +184,7 @@ function AdminUsuarios({
         error.message ||
           (editando
             ? "No se pudo actualizar el usuario"
-            : "No se pudo crear el usuario")
+            : "No se pudo crear el usuario"),
       );
     } finally {
       setGuardando(false);
@@ -224,7 +224,7 @@ function AdminUsuarios({
     return usuarios.filter((u) => {
       const coincideEstado = !filtroEstado || u.estado === filtroEstado;
       const texto = normalizar(
-        `${u.nombre} ${u.apellido} ${u.email} ${u.rol?.nombre || ""}`
+        `${u.nombre} ${u.apellido} ${u.email} ${u.rol?.nombre || ""}`,
       );
       return coincideEstado && texto.includes(q);
     });
@@ -351,7 +351,9 @@ function AdminUsuarios({
           </label>
 
           <label className="mf-campo">
-            <span>{editando ? "Nueva contraseña (opcional)" : "Contraseña"}</span>
+            <span>
+              {editando ? "Nueva contraseña (opcional)" : "Contraseña"}
+            </span>
             <input
               type="password"
               value={form.password}
@@ -394,7 +396,11 @@ function AdminUsuarios({
 
           <div className="mf-archivo mf-ancho">
             {vistaPrevia && (
-              <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
+              <img
+                className="mf-preview"
+                src={vistaPrevia}
+                alt="Vista previa"
+              />
             )}
             <label className="mf-campo">
               <span>Imagen (opcional)</span>

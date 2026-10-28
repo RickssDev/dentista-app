@@ -4,7 +4,7 @@ import Sidebar from "../../components/sidebar";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import { api } from "../../services/api";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import "../../styles/MisCitas.css";
 
 const DATOS_VACIOS = {

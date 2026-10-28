@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import {
   FaPlus,
   FaBook,
@@ -11,7 +11,7 @@ import {
   FaTimesCircle,
   FaCalendarAlt,
   FaSyncAlt,
-  FaChevronRight
+  FaChevronRight,
 } from "react-icons/fa";
 import { api, getImageUrl } from "../../services/api";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
@@ -45,14 +45,14 @@ const ACCIONES = [
     destacada: true,
   },
   {
-  key: "ver-agenda",
-  label: "Ver agenda",
-  descripcion: "Abre el calendario de citas",
-  icono: <FaBook />,
-  ruta: "citas",
-  state: { vista: "calendario" },
+    key: "ver-agenda",
+    label: "Ver agenda",
+    descripcion: "Abre el calendario de citas",
+    icono: <FaBook />,
+    ruta: "citas",
+    state: { vista: "calendario" },
   },
-  
+
   {
     key: "agregar-paciente",
     label: "Agregar paciente",
@@ -70,7 +70,6 @@ const ACCIONES = [
     state: { filtroEstado: "oculto" },
     badge: "comentariosPendientes",
   },
-
 ];
 const TITULOS = {
   reprogramar: "Reprogramar cita",
@@ -79,9 +78,18 @@ const TITULOS = {
 };
 
 const EXITOS = {
-  reprogramar: { titulo: "Cita reprogramada", mensaje: "La cita se reprogramó correctamente." },
-  cancelar: { titulo: "Cita cancelada", mensaje: "La cita se canceló correctamente." },
-  finalizar: { titulo: "Cita finalizada", mensaje: "La cita se finalizó correctamente." },
+  reprogramar: {
+    titulo: "Cita reprogramada",
+    mensaje: "La cita se reprogramó correctamente.",
+  },
+  cancelar: {
+    titulo: "Cita cancelada",
+    mensaje: "La cita se canceló correctamente.",
+  },
+  finalizar: {
+    titulo: "Cita finalizada",
+    mensaje: "La cita se finalizó correctamente.",
+  },
 };
 
 const ERRORES = {
@@ -190,7 +198,7 @@ function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
     const cargarHorarios = async () => {
       try {
         const respuesta = await api(
-          `/citas/horarios-disponibles?fecha=${form.nuevaFecha}&id_servicio=${servicioId}`
+          `/citas/horarios-disponibles?fecha=${form.nuevaFecha}&id_servicio=${servicioId}`,
         );
         const data = respuesta?.payload ?? respuesta?.data ?? respuesta;
         if (!cancelado) setHorarios(Array.isArray(data) ? data : []);
@@ -320,7 +328,9 @@ function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
             <div className="inicio-usuario">
               <AvatarUsuario usuario={usuario} />
               <div>
-                <p className="inicio-usuario-nombre">{usuario.nombre_usuario}</p>
+                <p className="inicio-usuario-nombre">
+                  {usuario.nombre_usuario}
+                </p>
                 {usuario.rol && (
                   <p className="inicio-usuario-rol">{usuario.rol}</p>
                 )}
@@ -332,42 +342,44 @@ function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
 
       {error && <p className="mensaje-error">{error}</p>}
 
-            <div className="inicio-stats">
+      <div className="inicio-stats">
         {TARJETAS.map((tarjeta) => (
-            <div key={tarjeta.key} className="inicio-stat">
+          <div key={tarjeta.key} className="inicio-stat">
             <span className="inicio-stat-numero">
-                {cargando ? "–" : estadisticas[tarjeta.key]}
+              {cargando ? "–" : estadisticas[tarjeta.key]}
             </span>
             <span className="inicio-stat-label">{tarjeta.label}</span>
-            </div>
+          </div>
         ))}
-        </div>
+      </div>
 
       <h2 className="inicio-seccion">Accesos rápidos</h2>
 
       <div className="inicio-acciones">
         {ACCIONES.map((a) => (
-            <button
+          <button
             key={a.key}
             type="button"
             className={`inicio-accion${a.color ? ` ${a.color}` : ""}${a.destacada ? " destacada" : ""}`}
             onClick={() => ejecutarAccion(a)}
-            >
+          >
             <span className="inicio-accion-icono">{a.icono}</span>
 
             <span className="inicio-accion-texto">
-                <span className="inicio-accion-titulo">{a.label}</span>
-                <span className="inicio-accion-desc">{a.descripcion}</span>
+              <span className="inicio-accion-titulo">{a.label}</span>
+              <span className="inicio-accion-desc">{a.descripcion}</span>
             </span>
 
             {a.badge && estadisticas[a.badge] > 0 && (
-                <span className="inicio-accion-badge">{estadisticas[a.badge]}</span>
+              <span className="inicio-accion-badge">
+                {estadisticas[a.badge]}
+              </span>
             )}
 
             <FaChevronRight className="inicio-accion-flecha" />
-            </button>
+          </button>
         ))}
-        </div>
+      </div>
 
       <section className="agenda-card">
         <div className="agenda-header">
@@ -440,115 +452,119 @@ function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
       </section>
 
       <ModalFormulario
-  abierto={!!accion}
-  titulo={TITULOS[accion?.tipo] || ""}
-  subtitulo={
-    accion?.cita
-      ? `${accion.cita.nombre_usuario} ${accion.cita.apellido} · ${formatHora(
-          accion.cita.hora
-        )}`
-      : ""
-  }
-  onCerrar={cerrarAccion}
-  onSubmit={confirmarAccion}
-  enviando={procesando}
-  error={errorAccion}
-  textoEnviar={procesando ? "Procesando..." : "Confirmar"}
-  textoCancelar={accion?.tipo === "cancelar" ? "Volver" : "Cancelar"}
-  peligro={accion?.tipo === "cancelar"}
-  ancho={500}
->
-  {accion?.tipo === "reprogramar" && (
-    <div className="mf-grid">
-      <label className="mf-campo">
-        <span>Nueva fecha</span>
-        <input
-          type="date"
-          min={new Date().toLocaleDateString("en-CA")}
-          value={form.nuevaFecha}
-          onChange={(e) =>
-            setForm({ ...form, nuevaFecha: e.target.value, nuevaHora: "" })
-          }
-          required
-        />
-      </label>
+        abierto={!!accion}
+        titulo={TITULOS[accion?.tipo] || ""}
+        subtitulo={
+          accion?.cita
+            ? `${accion.cita.nombre_usuario} ${accion.cita.apellido} · ${formatHora(
+                accion.cita.hora,
+              )}`
+            : ""
+        }
+        onCerrar={cerrarAccion}
+        onSubmit={confirmarAccion}
+        enviando={procesando}
+        error={errorAccion}
+        textoEnviar={procesando ? "Procesando..." : "Confirmar"}
+        textoCancelar={accion?.tipo === "cancelar" ? "Volver" : "Cancelar"}
+        peligro={accion?.tipo === "cancelar"}
+        ancho={500}
+      >
+        {accion?.tipo === "reprogramar" && (
+          <div className="mf-grid">
+            <label className="mf-campo">
+              <span>Nueva fecha</span>
+              <input
+                type="date"
+                min={new Date().toLocaleDateString("en-CA")}
+                value={form.nuevaFecha}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nuevaFecha: e.target.value,
+                    nuevaHora: "",
+                  })
+                }
+                required
+              />
+            </label>
 
-      <label className="mf-campo">
-        <span>Nueva hora</span>
-        <select
-          value={form.nuevaHora}
-          onChange={cambiarCampo("nuevaHora")}
-          disabled={!form.nuevaFecha || horarios.length === 0}
-          required
-        >
-          <option value="">
-            {!form.nuevaFecha
-              ? "Primero selecciona una fecha"
-              : horarios.length === 0
-                ? "No hay horarios disponibles"
-                : "Selecciona un horario"}
-          </option>
+            <label className="mf-campo">
+              <span>Nueva hora</span>
+              <select
+                value={form.nuevaHora}
+                onChange={cambiarCampo("nuevaHora")}
+                disabled={!form.nuevaFecha || horarios.length === 0}
+                required
+              >
+                <option value="">
+                  {!form.nuevaFecha
+                    ? "Primero selecciona una fecha"
+                    : horarios.length === 0
+                      ? "No hay horarios disponibles"
+                      : "Selecciona un horario"}
+                </option>
 
-          {horarios.map((horario) => (
-            <option key={horario} value={horario}>
-              {horario}
-            </option>
-          ))}
-        </select>
-      </label>
+                {horarios.map((horario) => (
+                  <option key={horario} value={horario}>
+                    {horario}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-      <label className="mf-campo mf-ancho">
-        <span>Motivo</span>
-        <textarea
-          rows={3}
-          placeholder="Motivo de la reprogramación"
-          value={form.motivo}
-          onChange={cambiarCampo("motivo")}
-          required
-        />
-      </label>
-    </div>
-  )}
+            <label className="mf-campo mf-ancho">
+              <span>Motivo</span>
+              <textarea
+                rows={3}
+                placeholder="Motivo de la reprogramación"
+                value={form.motivo}
+                onChange={cambiarCampo("motivo")}
+                required
+              />
+            </label>
+          </div>
+        )}
 
-  {accion?.tipo === "cancelar" && (
-    <label className="mf-campo mf-ancho">
-      <span>Motivo</span>
-      <textarea
-        rows={3}
-        placeholder="Motivo de la cancelación"
-        value={form.motivo}
-        onChange={cambiarCampo("motivo")}
-        required
-      />
-    </label>
-  )}
+        {accion?.tipo === "cancelar" && (
+          <label className="mf-campo mf-ancho">
+            <span>Motivo</span>
+            <textarea
+              rows={3}
+              placeholder="Motivo de la cancelación"
+              value={form.motivo}
+              onChange={cambiarCampo("motivo")}
+              required
+            />
+          </label>
+        )}
 
-  {accion?.tipo === "finalizar" && (
-    <div className="mf-grid">
-      <label className="mf-campo mf-ancho">
-        <span>Diagnóstico</span>
-        <textarea
-          rows={3}
-          placeholder="Diagnóstico"
-          value={form.diagnostico}
-          onChange={cambiarCampo("diagnostico")}
-          required
-        />
-      </label>
+        {accion?.tipo === "finalizar" && (
+          <div className="mf-grid">
+            <label className="mf-campo mf-ancho">
+              <span>Diagnóstico</span>
+              <textarea
+                rows={3}
+                placeholder="Diagnóstico"
+                value={form.diagnostico}
+                onChange={cambiarCampo("diagnostico")}
+                required
+              />
+            </label>
 
-      <label className="mf-campo mf-ancho">
-        <span>Observaciones</span>
-        <textarea
-          rows={3}
-          placeholder="Observaciones"
-          value={form.observaciones}
-          onChange={cambiarCampo("observaciones")}
-          required
-        />
-      </label>
-    </div>
-  )}
-</ModalFormulario>
+            <label className="mf-campo mf-ancho">
+              <span>Observaciones</span>
+              <textarea
+                rows={3}
+                placeholder="Observaciones"
+                value={form.observaciones}
+                onChange={cambiarCampo("observaciones")}
+                required
+              />
+            </label>
+          </div>
+        )}
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!aviso}

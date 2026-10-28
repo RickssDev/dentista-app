@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import {
   FaRegEye,
   FaRegEyeSlash,
@@ -14,7 +14,20 @@ import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
 
-const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const MESES = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
 
 const formatFecha = (fecha) => {
   if (!fecha) return "";
@@ -72,21 +85,21 @@ function AdminImagenes() {
     obtenerImagenes();
   }, []);
   useEffect(() => {
-  if (!form.imagen) {
-    setVistaPrevia(null);
-    return;
-  }
+    if (!form.imagen) {
+      setVistaPrevia(null);
+      return;
+    }
 
-  if (typeof form.imagen === "string") {
-    setVistaPrevia(getImageUrl(form.imagen));
-    return;
-  }
+    if (typeof form.imagen === "string") {
+      setVistaPrevia(getImageUrl(form.imagen));
+      return;
+    }
 
-  const url = URL.createObjectURL(form.imagen);
-  setVistaPrevia(url);
+    const url = URL.createObjectURL(form.imagen);
+    setVistaPrevia(url);
 
-  return () => URL.revokeObjectURL(url);
-}, [form.imagen]);
+    return () => URL.revokeObjectURL(url);
+  }, [form.imagen]);
 
   const imagenesFiltradas = useMemo(() => {
     const q = normalizar(busqueda.trim());
@@ -128,46 +141,46 @@ function AdminImagenes() {
   };
 
   const guardarImagen = async () => {
-  const hayArchivoNuevo = form.imagen instanceof File;
+    const hayArchivoNuevo = form.imagen instanceof File;
 
-  if (!form.titulo.trim()) {
-    setErrorForm("El título es obligatorio");
-    return;
-  }
-
-  if (!editando && !hayArchivoNuevo) {
-    setErrorForm("Selecciona una imagen");
-    return;
-  }
-
-  setErrorForm("");
-
-  const formData = new FormData();
-  formData.append("titulo", form.titulo);
-  formData.append("visible", form.visible);
-
-  if (hayArchivoNuevo) {
-    formData.append("imagen", form.imagen);
-  }
-
-  try {
-    setGuardando(true);
-
-    if (editando) {
-      await api(`/imagenes/${imagenId}`, "PUT", formData, true);
-    } else {
-      await api("/imagenes", "POST", formData, true);
+    if (!form.titulo.trim()) {
+      setErrorForm("El título es obligatorio");
+      return;
     }
 
-    obtenerImagenes();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo guardar la imagen");
-  } finally {
-    setGuardando(false);
-  }
-};
+    if (!editando && !hayArchivoNuevo) {
+      setErrorForm("Selecciona una imagen");
+      return;
+    }
+
+    setErrorForm("");
+
+    const formData = new FormData();
+    formData.append("titulo", form.titulo);
+    formData.append("visible", form.visible);
+
+    if (hayArchivoNuevo) {
+      formData.append("imagen", form.imagen);
+    }
+
+    try {
+      setGuardando(true);
+
+      if (editando) {
+        await api(`/imagenes/${imagenId}`, "PUT", formData, true);
+      } else {
+        await api("/imagenes", "POST", formData, true);
+      }
+
+      obtenerImagenes();
+      cerrarModal();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la imagen");
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   // Mostrar u ocultar desde la card sin abrir el modal
   const cambiarVisibilidad = async (img) => {
@@ -285,66 +298,66 @@ function AdminImagenes() {
       )}
 
       <ModalFormulario
-      abierto={mostrarModal}
-      titulo={editando ? "Editar imagen" : "Nueva imagen"}
-      subtitulo={
-        editando
-          ? "Actualiza los datos de la imagen."
-          : "Agrega una imagen para la galería de la clínica."
-      }
-      onCerrar={cerrarModal}
-      onSubmit={guardarImagen}
-      enviando={guardando}
-      error={errorForm}
-      textoEnviar={editando ? "Guardar cambios" : "Crear imagen"}
-      ancho={560}
-    >
-      <div className="mf-grid">
-        <label className="mf-campo mf-ancho">
-          <span>Título</span>
-          <input
-            value={form.titulo}
-            onChange={(e) => setForm({ ...form, titulo: e.target.value })}
-            required={!editando}
-          />
-        </label>
-
-        <label className="mf-campo">
-          <span>Estado</span>
-          <select
-            value={form.visible}
-            onChange={(e) => setForm({ ...form, visible: e.target.value })}
-          >
-            <option value="1">Visible</option>
-            <option value="0">Oculta</option>
-          </select>
-        </label>
-
-        <div className="mf-archivo mf-ancho">
-          {vistaPrevia && (
-            <img
-              className="mf-preview"
-              src={vistaPrevia}
-              alt="Vista previa"
-            />
-          )}
-
-          <label className="mf-campo">
-            <span>Imagen {editando ? "(opcional)" : ""}</span>
+        abierto={mostrarModal}
+        titulo={editando ? "Editar imagen" : "Nueva imagen"}
+        subtitulo={
+          editando
+            ? "Actualiza los datos de la imagen."
+            : "Agrega una imagen para la galería de la clínica."
+        }
+        onCerrar={cerrarModal}
+        onSubmit={guardarImagen}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar={editando ? "Guardar cambios" : "Crear imagen"}
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Título</span>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  imagen: e.target.files[0] || form.imagen,
-                })
-              }
+              value={form.titulo}
+              onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+              required={!editando}
             />
           </label>
+
+          <label className="mf-campo">
+            <span>Estado</span>
+            <select
+              value={form.visible}
+              onChange={(e) => setForm({ ...form, visible: e.target.value })}
+            >
+              <option value="1">Visible</option>
+              <option value="0">Oculta</option>
+            </select>
+          </label>
+
+          <div className="mf-archivo mf-ancho">
+            {vistaPrevia && (
+              <img
+                className="mf-preview"
+                src={vistaPrevia}
+                alt="Vista previa"
+              />
+            )}
+
+            <label className="mf-campo">
+              <span>Imagen {editando ? "(opcional)" : ""}</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    imagen: e.target.files[0] || form.imagen,
+                  })
+                }
+              />
+            </label>
+          </div>
         </div>
-      </div>
-    </ModalFormulario>
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!imagenAEliminar}

@@ -64,10 +64,14 @@ function ModalFormulario({
   useEffect(() => {
     if (!abierto) return;
     const campo = cuerpoRef.current?.querySelector(
-      "input:not([type=hidden]):not([type=file]), select, textarea"
+      "input:not([type=hidden]):not([type=file]), select, textarea",
     );
     const raiz = modalRef.current;
-    (campo || raiz?.querySelector(".mf-btn-sec") || raiz?.querySelector(".mf-btn"))?.focus();
+    (
+      campo ||
+      raiz?.querySelector(".mf-btn-sec") ||
+      raiz?.querySelector(".mf-btn")
+    )?.focus();
   }, [abierto]);
 
   if (!abierto) return null;
