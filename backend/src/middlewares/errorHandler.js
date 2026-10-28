@@ -47,6 +47,15 @@ function normalizeJwtError(err) {
     };
   }
 
+  if (err.name === "AccountDisabledError") {
+    return {
+      ...err,
+      statusCode: 401,
+      status: "fail",
+      isOperational: true,
+      message: "Tu cuenta está desactivada o ya no existe.",
+    };
+  }
   return err;
 }
 

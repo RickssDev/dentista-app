@@ -98,3 +98,18 @@ exports.getHorariosDisponibles = catchAsync(async (req, res) => {
   const horarios = await service.getHorariosDisponibles(fecha,id_servicio);
   res.status(200).json({status: "success",data: horarios,});
 });
+
+
+exports.updateMiCita = catchAsync(async (req, res) => {
+  const data = await service.updateMiCita(req.user.id, req.params.id, req.body);
+  return HandleResponse.success(res, 200, data.message);
+});
+ 
+exports.cancelarMiCita = catchAsync(async (req, res) => {
+  const data = await service.cancelarMiCita(
+    req.user.id,
+    req.params.id,
+    req.body.motivo,
+  );
+  return HandleResponse.success(res, 200, data.message);
+});

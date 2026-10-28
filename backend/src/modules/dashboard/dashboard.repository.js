@@ -52,6 +52,7 @@ exports.countComentariosPendientes = async () => {
     SELECT COUNT(*) AS total
     FROM comentarios
     WHERE estado = 'oculto'
+      AND eliminado = 0
     `,
   );
 

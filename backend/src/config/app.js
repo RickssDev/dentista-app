@@ -2,21 +2,44 @@ const express = require("express");
 const errorHandler = require('../middlewares/errorHandler');
 const indexRoutes = require('../routes');
 const cors = require('cors');
+const helmet = require('helmet');
+
+const obtenerOrigenesPermitidos = () => {
+  const origenes = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((origen) => origen.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+  if (origenes.length > 0) return origenes;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Falta definir FRONTEND_URL en producción");
+  }
+
+  return ["http://localhost:5173"];
+};
 
 function createApp() {
   const app = express();
+  app.set('trust proxy', Number(process.env.TRUST_PROXY) || 0);
 
-const allowedOrigins = [
-  "http://localhost:5174",
-  "http://192.168.11.239:5174" 
-];
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  }));
 
-app.use(cors({
-  origin: function(origin, callback){
-    return callback(null, true);
-  },
-  credentials: true
-}));
+  const origenesPermitidos = obtenerOrigenesPermitidos();
+
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin || origenesPermitidos.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
+    credentials: true
+  }));
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use('/uploads', express.static('uploads'));
@@ -25,9 +48,9 @@ app.use(cors({
       message: 'API dentista activa.'
     });
   });
-  
+
   app.use('/api/v1', indexRoutes);
-  
+
   app.use(errorHandler);
 
   return app;
@@ -36,5 +59,3 @@ app.use(cors({
 module.exports = {
   createApp
 };
-
-

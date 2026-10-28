@@ -1,14 +1,26 @@
 const { pool } = require("../../config/db");
 
+/*
+  Borrado lógico: eliminar un comentario NO borra la fila, solo la marca
+  con eliminado = 1. Así la cita sigue contando como "ya reseñada" y el
+  paciente no puede volver a comentar, sin importar si el comentario fue
+  aprobado, quedó pendiente o el administrador lo eliminó.
+
+  Requiere en la base de datos:
+    ALTER TABLE comentarios ADD COLUMN eliminado TINYINT(1) NOT NULL DEFAULT 0;
+*/
+
+// Los comentarios eliminados ya no existen para el panel del administrador
 exports.getComentarioById = async (id) => {
   const [rows] = await pool.query(
-    "SELECT * FROM comentarios WHERE id_comentario = ?",
+    "SELECT * FROM comentarios WHERE id_comentario = ? AND eliminado = 0",
     [id],
   );
 
   return rows[0];
 };
 
+// Incluye los eliminados a propósito: una cita reseñada no se puede reseñar otra vez
 exports.getComentarioByCita = async (idCita) => {
   const [rows] = await pool.query(
     "SELECT * FROM comentarios WHERE id_cita = ?",
@@ -40,12 +52,13 @@ exports.getComentarios = async (estado = "todos") => {
       ON p.id_usuario = u.id_usuario
     JOIN servicio s
       ON ci.id_servicio = s.id_servicio
+    WHERE c.eliminado = 0
   `;
 
   const params = [];
 
   if (estado !== "todos") {
-    query += " WHERE c.estado = ?";
+    query += " AND c.estado = ?";
     params.push(estado);
   }
 
@@ -72,6 +85,7 @@ exports.getComentariosPublicos = async () => {
     JOIN usuarios u
       ON p.id_usuario = u.id_usuario
     WHERE c.estado = 'visible'
+      AND c.eliminado = 0
     ORDER BY c.fecha DESC
   `);
 
@@ -118,14 +132,14 @@ exports.updateEstadoComentario = async (id, estado) => {
   );
 };
 
+// Borrado lógico: queda oculto y marcado como eliminado, pero la cita sigue reseñada
 exports.deleteComentario = async (id) => {
   await pool.query(
     `
-      DELETE FROM comentarios
+      UPDATE comentarios
+      SET eliminado = 1, estado = 'oculto'
       WHERE id_comentario = ?
     `,
     [id],
   );
 };
-
-
