@@ -4,6 +4,8 @@ const { sendTemplateMessage } = require("../../services/whatp.service");
 const servicioRepo = require("../servicios/servicios.repository");
 const pacienteRepo = require("../pacientes/pacientes.repository");
 
+const CAMPOS_EDITABLES = ["fecha_agendada", "hora", "motivo"];
+
 const timeToMinutes = (time) => {
   const [h, m] = time.split(":");
   return Number(h) * 60 + Number(m);
@@ -176,9 +178,11 @@ exports.updateCita = async (id, data) => {
 
   const cleanedData = {};
 
-  for (const key in data) {
-    if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
-      cleanedData[key] = data[key];
+  for (const key of CAMPOS_EDITABLES) {
+    const valor = data?.[key];
+
+    if (valor !== "" && valor !== undefined && valor !== null) {
+      cleanedData[key] = valor;
     }
   }
 
@@ -360,6 +364,7 @@ exports.getMisCitas = async (idUsuario) => {
     nombre_servicio: c.nombre_servicio,
     estado: c.estado,
     motivo: c.motivo,
+    comentado: Boolean(c.comentado),
   }));
 };
 exports.createCitaPaciente = async (idUsuario, data) => {
@@ -540,4 +545,41 @@ if (fecha === fechaMexico) {
   }
 
   return horariosDisponibles;
+};
+
+const obtenerCitaPropia = async (idUsuario, idCita) => {
+  if (!idCita || isNaN(idCita)) {
+    throw new AppError("ID de cita inválido", 400);
+  }
+ 
+  const cita = await repo.getCitaConUsuario(idCita);
+ 
+  if (!cita || Number(cita.id_usuario) !== Number(idUsuario)) {
+    throw new AppError("Cita no encontrada", 404);
+  }
+ 
+  if (cita.estado !== "pendiente") {
+    throw new AppError("Solo puedes modificar citas pendientes", 400);
+  }
+ 
+  return cita;
+};
+ 
+exports.updateMiCita = async (idUsuario, id, data = {}) => {
+  await obtenerCitaPropia(idUsuario, id);
+ 
+  const { fecha_agendada, hora, motivo } = data;
+ 
+  if (!fecha_agendada || !hora) {
+    throw new AppError("La fecha y la hora son obligatorias", 400);
+  }
+ 
+  // Solo se aceptan estos tres campos; cualquier otro del body se ignora
+  return exports.updateCita(id, { fecha_agendada, hora, motivo });
+};
+ 
+exports.cancelarMiCita = async (idUsuario, id, motivo) => {
+  await obtenerCitaPropia(idUsuario, id);
+ 
+  return exports.cancelarCita(id, motivo);
 };

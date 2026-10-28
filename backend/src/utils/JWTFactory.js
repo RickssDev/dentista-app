@@ -1,24 +1,40 @@
 const jwt = require('jsonwebtoken');
 
+const ALGORITMO = 'HS256';
+const LONGITUD_MINIMA_SECRETO = 32;
+
+const validarSecreto = (secret) => {
+	if (!secret) {
+		throw new Error('JWT_SECRET no esta definido en las variables de entorno.');
+	}
+
+	if (process.env.NODE_ENV === 'production' && secret.length < LONGITUD_MINIMA_SECRETO) {
+		throw new Error(
+			`JWT_SECRET es demasiado corto: usa al menos ${LONGITUD_MINIMA_SECRETO} caracteres.`
+		);
+	}
+
+	return secret;
+};
+
 class JWTFactory {
 	static revokedTokens = new Set();
 
 	constructor(secret = process.env.JWT_SECRET) {
-		if (!secret) {
-			throw new Error('JWT_SECRET no esta definido en las variables de entorno.');
-		}
-
-		this.secret = secret;
+		this.secret = validarSecreto(secret);
 	}
 
 	createToken(payload, options = {}) {
-		return jwt.sign(payload, this.secret, {expiresIn: '1d', ...options });
+		return jwt.sign(payload, this.secret, {
+			algorithm: ALGORITMO,
+			// Siempre con unidad: 8h, 1d (un número solo se toma como milisegundos)
+			expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+			...options
+		});
 	}
 
 	static verifyToken(token, secret = process.env.JWT_SECRET) {
-		if (!secret) {
-			throw new Error('JWT_SECRET no esta definido en las variables de entorno.');
-		}
+		validarSecreto(secret);
 
 		if (JWTFactory.revokedTokens.has(token)) {
 			const revokedError = new Error('Token invalido o revocado.');
@@ -26,7 +42,7 @@ class JWTFactory {
 			throw revokedError;
 		}
 
-		return jwt.verify(token, secret);
+		return jwt.verify(token, secret, { algorithms: [ALGORITMO] });
 	}
 
 	static decodeToken(token) {
