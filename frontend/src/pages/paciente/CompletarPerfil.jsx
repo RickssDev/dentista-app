@@ -1,122 +1,125 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ModalFormulario from "../../components/ModalFormulario";
 import { api } from "../../services/api";
-import "../../styles/CompletarPerfil.css";
+import { hoyClave } from "../../utils/fechas";
+import "../../styles/AdminPanel.css";
+import "../../styles/MisCitas.css";
+
+const FORM_VACIO = {
+  telefono: "",
+  direccion: "",
+  fecha_nacimiento: "",
+  genero: "",
+};
 
 function CompletarPerfil() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    telefono: "",
-    direccion: "",
-    fecha_nacimiento: "",
-    genero: "",
-  });
-
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState(FORM_VACIO);
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  // Si el teléfono ya existe (por ejemplo, al registrarse), se precarga
+  useEffect(() => {
+    let cancelado = false;
 
-    setForm({
-      ...form,
-      [name]: value,
-    });
-  };
+    api("/pacientes/perfil")
+      .then((res) => {
+        const perfil = res?.payload || res?.data || res;
+        if (!cancelado && perfil?.telefono) {
+          setForm((f) => ({ ...f, telefono: perfil.telefono }));
+        }
+      })
+      .catch(() => {});
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
-    setError("");
-    setLoading(true);
+  const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const completarPerfil = async () => {
     try {
+      setGuardando(true);
+      setError("");
+
       await api("/pacientes", "POST", {
         telefono: form.telefono,
-        direccion: form.direccion,
+        direccion: form.direccion.trim(),
         fecha_nacimiento: form.fecha_nacimiento,
         genero: form.genero,
       });
 
-      // Perfil creado correctamente
       navigate("/paciente");
-    } catch (error) {
-      console.error("Error al crear perfil:", error);
-
-      setError(
-        error.message || "No se pudo completar el perfil",
-      );
+    } catch (err) {
+      console.error("Error al crear perfil:", err);
+      setError(err.message || "No se pudo completar el perfil.");
     } finally {
-      setLoading(false);
+      setGuardando(false);
     }
   };
 
-  useEffect(() => {
-  api("/pacientes/perfil")
-    .then((res) => {
-      const perfil = res?.payload || res?.data || res;
-      if (perfil?.telefono) {
-        setForm((f) => ({ ...f, telefono: perfil.telefono }));
-      }
-    })
-    .catch(() => {});
-}, []);
-
   return (
-    <div className="completar-perfil-page">
-      <div className="completar-perfil-card">
-        <h1>Completa tus datos</h1>
-
-        
-
-        {error && <div className="completar-perfil-error">{error}</div>}
-
-        <form className="completar-perfil-form" onSubmit={handleSubmit}>
-          <div className="completar-perfil-field">
-            <label>Teléfono</label>
+    <div className="completar-fondo">
+      <ModalFormulario
+        abierto
+        titulo="Completa tus datos"
+        subtitulo="Los necesitamos para agendar y dar seguimiento a tus citas."
+        onCerrar={() => navigate("/paciente")}
+        onSubmit={completarPerfil}
+        enviando={guardando}
+        error={error}
+        textoEnviar="Completar perfil"
+        textoEnviando="Guardando..."
+        textoCancelar="Quizá más tarde"
+        ancho={520}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Teléfono</span>
             <input
               type="tel"
               name="telefono"
-              value={form.telefono}
-              onChange={handleChange}
+              inputMode="numeric"
               placeholder="10 dígitos"
+              value={form.telefono}
+              onChange={cambiar}
               required
             />
-          </div>
+          </label>
 
-          <div className="completar-perfil-field">
-            <label>Dirección</label>
-
+          <label className="mf-campo mf-ancho">
+            <span>Dirección</span>
             <input
               type="text"
               name="direccion"
-              value={form.direccion}
-              onChange={handleChange}
               placeholder="Ingresa tu dirección"
+              value={form.direccion}
+              onChange={cambiar}
               required
             />
-          </div>
+          </label>
 
-          <div className="completar-perfil-field">
-            <label>Fecha de nacimiento</label>
-
+          <label className="mf-campo">
+            <span>Fecha de nacimiento</span>
             <input
               type="date"
               name="fecha_nacimiento"
+              max={hoyClave()}
               value={form.fecha_nacimiento}
-              onChange={handleChange}
+              onChange={cambiar}
               required
             />
-          </div>
+          </label>
 
-          <div className="completar-perfil-field">
-            <label>Género</label>
-
+          <label className="mf-campo">
+            <span>Género</span>
             <select
               name="genero"
               value={form.genero}
-              onChange={handleChange}
+              onChange={cambiar}
               required
             >
               <option value="">Selecciona una opción</option>
@@ -124,25 +127,9 @@ function CompletarPerfil() {
               <option value="masculino">Masculino</option>
               <option value="otro">Otro</option>
             </select>
-          </div>
-
-          <button
-            className="completar-perfil-button"
-            type="submit"
-            disabled={loading}
-          > 
-            {loading ? "Guardando..." : "Completar perfil"}
-          </button>
-
-          <button
-            type="button"
-            className="completar-perfil-later"
-            onClick={() => navigate("/paciente")}
-          >
-            Quizá más tarde
-          </button>
-        </form>
-      </div>
+          </label>
+        </div>
+      </ModalFormulario>
     </div>
   );
 }
