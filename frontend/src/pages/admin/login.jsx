@@ -63,8 +63,11 @@ function CampoPass({ id, etiqueta, visible, onAlternar, ...props }) {
   );
 }
 
-// El botón de Google necesita un ancho en px: lo medimos del contenedor
-function GoogleBoton({ onSuccess, onError, texto }) {
+// El botón de Google necesita un ancho en px: lo medimos del contenedor.
+// Solo se monta el botón del formulario visible (activo): Google usa la última
+// instancia inicializada para todos los botones, y con dos montados a la vez el
+// clic de "Crear cuenta" podía terminar ejecutando el manejador de "Iniciar sesión".
+function GoogleBoton({ onSuccess, onError, texto, activo }) {
   const ref = useRef(null);
   const [ancho, setAncho] = useState(null);
 
@@ -81,7 +84,7 @@ function GoogleBoton({ onSuccess, onError, texto }) {
 
   return (
     <div className="google-btn" ref={ref}>
-      {ancho && (
+      {ancho && activo && (
         <GoogleLogin
           onSuccess={onSuccess}
           onError={onError}
@@ -304,7 +307,12 @@ function Login() {
             <button type="submit" className="btn-principal">Crear cuenta</button>
 
             <div className="separador"><span>o continúa con</span></div>
-            <GoogleBoton onSuccess={handleGoogleRegister} onError={errorGoogle} texto="signup_with" />
+            <GoogleBoton
+              activo={active}
+              onSuccess={handleGoogleRegister}
+              onError={errorGoogle}
+              texto="signup_with"
+            />
 
             <p className="cambiar-modo">
               ¿Ya tienes cuenta?{" "}
@@ -335,7 +343,12 @@ function Login() {
             <button type="submit" className="btn-principal">Iniciar sesión</button>
 
             <div className="separador"><span>o continúa con</span></div>
-            <GoogleBoton onSuccess={handleGoogleLogin} onError={errorGoogle} texto="signin_with" />
+            <GoogleBoton
+              activo={!active}
+              onSuccess={handleGoogleLogin}
+              onError={errorGoogle}
+              texto="signin_with"
+            />
 
             <p className="cambiar-modo">
               ¿No tienes cuenta?{" "}
