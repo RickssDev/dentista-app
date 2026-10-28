@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { api } from "../../services/api";
 import { normalizar } from "../../api/normalize";
@@ -39,7 +39,7 @@ function AdminFaqs() {
     const q = normalizar(busqueda.trim());
 
     return faqs.filter((faq) =>
-      normalizar(`${faq.pregunta} ${faq.respuesta}`).includes(q)
+      normalizar(`${faq.pregunta} ${faq.respuesta}`).includes(q),
     );
   }, [faqs, busqueda]);
 
@@ -72,31 +72,31 @@ function AdminFaqs() {
   };
 
   const guardarFaq = async () => {
-  if (!form.pregunta.trim() || !form.respuesta.trim()) {
-    setErrorForm("Pregunta y respuesta son obligatorias");
-    return;
-  }
-
-  setErrorForm("");
-
-  try {
-    setGuardando(true);
-
-    if (editando) {
-      await api(`/faqs/${faqId}`, "PUT", form);
-    } else {
-      await api("/faqs", "POST", form);
+    if (!form.pregunta.trim() || !form.respuesta.trim()) {
+      setErrorForm("Pregunta y respuesta son obligatorias");
+      return;
     }
 
-    obtenerFaqs();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo guardar la pregunta");
-  } finally {
-    setGuardando(false);
-  }
-};
+    setErrorForm("");
+
+    try {
+      setGuardando(true);
+
+      if (editando) {
+        await api(`/faqs/${faqId}`, "PUT", form);
+      } else {
+        await api("/faqs", "POST", form);
+      }
+
+      obtenerFaqs();
+      cerrarModal();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la pregunta");
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   const confirmarEliminar = async () => {
     const id = faqAEliminar.id_pregunta;
@@ -122,7 +122,6 @@ function AdminFaqs() {
         textoBoton="Nueva pregunta"
         onBoton={abrirNuevo}
       />
-
 
       {faqsFiltradas.length === 0 ? (
         <p className="usuarios-vacio">
@@ -158,45 +157,41 @@ function AdminFaqs() {
       )}
 
       <ModalFormulario
-      abierto={mostrarModal}
-      titulo={editando ? "Editar pregunta" : "Nueva pregunta"}
-      subtitulo={
-        editando
-          ? "Actualiza la pregunta y su respuesta."
-          : "Agrega una pregunta frecuente para los pacientes."
-      }
-      onCerrar={cerrarModal}
-      onSubmit={guardarFaq}
-      enviando={guardando}
-      error={errorForm}
-      textoEnviar={editando ? "Guardar cambios" : "Crear pregunta"}
-      ancho={560}
-    >
-      <div className="mf-grid">
-        <label className="mf-campo mf-ancho">
-          <span>Pregunta</span>
-          <input
-            value={form.pregunta}
-            onChange={(e) =>
-              setForm({ ...form, pregunta: e.target.value })
-            }
-            required
-          />
-        </label>
+        abierto={mostrarModal}
+        titulo={editando ? "Editar pregunta" : "Nueva pregunta"}
+        subtitulo={
+          editando
+            ? "Actualiza la pregunta y su respuesta."
+            : "Agrega una pregunta frecuente para los pacientes."
+        }
+        onCerrar={cerrarModal}
+        onSubmit={guardarFaq}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar={editando ? "Guardar cambios" : "Crear pregunta"}
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Pregunta</span>
+            <input
+              value={form.pregunta}
+              onChange={(e) => setForm({ ...form, pregunta: e.target.value })}
+              required
+            />
+          </label>
 
-        <label className="mf-campo mf-ancho">
-          <span>Respuesta</span>
-          <textarea
-            rows={5}
-            value={form.respuesta}
-            onChange={(e) =>
-              setForm({ ...form, respuesta: e.target.value })
-            }
-            required
-          />
-        </label>
-      </div>
-    </ModalFormulario>
+          <label className="mf-campo mf-ancho">
+            <span>Respuesta</span>
+            <textarea
+              rows={5}
+              value={form.respuesta}
+              onChange={(e) => setForm({ ...form, respuesta: e.target.value })}
+              required
+            />
+          </label>
+        </div>
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!faqAEliminar}

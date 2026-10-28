@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { api } from "../../services/api";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
@@ -52,7 +52,7 @@ function AdminHistorialPaciente() {
         setCargando(false);
       }
     },
-    [idPaciente]
+    [idPaciente],
   );
 
   useEffect(() => {
@@ -75,36 +75,32 @@ function AdminHistorialPaciente() {
   };
 
   const guardar = async () => {
-  const datos = {
-    servicio: (form.servicio || "").trim(),
-    diagnostico: (form.diagnostico || "").trim(),
-    observaciones: (form.observaciones || "").trim(),
+    const datos = {
+      servicio: (form.servicio || "").trim(),
+      diagnostico: (form.diagnostico || "").trim(),
+      observaciones: (form.observaciones || "").trim(),
+    };
+
+    if (!datos.servicio || !datos.diagnostico) {
+      setErrorForm("El servicio y el diagnóstico son obligatorios.");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+      setErrorForm("");
+
+      await api(`/historial/${consultaEditando.id_historial}`, "PATCH", datos);
+
+      cerrarEdicion();
+      await cargar(false);
+    } catch (err) {
+      console.error(err);
+      setErrorForm(err.message || "No se pudo actualizar la consulta.");
+    } finally {
+      setGuardando(false);
+    }
   };
-
-  if (!datos.servicio || !datos.diagnostico) {
-    setErrorForm("El servicio y el diagnóstico son obligatorios.");
-    return;
-  }
-
-  try {
-    setGuardando(true);
-    setErrorForm("");
-
-    await api(
-      `/historial/${consultaEditando.id_historial}`,
-      "PATCH",
-      datos
-    );
-
-    cerrarEdicion();
-    await cargar(false);
-  } catch (err) {
-    console.error(err);
-    setErrorForm(err.message || "No se pudo actualizar la consulta.");
-  } finally {
-    setGuardando(false);
-  }
-};
 
   const cambiarCampo = (campo) => (e) =>
     setForm({ ...form, [campo]: e.target.value });
@@ -132,7 +128,9 @@ function AdminHistorialPaciente() {
             <div className="clinico-grid">
               <div className="clinico-item">
                 <span className="clinico-label">Paciente</span>
-                <span className="clinico-valor">{paciente.nombre_usuario} {paciente.apellido}</span>
+                <span className="clinico-valor">
+                  {paciente.nombre_usuario} {paciente.apellido}
+                </span>
               </div>
               <div className="clinico-item">
                 <span className="clinico-label">ID de paciente</span>
@@ -188,46 +186,46 @@ function AdminHistorialPaciente() {
       )}
 
       <ModalFormulario
-      abierto={!!consultaEditando}
-      titulo="Editar consulta"
-      subtitulo="Actualiza la información de la consulta del paciente."
-      onCerrar={cerrarEdicion}
-      onSubmit={guardar}
-      enviando={guardando}
-      error={errorForm}
-      textoEnviar="Guardar cambios"
-      ancho={560}
-    >
-      <div className="mf-grid">
-        <label className="mf-campo mf-ancho">
-          <span>Servicio</span>
-          <input
-            value={form.servicio}
-            onChange={cambiarCampo("servicio")}
-            required
-          />
-        </label>
+        abierto={!!consultaEditando}
+        titulo="Editar consulta"
+        subtitulo="Actualiza la información de la consulta del paciente."
+        onCerrar={cerrarEdicion}
+        onSubmit={guardar}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar="Guardar cambios"
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Servicio</span>
+            <input
+              value={form.servicio}
+              onChange={cambiarCampo("servicio")}
+              required
+            />
+          </label>
 
-        <label className="mf-campo mf-ancho">
-          <span>Diagnóstico</span>
-          <textarea
-            value={form.diagnostico}
-            rows={3}
-            onChange={cambiarCampo("diagnostico")}
-            required
-          />
-        </label>
+          <label className="mf-campo mf-ancho">
+            <span>Diagnóstico</span>
+            <textarea
+              value={form.diagnostico}
+              rows={3}
+              onChange={cambiarCampo("diagnostico")}
+              required
+            />
+          </label>
 
-        <label className="mf-campo mf-ancho">
-          <span>Observaciones</span>
-          <textarea
-            value={form.observaciones}
-            rows={3}
-            onChange={cambiarCampo("observaciones")}
-          />
-        </label>
-      </div>
-    </ModalFormulario>
+          <label className="mf-campo mf-ancho">
+            <span>Observaciones</span>
+            <textarea
+              value={form.observaciones}
+              rows={3}
+              onChange={cambiarCampo("observaciones")}
+            />
+          </label>
+        </div>
+      </ModalFormulario>
     </div>
   );
 }

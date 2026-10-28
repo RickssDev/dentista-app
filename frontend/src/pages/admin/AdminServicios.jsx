@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import {
   FaTooth,
   FaRegClock,
@@ -64,18 +64,18 @@ function AdminServicios() {
   }, []);
 
   useEffect(() => {
-  if (!form.imagen) {
-    setVistaPrevia(null);
-    return;
-  }
-  if (typeof form.imagen === "string") {
-    setVistaPrevia(getImageUrl(form.imagen));
-    return;
-  }
-  const url = URL.createObjectURL(form.imagen);
-  setVistaPrevia(url);
-  return () => URL.revokeObjectURL(url);
-}, [form.imagen]);
+    if (!form.imagen) {
+      setVistaPrevia(null);
+      return;
+    }
+    if (typeof form.imagen === "string") {
+      setVistaPrevia(getImageUrl(form.imagen));
+      return;
+    }
+    const url = URL.createObjectURL(form.imagen);
+    setVistaPrevia(url);
+    return () => URL.revokeObjectURL(url);
+  }, [form.imagen]);
 
   const abrirModalNuevo = () => {
     setForm({ ...FORM_INICIAL });
@@ -105,105 +105,104 @@ function AdminServicios() {
     return formData;
   };
 
-const guardar = async () => {
-  setErrorForm("");
-
-  try {
-    setGuardando(true);
-
-    if (editando) {
-      await api(`/servicios/${servicioId}`, "PUT", construirFormData(), true);
-    } else {
-      await api("/servicios", "POST", construirFormData(), true);
-    }
-
-    obtenerServicios();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(
-      error.message ||
-        (editando
-          ? "No se pudo actualizar el servicio"
-          : "No se pudo crear el servicio")
-    );
-  } finally {
-    setGuardando(false);
-  }
-};
-
-const obtenerServicioPorId = async (id) => {
-  try {
-    const data = await api(`/servicios/${id}`);
-    const s = data.payload;
-
-    setForm({
-      nombre: s.nombre || "",
-      descripcion: s.descripcion || "",
-      duracion: s.duracion || "",
-      estado: s.estado || "activo",
-      imagen: s.imagen || null,
-    });
-
-    setServicioId(id);
-    setEditando(true);
+  const guardar = async () => {
     setErrorForm("");
-    setMostrarModal(true);
-  } catch (error) {
-    console.error(error);
-  }
-};
+
+    try {
+      setGuardando(true);
+
+      if (editando) {
+        await api(`/servicios/${servicioId}`, "PUT", construirFormData(), true);
+      } else {
+        await api("/servicios", "POST", construirFormData(), true);
+      }
+
+      obtenerServicios();
+      cerrarModal();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(
+        error.message ||
+          (editando
+            ? "No se pudo actualizar el servicio"
+            : "No se pudo crear el servicio"),
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const obtenerServicioPorId = async (id) => {
+    try {
+      const data = await api(`/servicios/${id}`);
+      const s = data.payload;
+
+      setForm({
+        nombre: s.nombre || "",
+        descripcion: s.descripcion || "",
+        duracion: s.duracion || "",
+        estado: s.estado || "activo",
+        imagen: s.imagen || null,
+      });
+
+      setServicioId(id);
+      setEditando(true);
+      setErrorForm("");
+      setMostrarModal(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const confirmarEliminar = async () => {
-  const id = servicioAEliminar.id;
-  setServicioAEliminar(null);
+    const id = servicioAEliminar.id;
+    setServicioAEliminar(null);
 
-  try {
-    const respuesta = await api(`/servicios/${id}`, "DELETE");
-    obtenerServicios();
+    try {
+      const respuesta = await api(`/servicios/${id}`, "DELETE");
+      obtenerServicios();
 
-    if (respuesta?.payload?.desactivado) {
+      if (respuesta?.payload?.desactivado) {
+        setAviso({
+          titulo: "Servicio desactivado",
+          mensaje:
+            "Tiene citas asociadas, así que se desactivó en lugar de eliminarse. Ya no aparecerá en el sitio público ni al crear nuevas citas.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
       setAviso({
-        titulo: "Servicio desactivado",
-        mensaje:
-          "Tiene citas asociadas, así que se desactivó en lugar de eliminarse. Ya no aparecerá en el sitio público ni al crear nuevas citas.",
+        titulo: "No se pudo eliminar",
+        mensaje: "Ocurrió un error al eliminar el servicio. Intenta de nuevo.",
       });
     }
-  } catch (error) {
-    console.error(error);
-    setAviso({
-      titulo: "No se pudo eliminar",
-      mensaje: "Ocurrió un error al eliminar el servicio. Intenta de nuevo.",
-    });
-  }
-};
+  };
 
   const cambiarCampo = (campo) => (e) =>
     setForm({ ...form, [campo]: e.target.value });
 
   const cambiarEstadoServicio = async (servicio) => {
-  const nuevoEstado =
-    servicio.estado === "activo" ? "inactivo" : "activo";
+    const nuevoEstado = servicio.estado === "activo" ? "inactivo" : "activo";
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    formData.append("nombre", servicio.nombre);
-    formData.append("descripcion", servicio.descripcion || "");
-    formData.append("duracion", servicio.duracion);
-    formData.append("estado", nuevoEstado);
+      formData.append("nombre", servicio.nombre);
+      formData.append("descripcion", servicio.descripcion || "");
+      formData.append("duracion", servicio.duracion);
+      formData.append("estado", nuevoEstado);
 
-    await api(`/servicios/${servicio.id}`, "PUT", formData, true);
+      await api(`/servicios/${servicio.id}`, "PUT", formData, true);
 
-    await obtenerServicios();
-  } catch (error) {
-    console.error(error);
-    setAviso({
-      titulo: "No se pudo cambiar el estado",
-      mensaje: "Ocurrió un error al actualizar el servicio.",
-    });
-  }
-};
+      await obtenerServicios();
+    } catch (error) {
+      console.error(error);
+      setAviso({
+        titulo: "No se pudo cambiar el estado",
+        mensaje: "Ocurrió un error al actualizar el servicio.",
+      });
+    }
+  };
 
   return (
     <div className="usuarios-container">
@@ -219,12 +218,12 @@ const obtenerServicioPorId = async (id) => {
       ) : (
         <div className="servicio-cards">
           {servicios.map((servicio) => (
-              <article
-    key={servicio.id}
-    className={`servicio-card${
-      servicio.estado !== "activo" ? " oculta" : ""
-    }`}
-  >
+            <article
+              key={servicio.id}
+              className={`servicio-card${
+                servicio.estado !== "activo" ? " oculta" : ""
+              }`}
+            >
               <ServicioImagen servicio={servicio} />
 
               <div className="servicio-card-top">
@@ -241,7 +240,6 @@ const obtenerServicioPorId = async (id) => {
                 <span>{servicio.duracion}</span>
               </div>
 
-            
               <div className="servicio-acciones">
                 <button
                   className="btn-card-edit"
@@ -252,7 +250,9 @@ const obtenerServicioPorId = async (id) => {
 
                 <button
                   className="btn-card-icon"
-                  title={servicio.estado === "activo" ? "Desactivar" : "Activar"}
+                  title={
+                    servicio.estado === "activo" ? "Desactivar" : "Activar"
+                  }
                   aria-label={
                     servicio.estado === "activo"
                       ? "Desactivar servicio"
@@ -275,89 +275,92 @@ const obtenerServicioPorId = async (id) => {
                   <FaRegTrashAlt />
                 </button>
               </div>
-
             </article>
           ))}
         </div>
       )}
 
       <ModalFormulario
-  abierto={mostrarModal}
-  titulo={editando ? "Editar servicio" : "Nuevo servicio"}
-  subtitulo={
-    editando
-      ? "Actualiza los datos del servicio."
-      : "Agrega un servicio al catálogo de la clínica."
-  }
-  onCerrar={cerrarModal}
-  onSubmit={guardar}
-  enviando={guardando}
-  error={errorForm}
-  textoEnviar={editando ? "Guardar cambios" : "Crear servicio"}
-  ancho={560}
->
-  <div className="mf-grid">
-    <label className="mf-campo mf-ancho">
-      <span>Nombre</span>
-      <input
-        value={form.nombre}
-        onChange={cambiarCampo("nombre")}
-        required
-      />
-    </label>
+        abierto={mostrarModal}
+        titulo={editando ? "Editar servicio" : "Nuevo servicio"}
+        subtitulo={
+          editando
+            ? "Actualiza los datos del servicio."
+            : "Agrega un servicio al catálogo de la clínica."
+        }
+        onCerrar={cerrarModal}
+        onSubmit={guardar}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar={editando ? "Guardar cambios" : "Crear servicio"}
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Nombre</span>
+            <input
+              value={form.nombre}
+              onChange={cambiarCampo("nombre")}
+              required
+            />
+          </label>
 
-    <label className="mf-campo mf-ancho">
-      <span>Descripción</span>
-      <textarea
-        rows={3}
-        value={form.descripcion}
-        onChange={cambiarCampo("descripcion")}
-      />
-    </label>
+          <label className="mf-campo mf-ancho">
+            <span>Descripción</span>
+            <textarea
+              rows={3}
+              value={form.descripcion}
+              onChange={cambiarCampo("descripcion")}
+            />
+          </label>
 
-    <label className="mf-campo">
-      <span>Duración</span>
-      <input
-        value={form.duracion}
-        onChange={cambiarCampo("duracion")}
-        required
-      />
-    </label>
+          <label className="mf-campo">
+            <span>Duración</span>
+            <input
+              value={form.duracion}
+              onChange={cambiarCampo("duracion")}
+              required
+            />
+          </label>
 
-    <label className="mf-campo">
-      <span>Estado</span>
-      <select value={form.estado} onChange={cambiarCampo("estado")}>
-        <option value="activo">Activo</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
-    </label>
+          <label className="mf-campo">
+            <span>Estado</span>
+            <select value={form.estado} onChange={cambiarCampo("estado")}>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </label>
 
-    <div className="mf-archivo mf-ancho">
-      {vistaPrevia && (
-        <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
-      )}
-      <label className="mf-campo">
-        <span>Imagen (opcional)</span>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setForm({ ...form, imagen: e.target.files[0] || form.imagen })
-          }
-        />
-      </label>
-    </div>
-  </div>
-</ModalFormulario>
+          <div className="mf-archivo mf-ancho">
+            {vistaPrevia && (
+              <img
+                className="mf-preview"
+                src={vistaPrevia}
+                alt="Vista previa"
+              />
+            )}
+            <label className="mf-campo">
+              <span>Imagen (opcional)</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                }
+              />
+            </label>
+          </div>
+        </div>
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!servicioAEliminar}
         titulo="Eliminar servicio"
         mensaje={
-        servicioAEliminar
-          ? `¿Seguro que quieres eliminar "${servicioAEliminar.nombre}"? Si tiene citas asociadas, se desactivará en lugar de eliminarse.`
-          : ""
-      }
+          servicioAEliminar
+            ? `¿Seguro que quieres eliminar "${servicioAEliminar.nombre}"? Si tiene citas asociadas, se desactivará en lugar de eliminarse.`
+            : ""
+        }
         textoConfirmar="Eliminar"
         peligro
         onConfirmar={confirmarEliminar}

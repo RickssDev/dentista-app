@@ -1,5 +1,20 @@
-const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1").replace(/\/+$/, "");
-export const BASE_ORIGIN = new URL(BASE_URL).origin;
+// Configuración central de la API
+export const BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:3000/api/v1"
+).replace(/\/+$/, "");
+
+// Compatible con URL relativa y absoluta
+export const BASE_ORIGIN = new URL(
+  BASE_URL,
+  window.location.origin
+).origin;
+
+// URL para archivos e imágenes
+export const ASSETS_URL = (
+  import.meta.env.VITE_ASSETS_URL ||
+  BASE_ORIGIN
+).replace(/\/+$/, "");
 
 // Rutas donde un 401 significa "credenciales incorrectas", no "sesión vencida"
 const RUTAS_SIN_SESION = [

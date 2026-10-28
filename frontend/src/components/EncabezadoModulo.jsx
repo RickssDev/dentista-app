@@ -1,13 +1,13 @@
-import "../styles/AdminPanel.css";
+import "../styles/adminpanel.css";
 import { FaRegHeart, FaPlus, FaArrowLeft } from "react-icons/fa";
 
 function EncabezadoModulo({
   titulo,
   descripcion,
-  textoBoton,         
+  textoBoton,
   onBoton,
-  acciones,            
-  onVolver,            
+  acciones,
+  onVolver,
   textoVolver = "Volver",
 }) {
   return (
@@ -24,13 +24,9 @@ function EncabezadoModulo({
           </button>
         )}
 
-       
-
         <h1 className="encabezado-titulo">{titulo}</h1>
 
-        {descripcion && (
-          <p className="encabezado-descripcion">{descripcion}</p>
-        )}
+        {descripcion && <p className="encabezado-descripcion">{descripcion}</p>}
       </div>
 
       {textoBoton && (
