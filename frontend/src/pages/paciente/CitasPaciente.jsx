@@ -13,7 +13,7 @@ import ModalFormulario from "../../components/ModalFormulario";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import { api } from "../../services/api";
 import { hoyClave } from "../../utils/fechas";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import "../../styles/CitasAdmin.css";
 import "../../styles/MisCitas.css";
 

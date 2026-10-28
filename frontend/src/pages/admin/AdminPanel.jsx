@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 
 import Sidebar from "../../components/sidebar";
 
@@ -35,7 +35,9 @@ function AdminPanel() {
               <AdminInicio
                 recargar={recargarInicio}
                 onCrearCita={() => setSolicitudCrearCita((n) => n + 1)}
-                onAgregarPaciente={() => setSolicitudCrearPaciente((n) => n + 1)}
+                onAgregarPaciente={() =>
+                  setSolicitudCrearPaciente((n) => n + 1)
+                }
               />
             }
           />
@@ -44,7 +46,10 @@ function AdminPanel() {
           <Route path="citas" element={<CitasAdmin />} />
           <Route path="servicios" element={<AdminServicios />} />
           <Route path="historial" element={<AdminHistorial />} />
-          <Route path="historial/:idPaciente" element={<AdminHistorialPaciente />} />
+          <Route
+            path="historial/:idPaciente"
+            element={<AdminHistorialPaciente />}
+          />
           <Route path="promociones" element={<AdminPromociones />} />
           <Route path="comentarios" element={<AdminComentarios />} />
           <Route path="faqs" element={<AdminFaqs />} />

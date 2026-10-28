@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import { FaFileExcel, FaFilePdf } from "react-icons/fa";
 import { api, apiDescargar } from "../../services/api";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
@@ -47,7 +47,8 @@ const RANGOS = [
 const TIPOS = {
   citas: {
     nombre: "Reporte de citas",
-    descripcion: "Estadísticas de las citas de la clínica en el periodo seleccionado.",
+    descripcion:
+      "Estadísticas de las citas de la clínica en el periodo seleccionado.",
     tarjetas: [
       { key: "total", label: "Total de citas" },
       { key: "completadas", label: "Completadas" },
@@ -66,7 +67,8 @@ const EXTENSIONES = { excel: "xlsx", pdf: "pdf" };
 
 const validarFechas = (inicio, fin) => {
   if (!inicio || !fin) return "Selecciona la fecha inicial y la fecha final";
-  if (inicio > fin) return "La fecha inicial no puede ser mayor a la fecha final";
+  if (inicio > fin)
+    return "La fecha inicial no puede ser mayor a la fecha final";
 
   const dias = (new Date(fin) - new Date(inicio)) / 86400000;
   if (dias > MAX_DIAS) return "El rango máximo es de un año (366 días)";
@@ -104,7 +106,7 @@ function AdminReportes() {
 
       try {
         const data = await api(
-          `/reportes/${tipo}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+          `/reportes/${tipo}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
         );
         if (!cancelado) setReporte({ ...data.payload, tipo });
       } catch (err) {
@@ -139,7 +141,7 @@ function AdminReportes() {
 
     try {
       const blob = await apiDescargar(
-        `/reportes/${tipo}/exportar/${formato}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+        `/reportes/${tipo}/exportar/${formato}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
       );
 
       const url = URL.createObjectURL(blob);

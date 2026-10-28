@@ -1,4 +1,4 @@
-import "../styles/AdminPanel.css";
+import "../styles/adminpanel.css";
 
 function FiltrosCard({
   placeholder = "Buscar...",

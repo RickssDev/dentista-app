@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import {
   FaStar,
   FaCheck,
@@ -16,13 +16,25 @@ import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
 
-
 const ESTADO_LABEL = {
   visible: "Aprobado",
   oculto: "Pendiente",
 };
 
-const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const MESES = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
 
 const formatFecha = (fecha) => {
   if (!fecha) return "";
@@ -52,7 +64,9 @@ function AdminComentarios() {
   const [respuesta, setRespuesta] = useState("");
   const [errorForm, setErrorForm] = useState("");
   const location = useLocation();
-  const [filtroEstado, setFiltroEstado] = useState(location.state?.filtroEstado || "");
+  const [filtroEstado, setFiltroEstado] = useState(
+    location.state?.filtroEstado || "",
+  );
   const [comentarioAEliminar, setComentarioAEliminar] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [guardando, setGuardando] = useState(false);
@@ -76,20 +90,20 @@ function AdminComentarios() {
       oculto: comentarios.filter((c) => c.estado === "oculto").length,
       visible: comentarios.filter((c) => c.estado === "visible").length,
     }),
-    [comentarios]
+    [comentarios],
   );
 
   const filtrados = useMemo(() => {
-  const q = normalizar(busqueda.trim());
+    const q = normalizar(busqueda.trim());
 
-  return comentarios.filter((c) => {
-    const coincideEstado = !filtroEstado || c.estado === filtroEstado;
-    const texto = normalizar(
-      `${c.nombre_usuario} ${c.apellido} ${c.nombre_servicio} ${c.comentario}`
-    );
-    return coincideEstado && texto.includes(q);
-  });
-}, [comentarios, filtroEstado, busqueda]);
+    return comentarios.filter((c) => {
+      const coincideEstado = !filtroEstado || c.estado === filtroEstado;
+      const texto = normalizar(
+        `${c.nombre_usuario} ${c.apellido} ${c.nombre_servicio} ${c.comentario}`,
+      );
+      return coincideEstado && texto.includes(q);
+    });
+  }, [comentarios, filtroEstado, busqueda]);
 
   // Aprobar (oculto -> visible) u ocultar (visible -> oculto)
   const cambiarEstado = async (comentario) => {
@@ -104,7 +118,8 @@ function AdminComentarios() {
       console.error(error);
       setAviso({
         titulo: "No se pudo cambiar el estado",
-        mensaje: "Ocurrió un error al actualizar el comentario. Intenta de nuevo.",
+        mensaje:
+          "Ocurrió un error al actualizar el comentario. Intenta de nuevo.",
       });
     }
   };
@@ -120,7 +135,8 @@ function AdminComentarios() {
       console.error(error);
       setAviso({
         titulo: "No se pudo eliminar",
-        mensaje: "Ocurrió un error al eliminar el comentario. Intenta de nuevo.",
+        mensaje:
+          "Ocurrió un error al eliminar el comentario. Intenta de nuevo.",
       });
     }
   };
@@ -138,28 +154,28 @@ function AdminComentarios() {
   };
 
   const guardarRespuesta = async () => {
-  setErrorForm("");
+    setErrorForm("");
 
-  try {
-    setGuardando(true);
+    try {
+      setGuardando(true);
 
-    await api(
-      `/comentarios/${seleccionado.id_comentario}/respuesta`,
-      "PATCH",
-      {
-        respuesta_admin: respuesta,
-      }
-    );
+      await api(
+        `/comentarios/${seleccionado.id_comentario}/respuesta`,
+        "PATCH",
+        {
+          respuesta_admin: respuesta,
+        },
+      );
 
-    obtenerComentarios();
-    cerrarDetalle();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo guardar la respuesta");
-  } finally {
-    setGuardando(false);
-  }
-};
+      obtenerComentarios();
+      cerrarDetalle();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la respuesta");
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   return (
     <div className="usuarios-container">
@@ -169,17 +185,17 @@ function AdminComentarios() {
       />
 
       <FiltrosCard
-      placeholder="Buscar por usuario o comentario..."
-      busqueda={busqueda}
-      onBusquedaChange={setBusqueda}
-      filtro={filtroEstado}
-      onFiltroChange={setFiltroEstado}
-      textoTodos={`Todos (${contadores.todos})`}
-      opcionesFiltro={[
-        { value: "oculto", label: `Pendientes (${contadores.oculto})` },
-        { value: "visible", label: `Aprobados (${contadores.visible})` },
-      ]}
-    />
+        placeholder="Buscar por usuario o comentario..."
+        busqueda={busqueda}
+        onBusquedaChange={setBusqueda}
+        filtro={filtroEstado}
+        onFiltroChange={setFiltroEstado}
+        textoTodos={`Todos (${contadores.todos})`}
+        opcionesFiltro={[
+          { value: "oculto", label: `Pendientes (${contadores.oculto})` },
+          { value: "visible", label: `Aprobados (${contadores.visible})` },
+        ]}
+      />
 
       {filtrados.length === 0 ? (
         <p className="usuarios-vacio">
@@ -245,8 +261,14 @@ function AdminComentarios() {
 
                   <button
                     className={`btn-card-icon${aprobado ? "" : " aprobar"}`}
-                    title={aprobado ? "Ocultar comentario" : "Aprobar y publicar"}
-                    aria-label={aprobado ? "Ocultar comentario" : "Aprobar y publicar comentario"}
+                    title={
+                      aprobado ? "Ocultar comentario" : "Aprobar y publicar"
+                    }
+                    aria-label={
+                      aprobado
+                        ? "Ocultar comentario"
+                        : "Aprobar y publicar comentario"
+                    }
                     onClick={() => cambiarEstado(c)}
                   >
                     {aprobado ? <FaRegEyeSlash /> : <FaRegCheckCircle />}
@@ -268,56 +290,54 @@ function AdminComentarios() {
       )}
 
       <ModalFormulario
-      abierto={!!seleccionado}
-      titulo={
-        seleccionado
-          ? `Comentario de ${seleccionado.nombre_usuario}`
-          : "Comentario"
-      }
-      subtitulo="Consulta la opinión del paciente y responde desde aquí."
-      onCerrar={cerrarDetalle}
-      onSubmit={guardarRespuesta}
-      enviando={guardando}
-      error={errorForm}
-      textoEnviar="Guardar respuesta"
-      textoCancelar="Cerrar"
-      ancho={560}
-    >
-      {seleccionado && (
-        <div className="mf-grid">
-          <div className="mf-campo mf-ancho">
-            <span>Servicio</span>
-            <p>{seleccionado.nombre_servicio || "Sin servicio"}</p>
-          </div>
-
-          <div className="mf-campo mf-ancho">
-            <span>Calificación</span>
-
-            <div className="comentario-modal-linea">
-              <Estrellas valor={seleccionado.calificacion} />
-              <span>{seleccionado.calificacion} / 5</span>
+        abierto={!!seleccionado}
+        titulo={
+          seleccionado
+            ? `Comentario de ${seleccionado.nombre_usuario}`
+            : "Comentario"
+        }
+        subtitulo="Consulta la opinión del paciente y responde desde aquí."
+        onCerrar={cerrarDetalle}
+        onSubmit={guardarRespuesta}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar="Guardar respuesta"
+        textoCancelar="Cerrar"
+        ancho={560}
+      >
+        {seleccionado && (
+          <div className="mf-grid">
+            <div className="mf-campo mf-ancho">
+              <span>Servicio</span>
+              <p>{seleccionado.nombre_servicio || "Sin servicio"}</p>
             </div>
-          </div>
 
-          <div className="mf-campo mf-ancho">
-            <span>Comentario</span>
-            <p className="comentario-completo">
-              {seleccionado.comentario}
-            </p>
-          </div>
+            <div className="mf-campo mf-ancho">
+              <span>Calificación</span>
 
-          <label className="mf-campo mf-ancho">
-            <span>Respuesta del administrador</span>
-            <textarea
-              value={respuesta}
-              placeholder="Escribe una respuesta"
-              rows={4}
-              onChange={(e) => setRespuesta(e.target.value)}
-            />
-          </label>
-        </div>
-      )}
-    </ModalFormulario>
+              <div className="comentario-modal-linea">
+                <Estrellas valor={seleccionado.calificacion} />
+                <span>{seleccionado.calificacion} / 5</span>
+              </div>
+            </div>
+
+            <div className="mf-campo mf-ancho">
+              <span>Comentario</span>
+              <p className="comentario-completo">{seleccionado.comentario}</p>
+            </div>
+
+            <label className="mf-campo mf-ancho">
+              <span>Respuesta del administrador</span>
+              <textarea
+                value={respuesta}
+                placeholder="Escribe una respuesta"
+                rows={4}
+                onChange={(e) => setRespuesta(e.target.value)}
+              />
+            </label>
+          </div>
+        )}
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!comentarioAEliminar}

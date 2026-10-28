@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "../../styles/AdminPanel.css";
+import "../../styles/adminpanel.css";
 import {
   FaTooth,
   FaRegCalendarAlt,
@@ -47,7 +47,6 @@ const estadoEfectivo = (promo, hoy) => {
 /* Imagen de la promoción; si no hay (o falla la carga) muestra un icono */
 function PromoImagen({ promo }) {
   const [falloImagen, setFalloImagen] = useState(false);
-  
 
   return (
     <div className="promo-img-wrap">
@@ -104,33 +103,33 @@ function AdminPromociones() {
   }, []);
 
   useEffect(() => {
-  if (!form.imagen) {
-    setVistaPrevia(null);
-    return;
-  }
-  if (typeof form.imagen === "string") {
-    setVistaPrevia(getImageUrl(form.imagen));
-    return;
-  }
-  const url = URL.createObjectURL(form.imagen);
-  setVistaPrevia(url);
-  return () => URL.revokeObjectURL(url);
-}, [form.imagen]);
+    if (!form.imagen) {
+      setVistaPrevia(null);
+      return;
+    }
+    if (typeof form.imagen === "string") {
+      setVistaPrevia(getImageUrl(form.imagen));
+      return;
+    }
+    const url = URL.createObjectURL(form.imagen);
+    setVistaPrevia(url);
+    return () => URL.revokeObjectURL(url);
+  }, [form.imagen]);
 
   const promocionesFiltradas = useMemo(() => {
-  const q = normalizar(busqueda.trim());
+    const q = normalizar(busqueda.trim());
 
-  return promociones.filter((p) => {
-    const coincideEstado =
-      !filtroEstado || estadoEfectivo(p, hoy) === filtroEstado;
-    const texto = normalizar(`${p.nombre_promocion} ${p.nombre_servicio}`);
-    return coincideEstado && texto.includes(q);
-  });
-}, [promociones, busqueda, filtroEstado, hoy]);
+    return promociones.filter((p) => {
+      const coincideEstado =
+        !filtroEstado || estadoEfectivo(p, hoy) === filtroEstado;
+      const texto = normalizar(`${p.nombre_promocion} ${p.nombre_servicio}`);
+      return coincideEstado && texto.includes(q);
+    });
+  }, [promociones, busqueda, filtroEstado, hoy]);
 
   // Solo servicios activos (más el que ya tenga la promoción que se edita)
   const serviciosDisponibles = servicios.filter(
-    (s) => s.estado === "activo" || String(s.id) === form.id_servicio
+    (s) => s.estado === "activo" || String(s.id) === form.id_servicio,
   );
 
   const abrirModalNuevo = () => {
@@ -162,53 +161,53 @@ function AdminPromociones() {
   };
 
   const validar = () => {
-  if (
-    !editando &&
-    (!form.nombre_promocion ||
-      !form.descripcion ||
-      !form.id_servicio ||
-      !form.fecha_inicio ||
-      !form.fecha_fin)
-  ) {
-    return "Completa todos los campos";
-  }
-  if (
-    form.fecha_inicio &&
-    form.fecha_fin &&
-    form.fecha_fin < form.fecha_inicio
-  ) {
-    return "La fecha de fin no puede ser anterior a la de inicio";
-  }
-  return "";
-};
+    if (
+      !editando &&
+      (!form.nombre_promocion ||
+        !form.descripcion ||
+        !form.id_servicio ||
+        !form.fecha_inicio ||
+        !form.fecha_fin)
+    ) {
+      return "Completa todos los campos";
+    }
+    if (
+      form.fecha_inicio &&
+      form.fecha_fin &&
+      form.fecha_fin < form.fecha_inicio
+    ) {
+      return "La fecha de fin no puede ser anterior a la de inicio";
+    }
+    return "";
+  };
 
   const guardarPromocion = async () => {
-  const mensajeError = validar();
-  if (mensajeError) {
-    setErrorForm(mensajeError);
-    return;
-  }
-
-  setErrorForm("");
-
-  try {
-    setGuardando(true);
-
-    if (editando) {
-      await api(`/promociones/${promoId}`, "PUT", construirFormData(), true);
-    } else {
-      await api("/promociones", "POST", construirFormData(), true);
+    const mensajeError = validar();
+    if (mensajeError) {
+      setErrorForm(mensajeError);
+      return;
     }
 
-    obtenerPromociones();
-    cerrarModal();
-  } catch (error) {
-    console.error(error);
-    setErrorForm(error.message || "No se pudo guardar la promoción");
-  } finally {
-    setGuardando(false);
-  }
-};
+    setErrorForm("");
+
+    try {
+      setGuardando(true);
+
+      if (editando) {
+        await api(`/promociones/${promoId}`, "PUT", construirFormData(), true);
+      } else {
+        await api("/promociones", "POST", construirFormData(), true);
+      }
+
+      obtenerPromociones();
+      cerrarModal();
+    } catch (error) {
+      console.error(error);
+      setErrorForm(error.message || "No se pudo guardar la promoción");
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   const obtenerPromocionPorId = async (id) => {
     try {
@@ -251,20 +250,24 @@ function AdminPromociones() {
   };
 
   const cambiarEstado = async (promo) => {
-  const formData = new FormData();
-  formData.append("estado", promo.estado === "activo" ? "inactivo" : "activo");
+    const formData = new FormData();
+    formData.append(
+      "estado",
+      promo.estado === "activo" ? "inactivo" : "activo",
+    );
 
-  try {
-    await api(`/promociones/${promo.id_promocion}`, "PUT", formData, true);
-    obtenerPromociones();
-  } catch (error) {
-    console.error(error);
-    setAviso({
-      titulo: "No se pudo cambiar el estado",
-      mensaje: "Ocurrió un error al actualizar la promoción. Intenta de nuevo.",
-    });
-  }
-};
+    try {
+      await api(`/promociones/${promo.id_promocion}`, "PUT", formData, true);
+      obtenerPromociones();
+    } catch (error) {
+      console.error(error);
+      setAviso({
+        titulo: "No se pudo cambiar el estado",
+        mensaje:
+          "Ocurrió un error al actualizar la promoción. Intenta de nuevo.",
+      });
+    }
+  };
 
   const cambiarCampo = (campo) => (e) =>
     setForm({ ...form, [campo]: e.target.value });
@@ -285,9 +288,9 @@ function AdminPromociones() {
         filtro={filtroEstado}
         onFiltroChange={setFiltroEstado}
         opcionesFiltro={[
-        { value: "activo", label: "Activo" },
-        { value: "inactivo", label: "Inactivo" },
-        { value: "vencida", label: "Vencida" },
+          { value: "activo", label: "Activo" },
+          { value: "inactivo", label: "Inactivo" },
+          { value: "vencida", label: "Vencida" },
         ]}
       />
 
@@ -321,7 +324,9 @@ function AdminPromociones() {
                 <div className="promo-datos">
                   <div className="promo-dato">
                     <FaTooth />
-                    <span title={promo.nombre_servicio}>{promo.nombre_servicio}</span>
+                    <span title={promo.nombre_servicio}>
+                      {promo.nombre_servicio}
+                    </span>
                   </div>
                   <div className="promo-dato">
                     <FaRegCalendarAlt />
@@ -351,7 +356,11 @@ function AdminPromociones() {
                           ? "Desactivar"
                           : "Activar"
                     }
-                    aria-label={guardadaActiva ? "Desactivar promoción" : "Activar promoción"}
+                    aria-label={
+                      guardadaActiva
+                        ? "Desactivar promoción"
+                        : "Activar promoción"
+                    }
                     onClick={() => cambiarEstado(promo)}
                   >
                     {guardadaActiva ? <FaRegEyeSlash /> : <FaRegEye />}
@@ -371,103 +380,107 @@ function AdminPromociones() {
         </div>
       )}
 
-        <ModalFormulario
-    abierto={mostrarModal}
-    titulo={editando ? "Editar promoción" : "Nueva promoción"}
-    subtitulo={
-      editando
-        ? "Actualiza los datos de la promoción."
-        : "Crea una oferta para uno de tus servicios."
-    }
-    onCerrar={cerrarModal}
-    onSubmit={guardarPromocion}
-    enviando={guardando}
-    error={errorForm}
-    textoEnviar={editando ? "Guardar cambios" : "Crear promoción"}
-    ancho={560}
-  >
-    <div className="mf-grid">
-      <label className="mf-campo mf-ancho">
-        <span>Título</span>
-        <input
-          value={form.nombre_promocion}
-          onChange={cambiarCampo("nombre_promocion")}
-          required={!editando}
-        />
-      </label>
+      <ModalFormulario
+        abierto={mostrarModal}
+        titulo={editando ? "Editar promoción" : "Nueva promoción"}
+        subtitulo={
+          editando
+            ? "Actualiza los datos de la promoción."
+            : "Crea una oferta para uno de tus servicios."
+        }
+        onCerrar={cerrarModal}
+        onSubmit={guardarPromocion}
+        enviando={guardando}
+        error={errorForm}
+        textoEnviar={editando ? "Guardar cambios" : "Crear promoción"}
+        ancho={560}
+      >
+        <div className="mf-grid">
+          <label className="mf-campo mf-ancho">
+            <span>Título</span>
+            <input
+              value={form.nombre_promocion}
+              onChange={cambiarCampo("nombre_promocion")}
+              required={!editando}
+            />
+          </label>
 
-      <label className="mf-campo mf-ancho">
-        <span>Descripción</span>
-        <textarea
-          rows={3}
-          value={form.descripcion}
-          onChange={cambiarCampo("descripcion")}
-          required={!editando}
-        />
-      </label>
+          <label className="mf-campo mf-ancho">
+            <span>Descripción</span>
+            <textarea
+              rows={3}
+              value={form.descripcion}
+              onChange={cambiarCampo("descripcion")}
+              required={!editando}
+            />
+          </label>
 
-      <label className="mf-campo">
-        <span>Servicio</span>
-        <select
-          value={form.id_servicio}
-          onChange={cambiarCampo("id_servicio")}
-          required={!editando}
-        >
-          <option value="">Selecciona servicio</option>
-          {serviciosDisponibles.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.nombre}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label className="mf-campo">
+            <span>Servicio</span>
+            <select
+              value={form.id_servicio}
+              onChange={cambiarCampo("id_servicio")}
+              required={!editando}
+            >
+              <option value="">Selecciona servicio</option>
+              {serviciosDisponibles.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label className="mf-campo">
-        <span>Estado</span>
-        <select value={form.estado} onChange={cambiarCampo("estado")}>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-        </select>
-      </label>
+          <label className="mf-campo">
+            <span>Estado</span>
+            <select value={form.estado} onChange={cambiarCampo("estado")}>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </label>
 
-      <label className="mf-campo">
-        <span>Fecha de inicio</span>
-        <input
-          type="date"
-          value={form.fecha_inicio}
-          onChange={cambiarCampo("fecha_inicio")}
-          required={!editando}
-        />
-      </label>
+          <label className="mf-campo">
+            <span>Fecha de inicio</span>
+            <input
+              type="date"
+              value={form.fecha_inicio}
+              onChange={cambiarCampo("fecha_inicio")}
+              required={!editando}
+            />
+          </label>
 
-      <label className="mf-campo">
-        <span>Fecha de fin</span>
-        <input
-          type="date"
-          min={form.fecha_inicio || undefined}
-          value={form.fecha_fin}
-          onChange={cambiarCampo("fecha_fin")}
-          required={!editando}
-        />
-      </label>
+          <label className="mf-campo">
+            <span>Fecha de fin</span>
+            <input
+              type="date"
+              min={form.fecha_inicio || undefined}
+              value={form.fecha_fin}
+              onChange={cambiarCampo("fecha_fin")}
+              required={!editando}
+            />
+          </label>
 
-      <div className="mf-archivo mf-ancho">
-        {vistaPrevia && (
-          <img className="mf-preview" src={vistaPrevia} alt="Vista previa" />
-        )}
-        <label className="mf-campo">
-          <span>Imagen </span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              setForm({ ...form, imagen: e.target.files[0] || form.imagen })
-            }
-          />
-        </label>
-      </div>
-    </div>
-  </ModalFormulario>
+          <div className="mf-archivo mf-ancho">
+            {vistaPrevia && (
+              <img
+                className="mf-preview"
+                src={vistaPrevia}
+                alt="Vista previa"
+              />
+            )}
+            <label className="mf-campo">
+              <span>Imagen </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                }
+              />
+            </label>
+          </div>
+        </div>
+      </ModalFormulario>
 
       <ModalConfirmacion
         abierto={!!promoAEliminar}
