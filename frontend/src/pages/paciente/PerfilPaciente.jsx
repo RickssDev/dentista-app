@@ -1,45 +1,51 @@
 import { useEffect, useState } from "react";
-import SidebarPaciente from "../../components/SidebarPaciente";
+import { FaLock } from "react-icons/fa";
+import Sidebar from "../../components/sidebar";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+import ModalConfirmacion from "../../components/ModalConfirmacion";
 import { api } from "../../services/api";
-import "../../styles/PerfilPaciente.css";
+import "../../styles/AdminPanel.css";
+import "../../styles/MisCitas.css";
+
+const DATOS_VACIOS = {
+  nombre: "",
+  apellido: "",
+  telefono: "",
+  direccion: "",
+  genero: "",
+  fecha_nacimiento: "",
+  correo: "",
+};
+
+const PASSWORD_VACIO = {
+  contrasena_actual: "",
+  nueva_contrasena: "",
+  confirmar_contrasena: "",
+};
 
 function PerfilPaciente() {
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
+  const [aviso, setAviso] = useState(null);
 
-  // Datos personales
-  const [datosPersonales, setDatosPersonales] = useState({
-    nombre: "",
-    apellido: "",
-    telefono: "",
-    direccion: "",
-    genero: "",
-    fecha_nacimiento: "",
-    correo: ""
-  });
+  const [datos, setDatos] = useState(DATOS_VACIOS);
+  const [guardandoDatos, setGuardandoDatos] = useState(false);
+  const [errorDatos, setErrorDatos] = useState("");
 
-  // Datos de contraseña
-  const [datosPassword, setDatosPassword] = useState({
-    contrasena_actual: "",
-    nueva_contrasena: "",
-    confirmar_contrasena: ""
-  });
+  const [password, setPassword] = useState(PASSWORD_VACIO);
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
+  const [errorPassword, setErrorPassword] = useState("");
 
-  useEffect(() => {
-    cargarPerfil();
-  }, []);
-
-  // =========================
-  // CARGAR PERFIL
-  // =========================
-  const cargarPerfil = async () => {
+  const cargarPerfil = async (mostrarCarga = true) => {
     try {
-      setLoading(true);
+      if (mostrarCarga) setCargando(true);
+      setErrorCarga("");
+      setErrorDatos("");
 
       const res = await api("/pacientes/perfil");
+      const data = res?.payload ?? res?.data ?? res;
 
-      const data = res.payload;
-
-      setDatosPersonales({
+      setDatos({
         nombre: data.nombre_usuario || "",
         apellido: data.apellido || "",
         telefono: data.telefono || "",
@@ -48,382 +54,296 @@ function PerfilPaciente() {
         fecha_nacimiento: data.fecha_nacimiento
           ? data.fecha_nacimiento.split("T")[0]
           : "",
-        correo: data.correo || ""
+        correo: data.correo || "",
       });
     } catch (error) {
       console.error("ERROR AL CARGAR PERFIL:", error);
+      setErrorCarga(error.message || "No se pudo cargar tu perfil.");
     } finally {
-      setLoading(false);
+      setCargando(false);
     }
   };
 
-  // =========================
-  // CAMBIOS DATOS PERSONALES
-  // =========================
-  const handlePersonalesChange = (e) => {
-    setDatosPersonales({
-      ...datosPersonales,
-      [e.target.name]: e.target.value
-    });
-  };
+  useEffect(() => {
+    cargarPerfil();
+  }, []);
 
-  const handlePasswordChange = (e) => {
-    setDatosPassword({
-      ...datosPassword,
-      [e.target.name]: e.target.value
-    });
-  };
+  const cambiarDatos = (e) =>
+    setDatos({ ...datos, [e.target.name]: e.target.value });
 
-  // =========================
-  // ACTUALIZAR DATOS PERSONALES
-  // =========================
-  const actualizarDatosPersonales = async (e) => {
+  const cambiarPassword = (e) =>
+    setPassword({ ...password, [e.target.name]: e.target.value });
+
+  const actualizarDatos = async (e) => {
     e.preventDefault();
 
+    const telefono = datos.telefono.replace(/\D/g, "");
+    if (telefono.length !== 10) {
+      setErrorDatos("El teléfono debe tener 10 dígitos.");
+      return;
+    }
+
     try {
-      await api(
-        "/pacientes/perfil",
-        "PUT",
-        {
-          telefono: datosPersonales.telefono,
-          direccion: datosPersonales.direccion,
-          genero: datosPersonales.genero
-        }
-      );
+      setGuardandoDatos(true);
+      setErrorDatos("");
 
-      alert("Datos personales actualizados con éxito");
+      await api("/pacientes/perfil", "PUT", {
+        telefono,
+        direccion: datos.direccion.trim(),
+        genero: datos.genero,
+      });
 
-      // Volvemos a cargar los datos desde el backend
-      await cargarPerfil();
+      await cargarPerfil(false);
+      setAviso({
+        titulo: "Datos actualizados",
+        mensaje: "Tus datos personales se guardaron correctamente.",
+      });
     } catch (error) {
       console.error("ERROR AL ACTUALIZAR PERFIL:", error);
-
-      alert(
-        error.message || "Error al actualizar perfil"
-      );
+      setErrorDatos(error.message || "No se pudo actualizar tu perfil.");
+    } finally {
+      setGuardandoDatos(false);
     }
   };
 
-  // =========================
-  // ACTUALIZAR CONTRASEÑA
-  // =========================
   const actualizarContrasena = async (e) => {
     e.preventDefault();
 
-    if (
-      datosPassword.nueva_contrasena !==
-      datosPassword.confirmar_contrasena
-    ) {
-      return alert("Las contraseñas nuevas no coinciden");
+    if (password.nueva_contrasena !== password.confirmar_contrasena) {
+      setErrorPassword("Las contraseñas nuevas no coinciden.");
+      return;
     }
 
     try {
-      await api(
-        `/auth/cambiarContrasena`,
-        "PUT",
-        {
-          contrasena_actual: datosPassword.contrasena_actual,
-          nueva_contrasena: datosPassword.nueva_contrasena,
-          confirmar_contrasena:
-            datosPassword.confirmar_contrasena
-        }
-      );
+      setGuardandoPassword(true);
+      setErrorPassword("");
 
-      alert("Contraseña actualizada con éxito");
+      await api("/auth/cambiarContrasena", "PUT", {
+        contrasena_actual: password.contrasena_actual,
+        nueva_contrasena: password.nueva_contrasena,
+        confirmar_contrasena: password.confirmar_contrasena,
+      });
 
-      setDatosPassword({
-        contrasena_actual: "",
-        nueva_contrasena: "",
-        confirmar_contrasena: ""
+      setPassword(PASSWORD_VACIO);
+      setAviso({
+        titulo: "Contraseña actualizada",
+        mensaje: "Tu contraseña se cambió correctamente.",
       });
     } catch (error) {
-      console.error(
-        "ERROR AL ACTUALIZAR CONTRASEÑA:",
-        error
-      );
-
-      alert(
-        error.message || "Error al actualizar contraseña"
-      );
+      console.error("ERROR AL ACTUALIZAR CONTRASEÑA:", error);
+      setErrorPassword(error.message || "No se pudo actualizar la contraseña.");
+    } finally {
+      setGuardandoPassword(false);
     }
   };
 
   return (
-    <>
-      <SidebarPaciente />
+    <div className="admin-container">
+      <Sidebar tipo="paciente" />
 
-      <div className="inicio-container">
-        <h1 style={{ marginBottom: "30px" }}>
-          Editar Perfil
-        </h1>
+      <div className="admin-content">
+        <div className="usuarios-container">
+          <EncabezadoModulo
+            titulo="Mi perfil"
+            descripcion="Actualiza tus datos de contacto y la seguridad de tu cuenta."
+          />
 
-        {loading ? (
-          <p>Cargando información del perfil...</p>
-        ) : (
-          <div className="perfil-grid">
+          {errorCarga && <p className="mensaje-error">{errorCarga}</p>}
 
-            {/* =========================
-                DATOS PERSONALES
-            ========================== */}
-            <div className="card perfil-card">
+          {cargando ? (
+            <p className="usuarios-vacio">Cargando perfil...</p>
+          ) : (
+            <div className="perfil-grid">
+              {/* Datos personales */}
+              <section className="clinico-card">
+                <h2 className="clinico-titulo">Datos personales</h2>
+                <p className="perfil-subtitulo">
+                  Los datos con candado solo pueden cambiarse en la clínica.
+                </p>
 
-              <h2>Datos Personales</h2>
+                <form className="perfil-form" onSubmit={actualizarDatos}>
+                  <div className="mf-grid">
+                    <label className="mf-campo">
+                      <span>
+                        Nombre 
+                      </span>
+                      <input type="text" value={datos.nombre} disabled />
+                    </label>
 
-              <p className="subtitulo">
-                Actualiza tu información de contacto.
-              </p>
+                    <label className="mf-campo">
+                      <span>
+                        Apellido 
+                      </span>
+                      <input type="text" value={datos.apellido} disabled />
+                    </label>
 
-              <form onSubmit={actualizarDatosPersonales}>
+                    <label className="mf-campo mf-ancho">
+                      <span>
+                        Correo electrónico 
+                      </span>
+                      <input type="email" value={datos.correo} disabled />
+                    </label>
 
-                {/* Nombre y apellido */}
-                <div className="form-row">
+                    <label className="mf-campo">
+                      <span>
+                        Fecha de nacimiento 
+                      </span>
+                      <input type="date" value={datos.fecha_nacimiento} disabled />
+                    </label>
 
-                  <div className="input-group">
-                    <label>Nombre</label>
+                    <label className="mf-campo">
+                      <span>Género</span>
+                      <select
+                        name="genero"
+                        value={datos.genero}
+                        onChange={cambiarDatos}
+                        required
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </label>
 
-                    <div className="input-with-icon">
+                    <label className="mf-campo mf-ancho">
+                      <span>Teléfono</span>
+                      <input
+                        type="tel"
+                        name="telefono"
+                        inputMode="numeric"
+                        placeholder="10 dígitos"
+                        value={datos.telefono}
+                        onChange={cambiarDatos}
+                        required
+                      />
+                    </label>
+
+                    <label className="mf-campo mf-ancho">
+                      <span>Dirección</span>
                       <input
                         type="text"
-                        value={datosPersonales.nombre}
-                        disabled
-                        className="input-disabled"
+                        name="direccion"
+                        value={datos.direccion}
+                        onChange={cambiarDatos}
+                        required
                       />
-
-                      <span className="lock-icon"> 
-                      </span>
-                    </div>
+                    </label>
                   </div>
 
-                  <div className="input-group">
-                    <label>Apellido</label>
+                  {errorDatos && (
+                    <p className="mf-error" role="alert">
+                      {errorDatos}
+                    </p>
+                  )}
 
-                    <div className="input-with-icon">
-                      <input
-                        type="text"
-                        value={datosPersonales.apellido}
-                        disabled
-                        className="input-disabled"
-                      />
-
-                      <span className="lock-icon">
-                      </span>
-                    </div>
+                  <div className="perfil-acciones">
+                    <button
+                      type="button"
+                      className="mf-btn mf-btn-sec"
+                      onClick={() => cargarPerfil(false)}
+                      disabled={guardandoDatos}
+                    >
+                      Restablecer
+                    </button>
+                    <button
+                      type="submit"
+                      className="mf-btn mf-btn-prin"
+                      disabled={guardandoDatos}
+                    >
+                      {guardandoDatos ? "Guardando..." : "Guardar cambios"}
+                    </button>
                   </div>
+                </form>
+              </section>
 
-                </div>
+              {/* Privacidad y seguridad */}
+              <section className="clinico-card">
+                <h2 className="clinico-titulo">Privacidad y seguridad</h2>
+                <p className="perfil-subtitulo">Cambia tu contraseña de acceso.</p>
 
-                {/* Correo */}
-                <div className="input-group">
-                  <label>Correo electrónico</label>
-
-                  <div className="input-with-icon">
+                <form className="perfil-form" onSubmit={actualizarContrasena}>
+                  <label className="mf-campo">
+                    <span>Contraseña actual</span>
                     <input
-                      type="email"
-                      value={datosPersonales.correo}
-                      disabled
-                      className="input-disabled"
+                      type="password"
+                      name="contrasena_actual"
+                      autoComplete="current-password"
+                      placeholder="Contraseña"
+                      value={password.contrasena_actual}
+                      onChange={cambiarPassword}
+                      required
                     />
-
-                    <span className="lock-icon">
-                    </span>
-                  </div>
-                </div>
-
-                {/* Fecha de nacimiento */}
-                <div className="input-group">
-                  <label>Fecha de Nacimiento</label>
-
-                  <div className="input-with-icon">
-                    <input
-                      type="date"
-                      value={
-                        datosPersonales.fecha_nacimiento
-                      }
-                      disabled
-                      className="input-disabled"
-                    />
-
-                    <span className="lock-icon">
-                    </span>
-                  </div>
-                </div>
-
-                {/* Teléfono */}
-                <div className="input-group">
-                  <label>Teléfono</label>
-
-                  <input
-                    type="text"
-                    name="telefono"
-                    value={datosPersonales.telefono}
-                    onChange={handlePersonalesChange}
-                    required
-                  />
-                </div>
-
-                {/* Dirección */}
-                <div className="input-group">
-                  <label>Dirección</label>
-
-                  <input
-                    type="text"
-                    name="direccion"
-                    value={datosPersonales.direccion}
-                    onChange={handlePersonalesChange}
-                    
-                    required
-                  />
-                </div>
-
-                {/* Género */}
-                <div className="input-group">
-                  <label>Género</label>
-
-                  <select
-                    name="genero"
-                    value={datosPersonales.genero}
-                    onChange={handlePersonalesChange}
-                    required
-                  >
-                    <option value="">
-                      Seleccionar...
-                    </option>
-
-                    <option value="femenino">
-                      Femenino
-                    </option>
-
-                    <option value="masculino">
-                      Masculino
-                    </option>
-
-                    <option value="otro">
-                      Otro
-                    </option>
-                  </select>
-                </div>
-
-                {/* Botones */}
-                <div className="botones botones-derecha">
-
-                  <button
-                    type="button"
-                    className="btn btn-cancelar"
-                    onClick={cargarPerfil}
-                  >
-                    Cancelar
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="btn btn-reprogramar"
-                  >
-                    Guardar Cambios
-                  </button>
-
-                </div>
-
-              </form>
-            </div>
-
-            {/* =========================
-                PRIVACIDAD Y SEGURIDAD
-            ========================== */}
-            <div className="card perfil-card">
-
-              <h2>Privacidad y Seguridad</h2>
-
-              <p className="subtitulo">
-                Cambia tu contraseña de acceso.
-              </p>
-
-              <form onSubmit={actualizarContrasena}>
-
-                {/* Contraseña actual */}
-                <div className="input-group">
-                  <label>Contraseña Actual</label>
-
-                  <input
-                    type="password"
-                    name="contrasena_actual"
-                    value={
-                      datosPassword.contrasena_actual
-                    }
-                    onChange={handlePasswordChange}
-                    placeholder="Contraseña"
-                    required
-                  />
-                </div>
-
-                {/* Nueva contraseña */}
-                <div className="input-group">
-                  <label>Nueva Contraseña</label>
-
-                  <input
-                    type="password"
-                    name="nueva_contrasena"
-                    value={
-                      datosPassword.nueva_contrasena
-                    }
-                    onChange={handlePasswordChange}
-                    placeholder="Nueva contraseña"
-                    required
-                    
-                  />
-                </div>
-
-                {/* Confirmar contraseña */}
-                <div className="input-group">
-                  <label>
-                    Confirmar Nueva Contraseña
                   </label>
 
-                  <input
-                    type="password"
-                    name="confirmar_contrasena"
-                    value={
-                      datosPassword.confirmar_contrasena
-                    }
-                    onChange={handlePasswordChange}
-                    placeholder="Repite tu nueva contraseña"
-                    required
-                    
-                  />
-                </div>
+                  <label className="mf-campo">
+                    <span>Nueva contraseña</span>
+                    <input
+                      type="password"
+                      name="nueva_contrasena"
+                      autoComplete="new-password"
+                      placeholder="Nueva contraseña"
+                      value={password.nueva_contrasena}
+                      onChange={cambiarPassword}
+                      required
+                    />
+                  </label>
 
-                {/* Botones */}
-                <div className="botones botones-derecha">
+                  <label className="mf-campo">
+                    <span>Confirmar nueva contraseña</span>
+                    <input
+                      type="password"
+                      name="confirmar_contrasena"
+                      autoComplete="new-password"
+                      placeholder="Repite tu nueva contraseña"
+                      value={password.confirmar_contrasena}
+                      onChange={cambiarPassword}
+                      required
+                    />
+                  </label>
 
-                  <button
-                    type="button"
-                    className="btn btn-cancelar"
-                    onClick={() =>
-                      setDatosPassword({
-                        contrasena_actual: "",
-                        nueva_contrasena: "",
-                        confirmar_contrasena: ""
-                      })
-                    }
-                  >
-                    Limpiar
-                  </button>
+                  {errorPassword && (
+                    <p className="mf-error" role="alert">
+                      {errorPassword}
+                    </p>
+                  )}
 
-                  <button
-                    type="submit"
-                    className="btn btn-reprogramar"
-                  >
-                    Actualizar Contraseña
-                  </button>
-
-                </div>
-
-              </form>
+                  <div className="perfil-acciones">
+                    <button
+                      type="button"
+                      className="mf-btn mf-btn-sec"
+                      onClick={() => {
+                        setPassword(PASSWORD_VACIO);
+                        setErrorPassword("");
+                      }}
+                      disabled={guardandoPassword}
+                    >
+                      Limpiar
+                    </button>
+                    <button
+                      type="submit"
+                      className="mf-btn mf-btn-prin"
+                      disabled={guardandoPassword}
+                    >
+                      {guardandoPassword ? "Guardando..." : "Actualizar contraseña"}
+                    </button>
+                  </div>
+                </form>
+              </section>
             </div>
-
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </>
+
+      <ModalConfirmacion
+        abierto={!!aviso}
+        titulo={aviso?.titulo}
+        mensaje={aviso?.mensaje}
+        textoCancelar={null}
+        textoConfirmar="Aceptar"
+        onConfirmar={() => setAviso(null)}
+      />
+    </div>
   );
 }
 

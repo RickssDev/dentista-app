@@ -1,101 +1,269 @@
-/* Heredamos .inicio-container, .card, .btn y modales de tu CSS existente */
+/* =========================================================
+   MisCitas.css
+   Estilos exclusivos del área del paciente: Mis citas, Inicio,
+   Mi perfil y Completar perfil.
+   El layout, el encabezado, las cards y los modales vienen de
+   AdminPanel.css, CitasAdmin.css y sidebar.css.
+   ========================================================= */
 
-.header-citas {
-    display: flex;
-    justify-content: space-between;
+/* Botón "Dejar comentario" dentro de la card de cita */
+.cita-comentar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Selector de estrellas del modal de comentario */
+.estrellas-input {
+  display: flex;
+  gap: 6px;
+}
+
+.estrella-btn {
+  padding: 0;
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.estrella-btn.llena {
+  color: #f5b301;
+}
+
+.estrella-btn:hover {
+  transform: scale(1.12);
+}
+
+.estrella-btn:focus-visible {
+  outline: 2px solid #e94b6a;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .estrella-btn {
+    transition: none;
+  }
+
+  .estrella-btn:hover {
+    transform: none;
+  }
+}
+
+
+/* =========================================================
+   Inicio del paciente
+   ========================================================= */
+
+/* Botones de texto dentro de la card de la próxima cita */
+.cita-acciones .mf-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+}
+
+/* La fecha cabe completa dentro de la pastilla de la lista */
+.historial-fecha {
+  min-width: 112px;
+  white-space: nowrap;
+}
+
+.inicio-ver-todas {
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #9d2b4a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inicio-ver-todas:hover {
+  text-decoration: underline;
+}
+
+.inicio-ver-todas:focus-visible {
+  outline: 2px solid #e94b6a;
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* Recordatorio de la próxima cita */
+.recordatorio-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+  padding: 16px 20px;
+  background: #fff1f4;
+  border: 1px solid #fde8ec;
+  border-radius: 20px;
+  color: #4b5563;
+}
+
+.recordatorio-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border-radius: 14px;
+  color: #e94b6a;
+  font-size: 1.1rem;
+}
+
+.recordatorio-texto {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.recordatorio-texto strong {
+  color: #9d2b4a;
+}
+
+
+/* =========================================================
+   Mi perfil
+   ========================================================= */
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.perfil-subtitulo {
+  margin: -8px 0 20px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.perfil-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Candado de los datos que no se pueden editar */
+.campo-candado {
+  margin-left: 6px;
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.mf-campo input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .perfil-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .recordatorio-card {
+    align-items: flex-start;
+  }
+}
+
+
+/* =========================================================
+   Completar perfil
+   ========================================================= */
+
+/* Fondo de la página detrás de la modal */
+.completar-fondo {
+  min-height: 100vh;
+  background: #f4dede;
+}
+
+
+/* =========================================================
+   Inicio del paciente: próxima cita vacía e historial en pantallas angostas
+   ========================================================= */
+
+/* Tarjeta de "no hay próxima cita" (y de carga) */
+.proxima-vacia {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background: #fff;
+  border: 1px solid #ead9d7;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.proxima-vacia-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: #fde8ec;
+  border-radius: 14px;
+  color: #e94b6a;
+  font-size: 1.2rem;
+}
+
+.proxima-vacia-titulo {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.proxima-vacia-texto {
+  margin: 2px 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Historial: en pantallas angostas la fila pasa a dos renglones
+   (fecha + estado arriba, servicio y hora abajo) para que el texto
+   tenga todo el ancho y no se parta letra por letra */
+@media (max-width: 900px) {
+  .agenda-item.historial-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "fecha estado"
+      "info info";
     align-items: center;
-    margin-bottom: 20px;
-}
+    gap: 10px 12px;
+  }
 
-.header-citas h1 {
-    margin-bottom: 0; /* Para alinear con el botón */
-}
+  .historial-item .historial-fecha {
+    grid-area: fecha;
+    justify-self: start;
+    min-width: 0;
+  }
 
-/* Estilos de Tabla */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
+  .historial-item .cita-estado {
+    grid-area: estado;
+  }
 
-th {
-    text-align: left;
-    padding: 15px 10px;
-    font-size: 12px;
-    color: #666;
-    border-bottom: 1px solid #eee;
-    text-transform: uppercase;
-}
-
-td {
-    padding: 18px 10px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-    color: #333;
-}
-
-tr:last-child td {
-    border-bottom: none;
-}
-
-/* Clases dinámicas para los Estados */
-.estado {
-    padding: 6px 20px;
-    border-radius: 20px;
-    font-size: 13px;
-    display: inline-block;
-    text-align: center;
-    min-width: 90px;
-}
-
-.estado.confirmada {
-    background: #d94b7a; /* Tu rosa fuerte */
-    color: white;
-}
-
-.estado.pendiente {
-    background: #f19aae; /* Un rosa más claro */
-    color: white;
-}
-
-.estado.cancelada {
-    background: #e0e0e0;
-    color: #555;
-}
-
-/* Paginación estática (Figma) */
-.paginacion {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 30px;
-}
-
-.btn-pag {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    border: none;
-    background: #eaeaea;
-    color: #666;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-pag.activa {
-    background: #d94b7a;
-    color: white;
-}
-
-/* Ajuste rápido para select e inputs del modal si no los tenías estilizados globalmente */
-.modal input, .modal select, .modal textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 20px 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-family: inherit;
+  .historial-item .agenda-info {
+    grid-area: info;
+  }
 }

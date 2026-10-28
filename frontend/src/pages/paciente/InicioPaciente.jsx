@@ -1,370 +1,438 @@
 import { useEffect, useState } from "react";
-import SidebarPaciente from "../../components/SidebarPaciente";
+import { useNavigate } from "react-router-dom";
+import {
+  FaRegCalendarAlt,
+  FaRegClock,
+  FaCalendarAlt,
+  FaTimesCircle,
+  FaBell,
+} from "react-icons/fa";
+import Sidebar from "../../components/sidebar";
+import EncabezadoModulo from "../../components/EncabezadoModulo";
+import ModalFormulario from "../../components/ModalFormulario";
+import ModalConfirmacion from "../../components/ModalConfirmacion";
 import { api } from "../../services/api";
-import "../../styles/InicioPaciente.css";
+import { hoyClave } from "../../utils/fechas";
+import "../../styles/AdminPanel.css";
+import "../../styles/CitasAdmin.css";
+import "../../styles/MisCitas.css";
+
+const FORM_ACCION = { fecha: "", hora: "", motivo: "" };
+
+const TITULOS = {
+  reprogramar: "Reprogramar cita",
+  cancelar: "Cancelar cita",
+};
+
+const EXITOS = {
+  reprogramar: {
+    titulo: "Cita reprogramada",
+    mensaje: "Tu cita se reprogramó correctamente.",
+  },
+  cancelar: {
+    titulo: "Cita cancelada",
+    mensaje: "Tu cita se canceló correctamente.",
+  },
+};
+
+const ERRORES = {
+  reprogramar: "No se pudo reprogramar la cita.",
+  cancelar: "No se pudo cancelar la cita.",
+};
+
+const datosDe = (res) => res?.payload ?? res?.data ?? res;
+
+const leerUsuario = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+};
+
+const formatearFecha = (fechaISO = "") =>
+  fechaISO ? fechaISO.substring(0, 10).split("-").reverse().join("/") : "";
+
+const formatearHora = (hora) => {
+  if (!hora) return "";
+  const [h, m] = hora.split(":");
+  const horas = parseInt(h, 10);
+  const periodo = horas >= 12 ? "PM" : "AM";
+  const hora12 = String(horas % 12 || 12).padStart(2, "0");
+  return `${hora12}:${m} ${periodo}`;
+};
 
 function InicioPaciente() {
+  const navigate = useNavigate();
+  const fechaMinima = hoyClave();
+  const nombre = leerUsuario()?.nombre_usuario;
+
   const [proximaCita, setProximaCita] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [historial, setHistorial] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [aviso, setAviso] = useState(null);
 
-  const [mostrarReprogramar, setMostrarReprogramar] = useState(false);
-  const [mostrarCancelar, setMostrarCancelar] = useState(false);
+  // Una sola modal para reprogramar y cancelar
+  const [accion, setAccion] = useState(null); // "reprogramar" | "cancelar" | null
+  const [form, setForm] = useState(FORM_ACCION);
+  const [horarios, setHorarios] = useState([]);
+  const [cargandoHorarios, setCargandoHorarios] = useState(false);
+  const [procesando, setProcesando] = useState(false);
+  const [errorAccion, setErrorAccion] = useState("");
 
-  const [fecha, setFecha] = useState("");
-  const [hora, setHora] = useState("");
-  const [motivo, setMotivo] = useState("");
-  const [motivoCancelar, setMotivoCancelar] = useState("");
-  const [horariosDisponibles, setHorariosDisponibles] = useState([]);
-  const [historialCitas, setHistorialCitas] = useState([]);
-
-  useEffect(() => {
-    cargarProximaCita();
-    cargarHistorialCitas();
-  }, []);
-
-  useEffect(() => {
-  if (fecha && proximaCita?.id_servicio) {
-    cargarHorariosDisponibles(fecha);
-  }
-}, [fecha, proximaCita?.id_servicio]);
   const cargarProximaCita = async () => {
     try {
-      setLoading(true);
       const res = await api("/citas/proximacita");
-      setProximaCita(res.data || null);
+      setProximaCita(res?.data || null);
     } catch (error) {
       console.error(error);
       setProximaCita(null);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const cargarHorariosDisponibles = async (nuevaFecha) => {
-  if (!nuevaFecha || !proximaCita?.id_servicio) {
-    setHorariosDisponibles([]);
-    return;
-  }
-
-  try {
-    const res = await api(
-      `/citas/horarios-disponibles?fecha=${nuevaFecha}&id_servicio=${proximaCita.id_servicio}`
-    );
-
-    console.log("Fecha consultada:", nuevaFecha);
-    console.log("ID servicio:", proximaCita.id_servicio);
-    console.log("Horarios recibidos:", res.data);
-
-    setHorariosDisponibles(res.data || []);
-  } catch (error) {
-    console.error(error);
-    setHorariosDisponibles([]);
-  }
-};
-
-  const cargarHistorialCitas = async () => {
-  try {
-    const res = await api("/citas/miscitas");
-
-    const citas = Array.isArray(res.payload)
-      ? res.payload
-      : [];
-
-    setHistorialCitas(citas);
-  } catch (error) {
-    console.error("ERROR MIS CITAS:", error);
-    setHistorialCitas([]);
-  }
-};
-
-  const abrirReprogramar = () => {
-  if (!proximaCita) return;
-
-  const fechaInicial = proximaCita.fecha_agendada
-    ? proximaCita.fecha_agendada.split("T")[0]
-    : "";
-
-  setFecha(fechaInicial);
-  setHora("");
-  setMotivo("");
-  setHorariosDisponibles([]);
-  setMostrarReprogramar(true);
-};
-
-  const reprogramarCita = async () => {
-    if (!fecha || !hora) {
-    alert("Selecciona una fecha y un horario");
-    return;
-  }
+  const cargarHistorial = async () => {
     try {
-      await api(
-        `/citas/${proximaCita.id_cita}`,
-        "PUT",
-        {
-          fecha_agendada: fecha,
-          hora,
+      const res = await api("/citas/miscitas");
+      const data = datosDe(res);
+      setHistorial(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setHistorial([]);
+    }
+  };
+
+  const cargarTodo = async () => {
+    await Promise.all([cargarProximaCita(), cargarHistorial()]);
+    setCargando(false);
+  };
+
+  useEffect(() => {
+    cargarTodo();
+  }, []);
+
+  // Horarios disponibles al reprogramar
+  useEffect(() => {
+    const idServicio = proximaCita?.id_servicio;
+
+    if (accion !== "reprogramar" || !form.fecha || !idServicio) {
+      setHorarios([]);
+      return;
+    }
+
+    let cancelado = false;
+
+    const cargarHorarios = async () => {
+      try {
+        setCargandoHorarios(true);
+        const res = await api(
+          `/citas/horarios-disponibles?fecha=${form.fecha}&id_servicio=${idServicio}`
+        );
+        const data = datosDe(res);
+        if (!cancelado) setHorarios(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (cancelado) return;
+        console.error(error);
+        setHorarios([]);
+        setErrorAccion(error.message || "No se pudieron cargar los horarios.");
+      } finally {
+        if (!cancelado) setCargandoHorarios(false);
+      }
+    };
+
+    cargarHorarios();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [accion, form.fecha, proximaCita?.id_servicio]);
+
+  const abrirAccion = (tipo) => {
+    setForm(FORM_ACCION);
+    setHorarios([]);
+    setErrorAccion("");
+    setAccion(tipo);
+  };
+
+  const cerrarAccion = () => {
+    setAccion(null);
+    setForm(FORM_ACCION);
+    setHorarios([]);
+    setErrorAccion("");
+  };
+
+  const confirmarAccion = async () => {
+    if (!proximaCita || !accion) return;
+
+    const motivo = form.motivo.trim();
+    if (!motivo) {
+      setErrorAccion(
+        accion === "cancelar"
+          ? "Escribe el motivo de la cancelación."
+          : "Escribe el motivo de la reprogramación."
+      );
+      return;
+    }
+
+    try {
+      setProcesando(true);
+      setErrorAccion("");
+
+      if (accion === "reprogramar") {
+        await api(`/citas/mias/${proximaCita.id_cita}`, "PUT", {
+          fecha_agendada: form.fecha,
+          hora: form.hora,
           motivo,
-        }
-      );
+        });
+      } else {
+        await api(`/citas/mias/${proximaCita.id_cita}/cancelar`, "PATCH", {
+          motivo,
+        });
+      }
 
-      alert("Cita reprogramada correctamente");
-      setMostrarReprogramar(false);
-      cargarProximaCita();
-      cargarHistorialCitas();
+      const exito = EXITOS[accion];
+      cerrarAccion();
+      cargarTodo();
+      setAviso(exito);
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      setErrorAccion(error.message || ERRORES[accion]);
+    } finally {
+      setProcesando(false);
     }
   };
-
-  const cancelarCita = async () => {
-    try {
-      await api(
-        `/citas/${proximaCita.id_cita}/cancelar`,
-        "PATCH",
-        {
-          motivo: motivoCancelar,
-        }
-      );
-
-      alert("Cita cancelada correctamente");
-      setMostrarCancelar(false);
-      setMotivoCancelar("");
-      cargarProximaCita();
-      cargarHistorialCitas();
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const obtenerFechaHoy = () => {
-  const hoy = new Date();
-
-  const year = hoy.getFullYear();
-  const month = String(hoy.getMonth() + 1).padStart(2, "0");
-  const day = String(hoy.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-   const formatearFecha = (fechaISO) => {
-  if (!fechaISO) return "";
-
-  const fecha = fechaISO.substring(0, 10);
-
-  const [year, month, day] = fecha.split("-");
-
-  return `${day}/${month}/${year}`;
-};
-
 
   return (
-    <>
-      <SidebarPaciente />
+    <div className="admin-container">
+      <Sidebar tipo="paciente" />
 
-      <div className="inicio-container">
-        <h1>Bienvenido, paciente</h1>
-
-        <div className="card">
-          <h2>Próxima cita</h2>
-          <p className="subtitulo">
-            Detalles de tu siguiente visita a la clínica
-          </p>
-
-          {loading ? (
-            <p>Cargando...</p>
-          ) : proximaCita ? (
-            <>
-              <div className="cita-info">
-                <div>
-                  <strong>Fecha:</strong>
-                  <p>{formatearFecha(proximaCita.fecha_agendada)}</p>
-                </div>
-
-                <div>
-                  <strong>Hora:</strong>
-                  <p>{proximaCita.hora.substring(0, 5)}</p>
-                </div>
-
-                <div>
-                  <strong>Servicio:</strong>
-                  <p>{proximaCita.nombre_servicio}</p>
-                </div>
-              </div>
-
-              <div className="botones">
-                <button
-                  className="btn btn-reprogramar"
-                  onClick={abrirReprogramar}
-                >
-                  Reprogramar
-                </button>
-
-                <button
-                  className="btn btn-cancelar"
-                  onClick={() => setMostrarCancelar(true)}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </>
-          ) : (
-            <p>No tienes una próxima cita programada.</p>
-          )}
-        </div>
-
-       <div className="card">
-  <h2>Historial de Citas Recientes</h2>
-
-  <div className="historial-header">
-    <span>FECHA</span>
-    <span>TRATAMIENTO</span>
-    <span>ESTADO</span>
-    <span>ESPECIALISTA</span>
-  </div>
-
-  {historialCitas.length === 0 ? (
-    <p>No tienes citas registradas.</p>
-  ) : (
-    historialCitas.slice(0, 5).map((cita) => (
-      <div className="historial-row" key={cita.id}>
-        <span>
-          {formatearFecha(cita.fecha_agendada)}
-        </span>
-
-        <span>
-          {cita.nombre_servicio}
-        </span>
-
-        <span>
-          <span className={`estado estado-${cita.estado}`}>
-            {cita.estado}
-          </span>
-        </span>
-
-        <span>
-          Por asignar
-        </span>
-      </div>
-    ))
-  )}
-</div>
-
-        <div className="card">
-  <h2>Recordatorio</h2>
-
-  {proximaCita ? (
-    <>
-      <p className="recordatorio-titulo">
-        No olvides tu próxima cita
-      </p>
-
-      <p>
-        No olvides tu cita de{" "}
-        <strong>{proximaCita.nombre_servicio}</strong>{" "}
-        el{" "}
-        <strong>
-          {formatearFecha(proximaCita.fecha_agendada)}
-        </strong>{" "}
-        a las{" "}
-        <strong>
-          {proximaCita.hora.substring(0, 5)}
-        </strong>.
-      </p>
-    </>
-  ) : (
-    <p>No tienes próximas citas.</p>
-  )}
-</div>
-      </div>
-
-      {mostrarReprogramar && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Reprogramar cita</h2>
-
-            <label>Fecha</label>
-            <input
-            type="date"
-            min={obtenerFechaHoy()}
-            value={fecha}
-            onChange={(e) => {
-              const nuevaFecha = e.target.value;
-              setFecha(nuevaFecha);
-              setHora("");
-            }}
+      <div className="admin-content">
+        <div className="usuarios-container">
+          <EncabezadoModulo
+            titulo={nombre ? `Bienvenido, ${nombre}` : "Bienvenido"}
+            descripcion="Revisa tu próxima cita y el resumen de tus visitas recientes."
+            textoBoton="Agendar nueva cita"
+            onBoton={() =>
+              navigate("/paciente/citaspaciente", { state: { agendar: true } })
+            }
           />
 
-            <label>Hora</label>
-            <select
-              value={hora}
-              onChange={(e) => setHora(e.target.value)}
-            >
-              <option value="">Selecciona un horario</option>
+          <h2 className="inicio-seccion">Próxima cita</h2>
 
-              {horariosDisponibles.map((horario) => (
-                <option key={horario} value={horario}>
-                  {horario}
+          {cargando ? (
+            <div className="proxima-vacia">
+              <p className="proxima-vacia-titulo">Cargando...</p>
+            </div>
+          ) : proximaCita ? (
+            <div className="citas-grid">
+              <article className="cita-card">
+                <div className="cita-card-top">
+                  <h3 className="cita-paciente">{proximaCita.nombre_servicio}</h3>
+                  <span className="cita-estado pendiente">pendiente</span>
+                </div>
+
+                <div className="cita-datos">
+                  <div className="cita-dato">
+                    <FaRegCalendarAlt />
+                    <span>{formatearFecha(proximaCita.fecha_agendada)}</span>
+                  </div>
+                  <div className="cita-dato">
+                    <FaRegClock />
+                    <span>{formatearHora(proximaCita.hora)}</span>
+                  </div>
+                </div>
+
+                <div className="cita-acciones">
+                  <button
+                    type="button"
+                    className="mf-btn mf-btn-prin"
+                    onClick={() => abrirAccion("reprogramar")}
+                  >
+                    <FaCalendarAlt /> Reprogramar
+                  </button>
+                  <button
+                    type="button"
+                    className="mf-btn mf-btn-sec"
+                    onClick={() => abrirAccion("cancelar")}
+                  >
+                    <FaTimesCircle /> Cancelar cita
+                  </button>
+                </div>
+              </article>
+            </div>
+          ) : (
+            <div className="proxima-vacia">
+              <span className="proxima-vacia-icono" aria-hidden="true">
+                <FaRegCalendarAlt />
+              </span>
+              <div>
+                <p className="proxima-vacia-titulo">
+                  No tienes una próxima cita programada.
+                </p>
+                <p className="proxima-vacia-texto">
+                  Cuando agendes una, aparecerá aquí.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {proximaCita && (
+            <div className="recordatorio-card">
+              <span className="recordatorio-icono" aria-hidden="true">
+                <FaBell />
+              </span>
+              <p className="recordatorio-texto">
+                No olvides tu cita de <strong>{proximaCita.nombre_servicio}</strong>{" "}
+                el <strong>{formatearFecha(proximaCita.fecha_agendada)}</strong> a
+                las <strong>{formatearHora(proximaCita.hora)}</strong>.
+              </p>
+            </div>
+          )}
+
+          <section className="agenda-card">
+            <div className="agenda-header">
+              <div>
+                <h2 className="agenda-titulo">Historial de citas recientes</h2>
+                
+              </div>
+
+              <button
+                type="button"
+                className="inicio-ver-todas"
+                onClick={() => navigate("/paciente/citaspaciente")}
+              >
+                Ver todas
+              </button>
+            </div>
+
+            {cargando ? (
+              <p className="usuarios-vacio">Cargando...</p>
+            ) : historial.length === 0 ? (
+              <p className="usuarios-vacio">No tienes citas registradas.</p>
+            ) : (
+              <ul className="agenda-lista">
+                {historial.slice(0, 3).map((cita) => {
+                  const estado = (cita.estado || "").toLowerCase();
+
+                  return (
+                    <li key={cita.id} className="agenda-item historial-item">
+                      <span className="agenda-hora historial-fecha">
+                        {formatearFecha(cita.fecha_agendada)}
+                      </span>
+
+                      <div className="agenda-info">
+                        <p className="agenda-paciente">{cita.nombre_servicio}</p>
+                        <p className="agenda-servicio">{formatearHora(cita.hora)}</p>
+                      </div>
+
+                      <span className={`cita-estado ${estado}`}>
+                        {estado || "Sin estado"}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
+      </div>
+
+      {/* Reprogramar / cancelar */}
+      <ModalFormulario
+        abierto={!!accion}
+        titulo={TITULOS[accion] || ""}
+        subtitulo={
+          proximaCita
+            ? `${proximaCita.nombre_servicio} · ${formatearFecha(
+                proximaCita.fecha_agendada
+              )} · ${formatearHora(proximaCita.hora)}`
+            : ""
+        }
+        onCerrar={cerrarAccion}
+        onSubmit={confirmarAccion}
+        enviando={procesando}
+        error={errorAccion}
+        textoEnviar={accion === "cancelar" ? "Cancelar cita" : "Reprogramar"}
+        textoEnviando="Procesando..."
+        textoCancelar={accion === "cancelar" ? "Volver" : "Cancelar"}
+        peligro={accion === "cancelar"}
+        ancho={500}
+      >
+        {accion === "reprogramar" && (
+          <div className="mf-grid">
+            <label className="mf-campo">
+              <span>Nueva fecha</span>
+              <input
+                type="date"
+                min={fechaMinima}
+                value={form.fecha}
+                onChange={(e) =>
+                  setForm({ ...form, fecha: e.target.value, hora: "" })
+                }
+                required
+              />
+            </label>
+
+            <label className="mf-campo">
+              <span>Nueva hora</span>
+              <select
+                value={form.hora}
+                onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                disabled={!form.fecha || cargandoHorarios}
+                required
+              >
+                <option value="">
+                  {!form.fecha
+                    ? "Primero selecciona una fecha"
+                    : cargandoHorarios
+                      ? "Buscando horarios..."
+                      : horarios.length === 0
+                        ? "No hay horarios disponibles"
+                        : "Seleccionar horario"}
                 </option>
-              ))}
-            </select>
+                {horarios.map((horario) => (
+                  <option key={horario} value={horario}>
+                    {formatearHora(horario)}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            <label>Motivo</label>
-            <textarea
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              placeholder="Escribe el motivo"
-            />
-
-            <div className="modal-botones">
-              <button
-                className="btn btn-cancelar"
-                onClick={() => setMostrarReprogramar(false)}
-              >
-                Cerrar
-              </button>
-
-              <button
-                className="btn btn-reprogramar"
-                onClick={reprogramarCita}
-              >
-                Guardar
-              </button>
-            </div>
+            <label className="mf-campo mf-ancho">
+              <span>Motivo</span>
+              <textarea
+                rows={3}
+                placeholder="Motivo de la reprogramación"
+                value={form.motivo}
+                onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+                required
+              />
+            </label>
           </div>
-        </div>
-      )}
+        )}
 
-      {mostrarCancelar && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Cancelar cita</h2>
-
-            <label>Motivo de cancelación</label>
+        {accion === "cancelar" && (
+          <label className="mf-campo">
+            <span>Motivo</span>
             <textarea
-              value={motivoCancelar}
-              onChange={(e) => setMotivoCancelar(e.target.value)}
-              placeholder="Escribe el motivo"
+              rows={3}
+              placeholder="Motivo de la cancelación"
+              value={form.motivo}
+              onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+              required
             />
+          </label>
+        )}
+      </ModalFormulario>
 
-            <div className="modal-botones">
-              <button
-                className="btn btn-cancelar"
-                onClick={() => setMostrarCancelar(false)}
-              >
-                Cerrar
-              </button>
-
-              <button
-                className="btn btn-reprogramar"
-                onClick={cancelarCita}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      <ModalConfirmacion
+        abierto={!!aviso}
+        titulo={aviso?.titulo}
+        mensaje={aviso?.mensaje}
+        textoCancelar={null}
+        textoConfirmar="Aceptar"
+        onConfirmar={() => setAviso(null)}
+      />
+    </div>
   );
 }
 

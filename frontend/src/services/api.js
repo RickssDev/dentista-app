@@ -1,6 +1,38 @@
 const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1").replace(/\/+$/, "");
 export const BASE_ORIGIN = new URL(BASE_URL).origin;
 
+// Rutas donde un 401 significa "credenciales incorrectas", no "sesión vencida"
+const RUTAS_SIN_SESION = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/google/login",
+  "/auth/google/register",
+];
+
+const limpiarSesion = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("rol");
+  localStorage.removeItem("tienePerfilPaciente");
+  sessionStorage.clear();
+};
+
+// Token vencido, inválido o cuenta desactivada: se limpia la sesión y se manda al login
+const manejarSesionVencida = (endpoint, status) => {
+  if (
+    status !== 401 ||
+    RUTAS_SIN_SESION.some((ruta) => endpoint.startsWith(ruta))
+  ) {
+    return;
+  }
+
+  limpiarSesion();
+
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login");
+  }
+};
+
 export const api = async (
     endpoint,
     method = "GET",
@@ -43,6 +75,8 @@ export const api = async (
     }
 
     if (!response.ok) {
+      manejarSesionVencida(endpoint, response.status);
+
       throw new Error(
         result.message ||
         "Error interno del servidor"
@@ -67,6 +101,8 @@ export const apiDescargar = async (ruta) => {
   const res = await fetch(`${BASE_URL}${ruta}`, options);
 
   if (!res.ok) {
+    manejarSesionVencida(ruta, res.status);
+
     const body = await res.json().catch(() => null);
     throw new Error(body?.message || "No se pudo descargar el archivo");
   }
