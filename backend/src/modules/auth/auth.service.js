@@ -10,6 +10,74 @@ const SALT_ROUNDS = 10;
 const ROL_PACIENTE = 3; 
 const jwtFactory = new JWTFactory();
 
+const verifyGoogleToken = async (credential) => {
+  if (!credential || typeof credential !== "string") {
+    throw new AppError("Credencial de Google requerida", 400);
+  }
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    throw new AppError("Google OAuth no está configurado", 500);
+  }
+
+  let ticket;
+
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+  } catch (error) {
+    throw new AppError("Token de Google inválido o expirado", 401);
+  }
+
+  const payload = ticket.getPayload();
+
+  if (
+    !payload?.sub ||
+    !payload?.email ||
+    payload.email_verified !== true
+  ) {
+    throw new AppError("La cuenta de Google no está verificada", 401);
+  }
+
+  return payload;
+};
+
+const buildSession = async (user) => {
+  if (user.estado === "inactivo") {
+    throw new AppError(
+      "Tu cuenta está desactivada. Contacta a la clínica.",
+      403
+    );
+  }
+
+  let tienePerfilPaciente = null;
+
+  if (user.rol === "Paciente") {
+    const perfilPaciente = await paciente.findByUserId(
+      user.id_usuario
+    );
+
+    tienePerfilPaciente = !!perfilPaciente;
+  }
+
+  const token = jwtFactory.createToken({
+    id: user.id_usuario,
+    rol: user.rol
+  });
+
+  return {
+    token,
+    user: {
+      id: user.id_usuario,
+      nombre_usuario: user.nombre_usuario,
+      correo: user.correo,
+      rol: user.rol,
+      imagen: user.imagen
+    },
+    tienePerfilPaciente
+  };
+};
 
 const MINIMO_PRODUCCION = 8;
 const MAXIMO_BYTES_BCRYPT = 72; // bcrypt ignora lo que pase de 72 bytes
@@ -74,51 +142,28 @@ exports.register = async ({
 
 exports.login = async ({ correo, contrasena }) => {
   const user = await repo.findUserByEmail(correo);
+
   if (!user) {
-    throw new AppError('Credenciales inválidas', 401);
+    throw new AppError("Credenciales inválidas", 401);
   }
+
   if (!user.contrasena) {
-    throw new AppError('Esta cuenta usa Google. Inicia sesión con Google.', 400);
+    throw new AppError(
+      "Esta cuenta usa Google. Inicia sesión con Google.",
+      400
+    );
   }
 
-    const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+  const isMatch = await bcrypt.compare(
+    contrasena,
+    user.contrasena
+  );
 
-    if (!isMatch) {
-      throw new AppError('Credenciales inválidas', 401);
-    }
-
-    if (user.estado === 'inactivo') {
-      throw new AppError(
-        'Tu cuenta está desactivada. Contacta a la clínica.',
-        403
-      );
-    }
-
- let tienePerfilPaciente = null;
-
-  if (user.rol === 'Paciente') {
-    const perfilPaciente =
-      await paciente.findByUserId(user.id_usuario);
-
-    tienePerfilPaciente = !!perfilPaciente;
+  if (!isMatch) {
+    throw new AppError("Credenciales inválidas", 401);
   }
 
-  const token = jwtFactory.createToken({
-    id: user.id_usuario,
-    rol: user.rol
-  });
-
-  return {
-    token,
-    user: {
-      id: user.id_usuario,
-      nombre_usuario: user.nombre_usuario,
-      correo: user.correo,
-      rol: user.rol,
-      imagen: user.imagen
-    },
-    tienePerfilPaciente
-  };
+  return buildSession(user);
 };
 exports.cambiarContrasena = async (
   idUsuario,
@@ -174,20 +219,27 @@ exports.cambiarContrasena = async (
 
 exports.googleLogin = async ({ credential }) => {
   const payload = await verifyGoogleToken(credential);
+
   const user = await repo.findUserByEmail(payload.email);
 
   if (!user) {
     throw new AppError(
-      'No existe una cuenta con este correo. Regístrate primero con Google.',
-      404,
+      "No existe una cuenta con este correo. Regístrate primero con Google.",
+      404
+    );
+  }
+
+  if (user.estado === "inactivo") {
+    throw new AppError(
+      "Tu cuenta está desactivada. Contacta a la clínica.",
+      403
     );
   }
 
   if (!user.google_id) {
-    // cuenta creada con contraseña: Google ya verificó el correo, la vinculamos
     await repo.linkGoogleId(user.id_usuario, payload.sub);
   } else if (user.google_id !== payload.sub) {
-    throw new AppError('Credenciales inválidas', 401);
+    throw new AppError("Credenciales inválidas", 401);
   }
 
   return buildSession(user);
