@@ -19,4 +19,16 @@ router.put(
 router.post("/google/login", limitadorLogin, controller.googleLogin);
 router.post("/google/register", limitadorRegistro, controller.googleRegister);
 
+router.post(
+  '/olvide-contrasena',
+  limitadorLogin,
+  controller.solicitarRecuperacion
+);
+
+router.post(
+  '/restablecer-contrasena',
+  limitadorCambioContrasena,
+  controller.restablecerContrasena
+);
+
 module.exports = router;
