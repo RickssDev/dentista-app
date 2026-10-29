@@ -440,3 +440,117 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* =====================================
+   RECUPERACIÓN DE CONTRASEÑA
+===================================== */
+
+/* Enlace debajo del campo contraseña */
+
+.login-page .olvide-contrasena {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin: 4px 0 16px;
+}
+
+.login-page .olvide-contrasena .enlace {
+  font-size: 13px;
+  color: #d75078;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-page .olvide-contrasena .enlace:hover {
+  text-decoration: underline;
+}
+
+/* Modal */
+
+.login-page .modal-recuperacion {
+  width: min(420px, calc(100vw - 32px));
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Icono del correo */
+
+.login-page .recuperacion-icono {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #fce7ef;
+  color: #d75078;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-page .recuperacion-icono svg {
+  width: 29px;
+  height: 29px;
+}
+
+/* Formulario */
+
+.login-page .recuperacion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.login-page .recuperacion-form .campo {
+  width: 100%;
+  text-align: left;
+}
+
+.login-page .recuperacion-form input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-page .recuperacion-form .btn-principal {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* Botón cancelar */
+
+.login-page .recuperacion-cancelar {
+  align-self: center;
+  margin-top: 4px;
+  padding: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.login-page .recuperacion-cancelar:hover {
+  color: #d75078;
+}
+
+/* Deshabilitados */
+
+.login-page .recuperacion-form button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Celulares */
+
+@media (max-width: 480px) {
+  .login-page .modal-recuperacion {
+    padding: 24px 20px;
+  }
+
+  .login-page .recuperacion-icono {
+    width: 50px;
+    height: 50px;
+  }
+}

@@ -131,7 +131,10 @@ function Login() {
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [verPassReg, setVerPassReg] = useState(false);
 
-  const [aviso, setAviso] = useState(null); // { titulo, mensaje, tipo }
+  const [aviso, setAviso] = useState(null); 
+  const [modalRecuperacion, setModalRecuperacion] = useState(false);
+  const [correoRecuperacion, setCorreoRecuperacion] = useState("");
+  const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false);
 
   const mostrarAviso = (titulo, mensaje, tipo = "error") =>
     setAviso({ titulo, mensaje, tipo });
@@ -200,6 +203,61 @@ function Login() {
     }
   };
 
+  // ---------- RECUPERAR CONTRASEÑA ----------
+
+const abrirRecuperacion = () => {
+  setCorreoRecuperacion(email);
+  setModalRecuperacion(true);
+};
+
+const cerrarRecuperacion = () => {
+  if (enviandoRecuperacion) return;
+
+  setModalRecuperacion(false);
+  setCorreoRecuperacion("");
+};
+
+const handleRecuperacion = async (e) => {
+  e.preventDefault();
+
+  const correo = correoRecuperacion.trim().toLowerCase();
+
+  if (!correo) {
+    mostrarAviso(
+      "Correo obligatorio",
+      "Ingresa tu correo electrónico para recuperar tu contraseña."
+    );
+    return;
+  }
+
+  setEnviandoRecuperacion(true);
+
+  try {
+    await api("/auth/olvide-contrasena", "POST", {
+      correo
+    });
+
+    setModalRecuperacion(false);
+    setCorreoRecuperacion("");
+
+    mostrarAviso(
+      "Solicitud recibida",
+      "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa también tu carpeta de spam.",
+      "exito"
+    );
+
+  } catch (error) {
+    mostrarAviso(
+      "No se pudo procesar la solicitud",
+      error?.message ||
+        "Ocurrió un error. Inténtalo nuevamente."
+    );
+
+  } finally {
+    setEnviandoRecuperacion(false);
+  }
+};
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -235,6 +293,8 @@ function Login() {
       mostrarAviso("No se pudo registrar", error?.message || "Error al registrar");
     }
   };
+
+
 
   // ---------- GOOGLE ----------
   const handleGoogleLogin = async ({ credential }) => {
@@ -335,12 +395,29 @@ function Login() {
               autoComplete="email" placeholder="tu@correo.com" value={email}
               onChange={(e) => setEmail(e.target.value)} />
 
-            <CampoPass id="login-pass" etiqueta="Contraseña"
-              autoComplete="current-password" value={password}
-              visible={verPass} onAlternar={() => setVerPass((v) => !v)}
-              onChange={(e) => setPassword(e.target.value)} />
+            <CampoPass
+              id="login-pass"
+              etiqueta="Contraseña"
+              autoComplete="current-password"
+              value={password}
+              visible={verPass}
+              onAlternar={() => setVerPass((v) => !v)}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-            <button type="submit" className="btn-principal">Iniciar sesión</button>
+            <div className="olvide-contrasena">
+              <button
+                type="button"
+                className="enlace"
+                onClick={abrirRecuperacion}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
+            <button type="submit" className="btn-principal">
+              Iniciar sesión
+            </button>
 
             <div className="separador"><span>o continúa con</span></div>
             <GoogleBoton
@@ -386,6 +463,95 @@ function Login() {
           </div>
         </div>
       </div>
+      
+{/* MODAL RECUPERAR CONTRASEÑA */}
+{modalRecuperacion && (
+  <div
+    className="mini-modal-overlay"
+    onClick={cerrarRecuperacion}
+  >
+    <div
+      className="mini-modal modal-recuperacion"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="recuperacion-titulo"
+      aria-describedby="recuperacion-descripcion"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="recuperacion-icono">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="14"
+            rx="2"
+          />
+          <path d="m3 7 9 6 9-6" />
+        </svg>
+      </div>
+
+      <h3 id="recuperacion-titulo">
+        Recuperar contraseña
+      </h3>
+
+      <p id="recuperacion-descripcion">
+        Ingresa el correo electrónico asociado
+        a tu cuenta y te enviaremos un enlace
+        para restablecer tu contraseña.
+      </p>
+
+      <form
+        className="recuperacion-form"
+        onSubmit={handleRecuperacion}
+      >
+        <Campo
+          id="recuperacion-correo"
+          etiqueta="Correo electrónico"
+          type="email"
+          placeholder="tu@correo.com"
+          autoComplete="email"
+          autoFocus
+          required
+          maxLength={100}
+          value={correoRecuperacion}
+          onChange={(e) =>
+            setCorreoRecuperacion(e.target.value)
+          }
+          disabled={enviandoRecuperacion}
+        />
+
+        <button
+          type="submit"
+          className="btn-principal"
+          disabled={enviandoRecuperacion}
+        >
+          {enviandoRecuperacion
+            ? "Enviando..."
+            : "Enviar enlace"}
+        </button>
+
+        <button
+          type="button"
+          className="enlace recuperacion-cancelar"
+          onClick={cerrarRecuperacion}
+          disabled={enviandoRecuperacion}
+        >
+          Volver a iniciar sesión
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
 
       {/* MINI MODAL */}
       {aviso && (

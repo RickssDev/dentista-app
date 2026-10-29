@@ -101,7 +101,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 28px;
+  margin: 0 0 20px;
   padding: 16px 20px;
   background: #fff1f4;
   border: 1px solid #fde8ec;
@@ -265,5 +265,42 @@
 
   .historial-item .agenda-info {
     grid-area: info;
+  }
+}
+
+
+/* =========================================================
+   Inicio del paciente: la card de próxima cita ocupa todo el ancho,
+   igual que el recordatorio
+   ========================================================= */
+
+.proxima-cita .cita-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fecha y hora en una sola línea cuando hay espacio */
+.proxima-cita .cita-datos {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px 32px;
+}
+
+/* Los botones no se estiran por todo el ancho en pantallas grandes */
+.proxima-cita .cita-acciones {
+  justify-content: flex-start;
+}
+
+.proxima-cita .cita-acciones .mf-btn {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .proxima-cita .cita-datos {
+    flex-direction: column;
+  }
+
+  .proxima-cita .cita-acciones .mf-btn {
+    flex: 1;
   }
 }
