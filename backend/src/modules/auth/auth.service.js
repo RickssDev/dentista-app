@@ -10,6 +10,178 @@ const SALT_ROUNDS = 10;
 const ROL_PACIENTE = 3; 
 const jwtFactory = new JWTFactory();
 
+const crypto = require('crypto');
+const {
+  enviarCorreoRestablecer,
+  enviarCorreoCuentaGoogle,
+  enviarCorreoContrasenaActualizada
+} = require('../../services/email.service');
+
+const MINUTOS_RECUPERACION = 15;
+
+exports.solicitarRecuperacion = async ({ correo }) => {
+  if (typeof correo !== 'string' || !correo.trim()) {
+    throw new AppError('Ingresa un correo válido', 400);
+  }
+
+  const correoNormalizado = correo.trim().toLowerCase();
+
+  if (
+    correoNormalizado.length > 100 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoNormalizado)
+  ) {
+    throw new AppError('Ingresa un correo válido', 400);
+  }
+
+  const mensaje = {
+    message: 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.'
+  };
+
+  const usuario = await repo.findUserByEmail(correoNormalizado);
+
+  // No revelar si el correo existe.
+  if (!usuario || usuario.estado !== 'activo') {
+    return mensaje;
+  }
+
+  // Cuenta creada únicamente con Google.
+  if (!usuario.contrasena) {
+    try {
+      await enviarCorreoCuentaGoogle({
+        para: usuario.correo,
+        nombre: usuario.nombre_usuario
+      });
+    } catch (error) {
+      console.error('Error enviando correo de Google:', error.message);
+    }
+
+    return mensaje;
+  }
+
+  // Token aleatorio de 32 bytes.
+  const token = crypto.randomBytes(32).toString('hex');
+
+  // Guardar únicamente el hash del token.
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  await repo.createPasswordResetToken(
+    usuario.id_usuario,
+    tokenHash
+  );
+
+  try {
+    await enviarCorreoRestablecer({
+      para: usuario.correo,
+      nombre: usuario.nombre_usuario,
+      token,
+      minutos: MINUTOS_RECUPERACION
+    });
+
+  } catch (error) {
+    // Si el envío falla, el token no debe quedar activo.
+    await repo.deletePasswordResetToken(tokenHash);
+
+    console.error(
+      'Error enviando correo de recuperación:',
+      error.message
+    );
+  }
+
+  return mensaje;
+};
+
+
+exports.restablecerContrasena = async ({
+  token,
+  nueva_contrasena,
+  confirmar_contrasena
+}) => {
+  if (
+    !token ||
+    !nueva_contrasena ||
+    !confirmar_contrasena
+  ) {
+    throw new AppError(
+      'Todos los campos son obligatorios',
+      400
+    );
+  }
+
+  if (
+    typeof token !== 'string' ||
+    !/^[a-f0-9]{64}$/i.test(token)
+  ) {
+    throw new AppError(
+      'El enlace de recuperación es inválido o ha expirado',
+      400
+    );
+  }
+
+  if (nueva_contrasena !== confirmar_contrasena) {
+    throw new AppError(
+      'Las contraseñas no coinciden',
+      400
+    );
+  }
+
+  // Reutilizamos tu validación existente.
+  validarContrasena(nueva_contrasena);
+
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  const hashedPassword = await bcrypt.hash(
+    nueva_contrasena,
+    SALT_ROUNDS
+  );
+
+  
+const resultado = await repo.resetPasswordWithToken(
+  tokenHash,
+  nueva_contrasena,
+  hashedPassword
+);
+
+if (resultado.estado === 'token_invalido') {
+  throw new AppError(
+    'El enlace de recuperación es inválido o ha expirado',
+    400
+  );
+}
+
+if (resultado.estado === 'misma_contrasena') {
+  throw new AppError(
+    'La nueva contraseña debe ser diferente a la contraseña actual',
+    400
+  );
+}
+
+// La contraseña ya fue actualizada.
+// Enviar notificación de seguridad.
+try {
+  await enviarCorreoContrasenaActualizada({
+    para: resultado.correo,
+    nombre: resultado.nombre_usuario
+  });
+
+} catch (error) {
+  console.error(
+    '[SEGURIDAD] No se pudo enviar el aviso de contraseña actualizada:',
+    error.message
+  );
+}
+
+return {
+  message: 'Tu contraseña se restableció correctamente'
+};
+
+};
+
 const verifyGoogleToken = async (credential) => {
   if (!credential || typeof credential !== "string") {
     throw new AppError("Credencial de Google requerida", 400);
@@ -27,8 +199,18 @@ const verifyGoogleToken = async (credential) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
   } catch (error) {
-    throw new AppError("Token de Google inválido o expirado", 401);
+  if (process.env.NODE_ENV !== "production") {
+    console.error(
+      "[GOOGLE AUTH] Error verificando token:",
+      error.message
+    );
   }
+
+  throw new AppError(
+    "No se pudo verificar tu cuenta de Google",
+    401
+  );
+}
 
   const payload = ticket.getPayload();
 
@@ -201,6 +383,18 @@ exports.cambiarContrasena = async (
   }
  
   validarContrasena(nueva_contrasena);
+
+  const esMismaContrasena = await bcrypt.compare(
+  nueva_contrasena,
+  user.contrasena
+  );
+
+  if (esMismaContrasena) {
+    throw new AppError(
+      'La nueva contraseña debe ser diferente a la contraseña actual',
+      400
+    );
+  }
  
   const hashedPassword = await bcrypt.hash(
     nueva_contrasena,
