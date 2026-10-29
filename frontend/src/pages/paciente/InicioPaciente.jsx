@@ -216,6 +216,19 @@ function InicioPaciente() {
             }
           />
 
+          {proximaCita && (
+            <div className="recordatorio-card">
+              <span className="recordatorio-icono" aria-hidden="true">
+                <FaBell />
+              </span>
+              <p className="recordatorio-texto">
+                No olvides tu cita de <strong>{proximaCita.nombre_servicio}</strong>{" "}
+                el <strong>{formatearFecha(proximaCita.fecha_agendada)}</strong> a
+                las <strong>{formatearHora(proximaCita.hora)}</strong>.
+              </p>
+            </div>
+          )}
+
           <h2 className="inicio-seccion">Próxima cita</h2>
 
           {cargando ? (
@@ -223,7 +236,7 @@ function InicioPaciente() {
               <p className="proxima-vacia-titulo">Cargando...</p>
             </div>
           ) : proximaCita ? (
-            <div className="citas-grid">
+            <div className="proxima-cita">
               <article className="cita-card">
                 <div className="cita-card-top">
                   <h3 className="cita-paciente">{proximaCita.nombre_servicio}</h3>
@@ -275,24 +288,11 @@ function InicioPaciente() {
             </div>
           )}
 
-          {proximaCita && (
-            <div className="recordatorio-card">
-              <span className="recordatorio-icono" aria-hidden="true">
-                <FaBell />
-              </span>
-              <p className="recordatorio-texto">
-                No olvides tu cita de <strong>{proximaCita.nombre_servicio}</strong>{" "}
-                el <strong>{formatearFecha(proximaCita.fecha_agendada)}</strong> a
-                las <strong>{formatearHora(proximaCita.hora)}</strong>.
-              </p>
-            </div>
-          )}
 
           <section className="agenda-card">
             <div className="agenda-header">
               <div>
                 <h2 className="agenda-titulo">Historial de citas recientes</h2>
-                
               </div>
 
               <button
