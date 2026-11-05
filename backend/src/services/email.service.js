@@ -10,8 +10,18 @@ const COLOR_MARCA = '#d75078';
 const urlApp = () => {
   const base =
     process.env.APP_URL ||
-    (process.env.FRONTEND_URL || '').split(',')[0] ||
-    'http://localhost:8080';
+    (process.env.FRONTEND_URL || '').split(',')[0];
+
+  if (!base) {
+    throw new Error('Falta configurar APP_URL');
+  }
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    !base.startsWith('https://')
+  ) {
+    throw new Error('APP_URL debe utilizar HTTPS');
+  }
 
   return base.trim().replace(/\/+$/, '');
 };
@@ -28,7 +38,7 @@ const escaparHtml = (texto = '') =>
 
 // Remitente de los correos.
 const remitente = () =>
-  `"Melissa López N." <${process.env.EMAIL_REMITENTE || 'onboarding@resend.dev'}>`;
+  `"Melissa López N." <${process.env.EMAIL_REMITENTE || 'onboarding@sistima.dentissa.app'}>`;
 
 // ==========================================
 // PLANTILLA HTML

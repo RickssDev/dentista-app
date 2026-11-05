@@ -49,6 +49,12 @@ function createApp() {
     });
   });
 
+  app.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok'
+  });
+  });
+
   app.use('/api/v1', indexRoutes);
 
   app.use(errorHandler);
