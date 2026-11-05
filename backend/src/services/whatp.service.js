@@ -1,10 +1,19 @@
-const axios = require("axios");
+const whatsappActivo = () =>
+  process.env.WHATSAPP_ENABLED === "true" &&
+  !!process.env.WHATSAPP_TOKEN &&
+  !!process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+exports.whatsappActivo = whatsappActivo;
 
 exports.sendTemplateMessage = async (
   telefono,
   templateName,
   parameters = []
 ) => {
+  if (!whatsappActivo()) {
+    return null; // WhatsApp apagado: no hace nada y no lanza error
+  }
+
   const response = await axios.post(
     `https://graph.facebook.com/v25.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
     {
