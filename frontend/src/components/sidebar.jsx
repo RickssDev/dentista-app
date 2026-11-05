@@ -104,7 +104,10 @@ function Sidebar({ tipo = "admin" }) {
     localStorage.removeItem("tienePerfilPaciente");
     sessionStorage.clear();
 
-    navigate("/login", { replace: true });
+    window.google?.accounts?.id?.disableAutoSelect();
+
+  
+    window.location.replace("/login");
   };
 
   return (
