@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../../services/api";
@@ -67,6 +67,8 @@ function CampoPass({ id, etiqueta, visible, onAlternar, ...props }) {
 // Solo se monta el botón del formulario visible (activo): Google usa la última
 // instancia inicializada para todos los botones, y con dos montados a la vez el
 // clic de "Crear cuenta" podía terminar ejecutando el manejador de "Iniciar sesión".
+// Importante: onSuccess y onError deben ser funciones ESTABLES (useCallback);
+// si cambian en cada render, GoogleLogin vuelve a inicializar Google cada vez.
 function GoogleBoton({ onSuccess, onError, texto, activo }) {
   const ref = useRef(null);
   const [ancho, setAncho] = useState(null);
@@ -328,6 +330,20 @@ const handleRecuperacion = async (e) => {
 
   const errorGoogle = () => mostrarAviso("Error", "No se pudo conectar con Google");
 
+  // La ref siempre apunta a los manejadores de ESTE render (con el estado al día),
+  // y los callbacks de abajo nunca cambian de identidad: así GoogleLogin no
+  // reinicializa Google en cada render (el aviso "initialize() is called multiple times").
+  const manejadoresGoogle = useRef({});
+  manejadoresGoogle.current = {
+    login: handleGoogleLogin,
+    register: handleGoogleRegister,
+    error: errorGoogle,
+  };
+
+  const onGoogleLogin = useCallback((r) => manejadoresGoogle.current.login(r), []);
+  const onGoogleRegister = useCallback((r) => manejadoresGoogle.current.register(r), []);
+  const onGoogleError = useCallback(() => manejadoresGoogle.current.error(), []);
+
   return (
     <div className="login-page">
       <div className={`container ${active ? "active" : ""}`}>
@@ -369,8 +385,8 @@ const handleRecuperacion = async (e) => {
             <div className="separador"><span>o continúa con</span></div>
             <GoogleBoton
               activo={active}
-              onSuccess={handleGoogleRegister}
-              onError={errorGoogle}
+              onSuccess={onGoogleRegister}
+              onError={onGoogleError}
               texto="signup_with"
             />
 
@@ -422,8 +438,8 @@ const handleRecuperacion = async (e) => {
             <div className="separador"><span>o continúa con</span></div>
             <GoogleBoton
               activo={!active}
-              onSuccess={handleGoogleLogin}
-              onError={errorGoogle}
+              onSuccess={onGoogleLogin}
+              onError={onGoogleError}
               texto="signin_with"
             />
 

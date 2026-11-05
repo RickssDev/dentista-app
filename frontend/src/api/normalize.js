@@ -68,13 +68,6 @@ export const normalizeImagen = (o, i) => {
   };
 };
 
-export const normalizeCertificacion = (o, i) => ({
-  id: id(o, i),
-  nombre: pick(o, ["nombre", "titulo", "title"]) ?? "Certificación",
-  institucion: pick(o, ["institucion", "emisor", "organizacion", "entidad"]) ?? "",
-  anio: pick(o, ["anio", "año", "year", "fecha"]),
-  imagen: resolveImage(pick(o, IMG_KEYS)),
-});
 
 export function formatPrice(value) {
   const n = Number(value);

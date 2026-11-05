@@ -18,5 +18,4 @@ export const ENDPOINTS = {
   comentarios: "/comentarios/publicos",
   faqs: "/faqs",
   imagenes: "/imagenes/publicas",
-  certificaciones: "/certificaciones/publicas",
 };
