@@ -14,6 +14,7 @@ import EncabezadoModulo from "../../components/EncabezadoModulo";
 import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
+import { validarImagen } from "../../utils/validarImagen";
 
 const FORM_INICIAL = {
   nombre_promocion: "",
@@ -182,6 +183,14 @@ function AdminPromociones() {
   };
 
   const guardarPromocion = async () => {
+    const errorImagen = validarImagen(
+    form.imagen instanceof File ? form.imagen : null
+  );
+
+  if (errorImagen) {
+    setErrorForm(errorImagen);
+    return;
+  }
     const mensajeError = validar();
     if (mensajeError) {
       setErrorForm(mensajeError);
@@ -473,9 +482,22 @@ function AdminPromociones() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                onChange={(e) => {
+                const archivo = e.target.files[0];
+
+                if (!archivo) return;
+
+                const error = validarImagen(archivo);
+
+                if (error) {
+                  setErrorForm(error);
+                  e.target.value = "";
+                  return;
                 }
+
+                setErrorForm("");
+                setForm({ ...form, imagen: archivo });
+              }}
               />
             </label>
           </div>

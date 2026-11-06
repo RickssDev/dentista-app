@@ -6,6 +6,7 @@ import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
+import { validarImagen } from "../../utils/validarImagen";
 
 const FORM_INICIAL = {
   nombre: "",
@@ -407,9 +408,26 @@ function AdminUsuarios({
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                onChange={(e) => {
+                const archivo = e.target.files[0];
+
+                if (!archivo) return;
+
+                const error = validarImagen(archivo);
+
+                if (error) {
+                  setErrorForm(error);
+                  e.target.value = "";
+                  return;
                 }
+
+                setErrorForm("");
+
+                setForm({
+                  ...form,
+                  imagen: archivo,
+                });
+              }}
               />
             </label>
           </div>
