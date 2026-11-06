@@ -13,6 +13,7 @@ import EncabezadoModulo from "../../components/EncabezadoModulo";
 import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
+import { validarImagen } from "../../utils/validarImagen";
 
 const MESES = [
   "Ene",
@@ -143,6 +144,13 @@ function AdminImagenes() {
   const guardarImagen = async () => {
     const hayArchivoNuevo = form.imagen instanceof File;
 
+    const errorImagen = validarImagen(hayArchivoNuevo ? form.imagen : null);
+
+    if (errorImagen) {
+      setErrorForm(errorImagen);
+      return;
+    }
+
     if (!form.titulo.trim()) {
       setErrorForm("El título es obligatorio");
       return;
@@ -181,6 +189,8 @@ function AdminImagenes() {
       setGuardando(false);
     }
   };
+
+  
 
   // Mostrar u ocultar desde la card sin abrir el modal
   const cambiarVisibilidad = async (img) => {
@@ -345,15 +355,29 @@ function AdminImagenes() {
             <label className="mf-campo">
               <span>Imagen {editando ? "(opcional)" : ""}</span>
               <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    imagen: e.target.files[0] || form.imagen,
-                  })
-                }
-              />
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+              const archivo = e.target.files[0];
+
+              if (!archivo) return;
+
+              const error = validarImagen(archivo);
+
+              if (error) {
+                setErrorForm(error);
+                e.target.value = "";
+                return;
+              }
+
+              setErrorForm("");
+
+              setForm({
+                ...form,
+                imagen: archivo,
+              });
+            }}
+            />
             </label>
           </div>
         </div>

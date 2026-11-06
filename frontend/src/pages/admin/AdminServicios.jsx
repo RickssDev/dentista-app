@@ -11,6 +11,7 @@ import { api, getImageUrl } from "../../services/api";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 import ModalFormulario from "../../components/ModalFormulario";
+import { validarImagen } from "../../utils/validarImagen";
 
 const FORM_INICIAL = {
   nombre: "",
@@ -106,6 +107,14 @@ function AdminServicios() {
   };
 
   const guardar = async () => {
+    const errorImagen = validarImagen(
+  form.imagen instanceof File ? form.imagen : null
+);
+
+if (errorImagen) {
+  setErrorForm(errorImagen);
+  return;
+}
     setErrorForm("");
 
     try {
@@ -344,9 +353,22 @@ function AdminServicios() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  setForm({ ...form, imagen: e.target.files[0] || form.imagen })
+                onChange={(e) => {
+                const archivo = e.target.files[0];
+
+                if (!archivo) return;
+
+                const error = validarImagen(archivo);
+
+                if (error) {
+                  setErrorForm(error);
+                  e.target.value = "";
+                  return;
                 }
+
+                setErrorForm("");
+                setForm({ ...form, imagen: archivo });
+              }}
               />
             </label>
           </div>
