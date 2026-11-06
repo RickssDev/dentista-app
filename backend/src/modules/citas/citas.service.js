@@ -382,7 +382,7 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
     throw new AppError(
-      "Paciente no encontrado",
+      "Debe completar su perfil antes de realizar su cita",
       404
     );
   }
@@ -462,12 +462,20 @@ exports.getProximaCita = async (idUsuario) => {
   const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
-  return null;
-}
+    return null;
+  }
 
-  return await repo.getProximaCita(paciente.id_paciente);
+  // Fecha y hora actuales de México, sin depender de la zona horaria de MySQL
+  const ahora = new Date();
+  const zona = "America/Mexico_City";
+  const fechaHoy = ahora.toLocaleDateString("en-CA", { timeZone: zona });
+  const horaAhora = ahora.toLocaleTimeString("en-GB", {
+    timeZone: zona,
+    hourCycle: "h23",
+  });
+
+  return await repo.getProximaCita(paciente.id_paciente, fechaHoy, horaAhora);
 };
-
 exports.getHorariosDisponibles = async (fecha, id_servicio) => {
   if (!fecha || !id_servicio) {
     throw new AppError("Fecha e id del servicio son obligatorios", 400);

@@ -302,7 +302,7 @@ exports.getCitasDelDia = async (
   return rows;
 };
 
-exports.getProximaCita = async (idPaciente) => {
+exports.getProximaCita = async (idPaciente, fechaHoy, horaAhora) => {
   const [rows] = await pool.query(
     `
     SELECT
@@ -317,16 +317,16 @@ exports.getProximaCita = async (idPaciente) => {
     WHERE c.id_paciente = ?
       AND c.estado = 'pendiente'
       AND (
-  c.fecha_agendada > CONVERT_TZ(CURDATE(), 'UTC', 'America/Mexico_City')
-  OR (
-    c.fecha_agendada = CONVERT_TZ(CURDATE(), 'UTC', 'America/Mexico_City')
-    AND c.hora >= CONVERT_TZ(CURTIME(), 'UTC', 'America/Mexico_City')
-  )
-)
+        DATE(c.fecha_agendada) > ?
+        OR (
+          DATE(c.fecha_agendada) = ?
+          AND ADDTIME(c.hora, s.duracion) > ?
+        )
+      )
     ORDER BY c.fecha_agendada ASC, c.hora ASC
     LIMIT 1
     `,
-    [idPaciente]
+    [idPaciente, fechaHoy, fechaHoy, horaAhora],
   );
 
   return rows[0] || null;

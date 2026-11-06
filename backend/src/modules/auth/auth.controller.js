@@ -27,3 +27,25 @@ exports.googleRegister = catchAsync(async (req, res) => {
   const data = await service.googleRegister(req.body);
   return HandleResponse.created(res, 201, "Cuenta creada con Google. Ahora inicia sesión.", data);
 });
+
+exports.solicitarRecuperacion = catchAsync(async (req, res) => {
+  const data = await service.solicitarRecuperacion(req.body);
+
+  return HandleResponse.success(
+    res,
+    200,
+    'Solicitud procesada correctamente',
+    data
+  );
+});
+
+exports.restablecerContrasena = catchAsync(async (req, res) => {
+  const data = await service.restablecerContrasena(req.body);
+
+  return HandleResponse.success(
+    res,
+    200,
+    'Contraseña restablecida correctamente',
+    data
+  );
+});
