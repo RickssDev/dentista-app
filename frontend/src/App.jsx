@@ -15,6 +15,7 @@ import InicioPaciente from "./pages/paciente/InicioPaciente";
 import CitasPaciente from "./pages/paciente/CitasPaciente";
 import PerfilPaciente from "./pages/paciente/PerfilPaciente";
 import CompletarPerfil from "./pages/paciente/CompletarPerfil";
+import RestablecerContrasena from "./pages/admin/RestablecerContrasena";
 
 import "./styles/home/global.css";
 
@@ -102,6 +103,9 @@ function App() {
 
         {/* Login: fuera del layout público */}
         <Route path="/login" element={<Login />} />
+        {/* Recuperación de contraseña: ruta pública */}
+        <Route path="/restablecer-contrasena"element={<RestablecerContrasena />}
+        />
 
         {/* Rutas privadas del administrador */}
         <Route

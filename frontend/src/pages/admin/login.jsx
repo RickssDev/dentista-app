@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../../services/api";
@@ -67,6 +67,8 @@ function CampoPass({ id, etiqueta, visible, onAlternar, ...props }) {
 // Solo se monta el botón del formulario visible (activo): Google usa la última
 // instancia inicializada para todos los botones, y con dos montados a la vez el
 // clic de "Crear cuenta" podía terminar ejecutando el manejador de "Iniciar sesión".
+// Importante: onSuccess y onError deben ser funciones ESTABLES (useCallback);
+// si cambian en cada render, GoogleLogin vuelve a inicializar Google cada vez.
 function GoogleBoton({ onSuccess, onError, texto, activo }) {
   const ref = useRef(null);
   const [ancho, setAncho] = useState(null);
@@ -131,7 +133,10 @@ function Login() {
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [verPassReg, setVerPassReg] = useState(false);
 
-  const [aviso, setAviso] = useState(null); // { titulo, mensaje, tipo }
+  const [aviso, setAviso] = useState(null); 
+  const [modalRecuperacion, setModalRecuperacion] = useState(false);
+  const [correoRecuperacion, setCorreoRecuperacion] = useState("");
+  const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false);
 
   const mostrarAviso = (titulo, mensaje, tipo = "error") =>
     setAviso({ titulo, mensaje, tipo });
@@ -200,6 +205,61 @@ function Login() {
     }
   };
 
+  // ---------- RECUPERAR CONTRASEÑA ----------
+
+const abrirRecuperacion = () => {
+  setCorreoRecuperacion(email);
+  setModalRecuperacion(true);
+};
+
+const cerrarRecuperacion = () => {
+  if (enviandoRecuperacion) return;
+
+  setModalRecuperacion(false);
+  setCorreoRecuperacion("");
+};
+
+const handleRecuperacion = async (e) => {
+  e.preventDefault();
+
+  const correo = correoRecuperacion.trim().toLowerCase();
+
+  if (!correo) {
+    mostrarAviso(
+      "Correo obligatorio",
+      "Ingresa tu correo electrónico para recuperar tu contraseña."
+    );
+    return;
+  }
+
+  setEnviandoRecuperacion(true);
+
+  try {
+    await api("/auth/olvide-contrasena", "POST", {
+      correo
+    });
+
+    setModalRecuperacion(false);
+    setCorreoRecuperacion("");
+
+    mostrarAviso(
+      "Solicitud recibida",
+      "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa también tu carpeta de spam.",
+      "exito"
+    );
+
+  } catch (error) {
+    mostrarAviso(
+      "No se pudo procesar la solicitud",
+      error?.message ||
+        "Ocurrió un error. Inténtalo nuevamente."
+    );
+
+  } finally {
+    setEnviandoRecuperacion(false);
+  }
+};
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -236,6 +296,8 @@ function Login() {
     }
   };
 
+
+
   // ---------- GOOGLE ----------
   const handleGoogleLogin = async ({ credential }) => {
     try {
@@ -267,6 +329,20 @@ function Login() {
   };
 
   const errorGoogle = () => mostrarAviso("Error", "No se pudo conectar con Google");
+
+  // La ref siempre apunta a los manejadores de ESTE render (con el estado al día),
+  // y los callbacks de abajo nunca cambian de identidad: así GoogleLogin no
+  // reinicializa Google en cada render (el aviso "initialize() is called multiple times").
+  const manejadoresGoogle = useRef({});
+  manejadoresGoogle.current = {
+    login: handleGoogleLogin,
+    register: handleGoogleRegister,
+    error: errorGoogle,
+  };
+
+  const onGoogleLogin = useCallback((r) => manejadoresGoogle.current.login(r), []);
+  const onGoogleRegister = useCallback((r) => manejadoresGoogle.current.register(r), []);
+  const onGoogleError = useCallback(() => manejadoresGoogle.current.error(), []);
 
   return (
     <div className="login-page">
@@ -309,8 +385,8 @@ function Login() {
             <div className="separador"><span>o continúa con</span></div>
             <GoogleBoton
               activo={active}
-              onSuccess={handleGoogleRegister}
-              onError={errorGoogle}
+              onSuccess={onGoogleRegister}
+              onError={onGoogleError}
               texto="signup_with"
             />
 
@@ -335,18 +411,35 @@ function Login() {
               autoComplete="email" placeholder="tu@correo.com" value={email}
               onChange={(e) => setEmail(e.target.value)} />
 
-            <CampoPass id="login-pass" etiqueta="Contraseña"
-              autoComplete="current-password" value={password}
-              visible={verPass} onAlternar={() => setVerPass((v) => !v)}
-              onChange={(e) => setPassword(e.target.value)} />
+            <CampoPass
+              id="login-pass"
+              etiqueta="Contraseña"
+              autoComplete="current-password"
+              value={password}
+              visible={verPass}
+              onAlternar={() => setVerPass((v) => !v)}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-            <button type="submit" className="btn-principal">Iniciar sesión</button>
+            <div className="olvide-contrasena">
+              <button
+                type="button"
+                className="enlace"
+                onClick={abrirRecuperacion}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
+            <button type="submit" className="btn-principal">
+              Iniciar sesión
+            </button>
 
             <div className="separador"><span>o continúa con</span></div>
             <GoogleBoton
               activo={!active}
-              onSuccess={handleGoogleLogin}
-              onError={errorGoogle}
+              onSuccess={onGoogleLogin}
+              onError={onGoogleError}
               texto="signin_with"
             />
 
@@ -386,6 +479,95 @@ function Login() {
           </div>
         </div>
       </div>
+      
+{/* MODAL RECUPERAR CONTRASEÑA */}
+{modalRecuperacion && (
+  <div
+    className="mini-modal-overlay"
+    onClick={cerrarRecuperacion}
+  >
+    <div
+      className="mini-modal modal-recuperacion"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="recuperacion-titulo"
+      aria-describedby="recuperacion-descripcion"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="recuperacion-icono">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="14"
+            rx="2"
+          />
+          <path d="m3 7 9 6 9-6" />
+        </svg>
+      </div>
+
+      <h3 id="recuperacion-titulo">
+        Recuperar contraseña
+      </h3>
+
+      <p id="recuperacion-descripcion">
+        Ingresa el correo electrónico asociado
+        a tu cuenta y te enviaremos un enlace
+        para restablecer tu contraseña.
+      </p>
+
+      <form
+        className="recuperacion-form"
+        onSubmit={handleRecuperacion}
+      >
+        <Campo
+          id="recuperacion-correo"
+          etiqueta="Correo electrónico"
+          type="email"
+          placeholder="tu@correo.com"
+          autoComplete="email"
+          autoFocus
+          required
+          maxLength={100}
+          value={correoRecuperacion}
+          onChange={(e) =>
+            setCorreoRecuperacion(e.target.value)
+          }
+          disabled={enviandoRecuperacion}
+        />
+
+        <button
+          type="submit"
+          className="btn-principal"
+          disabled={enviandoRecuperacion}
+        >
+          {enviandoRecuperacion
+            ? "Enviando..."
+            : "Enviar enlace"}
+        </button>
+
+        <button
+          type="button"
+          className="enlace recuperacion-cancelar"
+          onClick={cerrarRecuperacion}
+          disabled={enviandoRecuperacion}
+        >
+          Volver a iniciar sesión
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
 
       {/* MINI MODAL */}
       {aviso && (

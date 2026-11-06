@@ -8,12 +8,26 @@ const COLOR_MARCA = '#d75078';
 
 // Dirección del frontend para generar enlaces.
 const urlApp = () => {
-  const base =
+  const base = (
     process.env.APP_URL ||
     (process.env.FRONTEND_URL || '').split(',')[0] ||
-    'http://localhost:8080';
+    (process.env.NODE_ENV !== 'production'
+      ? 'http://localhost:8080'
+      : '')
+  ).trim();
 
-  return base.trim().replace(/\/+$/, '');
+  if (!base) {
+    throw new Error('Falta configurar APP_URL');
+  }
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    !base.startsWith('https://')
+  ) {
+    throw new Error('APP_URL debe utilizar HTTPS');
+  }
+
+  return base.replace(/\/+$/, '');
 };
 
 // Evitar insertar HTML desde datos del usuario.

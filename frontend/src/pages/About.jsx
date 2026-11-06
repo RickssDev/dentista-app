@@ -2,7 +2,7 @@ import Icon from "../components/home/Icon";
 import SmartImage from "../components/home/SmartImage";
 import { CtaBand, EmptyState, PageHero, SectionHeader } from "../components/home/ui";
 import { usePublicData } from "../hooks/usePublicData";
-import { normalizeCertificacion } from "../api/normalize";
+
 import { IMAGES, STATS, TEAM, VALUES } from "../data/site";
 import "../styles/home/About.css";
 
@@ -16,54 +16,7 @@ const initials = (name) =>
     .join("")
     .toUpperCase();
 
-function Certifications() {
-  const { data, loading } = usePublicData("certificaciones", normalizeCertificacion);
 
-  return (
-    <section id="certificaciones" className="section section--tint">
-      <div className="dt-container">
-        <SectionHeader
-          eyebrow="Respaldo profesional"
-          title="Certificaciones"
-          text="Nuestro equipo se actualiza constantemente para ofrecerte tratamientos con los más altos estándares."
-        />
-        {loading ? (
-          <div className="cert-grid">
-            {Array.from({ length: 3 }, (_, i) => (
-              <div key={i} className="skeleton skeleton--cert" />
-            ))}
-          </div>
-        ) : data.length === 0 ? (
-          <EmptyState
-            icon="award"
-            title="Próximamente"
-            text="Muy pronto podrás consultar aquí las certificaciones de nuestros especialistas."
-          />
-        ) : (
-          <div className="cert-grid">
-            {data.map((c) => (
-              <article key={c.id} className="cert-card">
-                {c.imagen ? (
-                  <SmartImage src={c.imagen} alt={c.nombre} ratio="1 / 1" className="cert-card__logo" />
-                ) : (
-                  <span className="cert-card__icon">
-                    <Icon name="award" size={24} />
-                  </span>
-                )}
-                <div>
-                  <h3>{c.nombre}</h3>
-                  {(c.institucion || c.anio) && (
-                    <p>{[c.institucion, c.anio && String(c.anio).slice(0, 4)].filter(Boolean).join(" · ")}</p>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
 
 export default function About() {
   return (
@@ -140,8 +93,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
-      <Certifications />
       <CtaBand />
     </>
   );

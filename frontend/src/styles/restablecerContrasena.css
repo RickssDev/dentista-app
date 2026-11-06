@@ -1,0 +1,289 @@
+
+/* =========================================
+   RESTABLECER CONTRASEÑA - MELISSA LÓPEZ
+========================================= */
+
+.reset-page {
+  --rosa: #d75078;
+  --rosa-oscuro: #b83b64;
+  --tinta: #3b1f2b;
+  --tinta-suave: #7a5a66;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(
+    135deg,
+    #fdf1ee 0%,
+    #f8d9d3 100%
+  );
+  font-family: "Jost Variable", "Jost", sans-serif;
+  color: var(--tinta);
+}
+
+.reset-page *,
+.reset-page *::before,
+.reset-page *::after {
+  box-sizing: border-box;
+}
+
+.reset-card {
+  width: 100%;
+  max-width: 470px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow:
+    0 25px 70px rgba(169, 51, 88, 0.16);
+}
+
+.reset-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  padding: 20px;
+  background: var(--rosa);
+}
+
+.reset-marca img {
+  display: block;
+  max-width: 220px;
+  max-height: 120px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.reset-contenido {
+  padding: 34px 38px 38px;
+}
+
+.reset-encabezado,
+.reset-resultado {
+  text-align: center;
+}
+
+.reset-icono {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  color: var(--rosa);
+  background: #fce7ef;
+  border-radius: 50%;
+}
+
+.reset-icono svg {
+  width: 29px;
+  height: 29px;
+}
+
+.reset-icono.exito {
+  color: #16804a;
+  background: #e4f7eb;
+}
+
+.reset-icono.error {
+  color: #b83b64;
+  background: #fde7ee;
+}
+
+.reset-contenido h1 {
+  margin: 0 0 12px;
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.reset-encabezado > p,
+.reset-resultado > p {
+  margin: 0 0 25px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--tinta-suave);
+}
+
+/* Formulario */
+
+.reset-contenido form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.reset-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reset-campo label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.reset-input-pass {
+  position: relative;
+  width: 100%;
+}
+
+.reset-input-pass input {
+  width: 100%;
+  height: 48px;
+  padding: 0 48px 0 15px;
+  background: #fffafa;
+  border: 1px solid #ead5dd;
+  border-radius: 12px;
+  outline: none;
+  color: var(--tinta);
+  font: inherit;
+  font-size: 15px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.reset-input-pass input:focus {
+  border-color: var(--rosa);
+  box-shadow: 0 0 0 3px rgba(215, 80, 120, 0.12);
+}
+
+.reset-input-pass button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 5px;
+  color: #856774;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.reset-input-pass button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.reset-ayuda {
+  margin: -6px 0 2px;
+  color: var(--tinta-suave);
+  font-size: 12px;
+}
+
+.reset-error {
+  padding: 12px 14px;
+  border: 1px solid #f2b8c6;
+  border-radius: 10px;
+  color: #9f254a;
+  background: #fff0f3;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  background: var(--rosa);
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: var(--rosa-oscuro);
+}
+
+.reset-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.reset-volver {
+  display: block;
+  margin-top: 24px;
+  color: var(--rosa-oscuro);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.reset-volver:hover {
+  text-decoration: underline;
+}
+
+.reset-nota {
+  margin-top: 18px !important;
+  font-size: 13px !important;
+}
+
+/* Accesibilidad */
+
+.reset-page a:focus-visible,
+.reset-page button:focus-visible {
+  outline: 3px solid var(--rosa-oscuro);
+  outline-offset: 3px;
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+  .reset-page {
+    padding: 16px;
+  }
+
+  .reset-card {
+    border-radius: 18px;
+  }
+
+  .reset-marca {
+    min-height: 120px;
+  }
+
+  .reset-marca img {
+    max-width: 180px;
+    max-height: 90px;
+  }
+
+  .reset-contenido {
+    padding: 28px 22px 30px;
+  }
+
+  .reset-contenido h1 {
+    font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reset-page *,
+  .reset-page *::before,
+  .reset-page *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

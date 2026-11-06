@@ -132,10 +132,6 @@ function AdminHistorialPaciente() {
                   {paciente.nombre_usuario} {paciente.apellido}
                 </span>
               </div>
-              <div className="clinico-item">
-                <span className="clinico-label">ID de paciente</span>
-                <span className="clinico-valor">{paciente.id_paciente}</span>
-              </div>
             </div>
           </section>
 
