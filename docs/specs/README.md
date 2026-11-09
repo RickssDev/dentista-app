@@ -26,5 +26,6 @@ En una spec inferida, `[x]` significa "un test existente cubre este criterio" y 
 | [015](015-comentarios-testimonios/spec.md) | Reseñas de pacientes | Contenido y sitio público | inferred | alta |
 | [016](016-faqs/spec.md) | Preguntas frecuentes | Contenido y sitio público | inferred | alta |
 | [017](017-sitio-publico/spec.md) | Sitio público | Contenido y sitio público | inferred | alta |
+| [018](018-base-tests-autenticacion/spec.md) | Base de tests, integración continua y autenticación | Calidad | approved | — |
 
 Las pantallas de cada feature están en el inventario de vistas de [docs/design/system.md](../design/system.md).
