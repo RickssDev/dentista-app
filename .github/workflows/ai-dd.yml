@@ -51,7 +51,17 @@ jobs:
           git diff --name-only --diff-filter=ACMR "origin/$BASE_REF"...HEAD -- '*.js' '*.jsx' \
             | grep '^frontend/' | sed 's#^frontend/##' \
             | xargs -r npx eslint
-      # Añadir aquí los tests cuando existan (roadmap, objetivo 1).
+      - name: Lint de backend en los archivos cambiados del PR
+        working-directory: backend
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "origin/$BASE_REF"...HEAD -- '*.js' \
+            | grep '^backend/' | sed 's#^backend/##' \
+            | xargs -r npx eslint
+      - name: Pruebas
+        timeout-minutes: 5
+        run: npm test
       - name: Build del frontend
         run: npm run build
         working-directory: frontend

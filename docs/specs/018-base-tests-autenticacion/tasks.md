@@ -58,21 +58,51 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 - [x] T007 [P] Crear los datos de prueba con correos `@example.test` y secretos de prueba evidentes — `backend/tests/support/fixtures.js` — hecho cuando: el archivo solo contiene correos `@example.test` y ningún secreto imita una credencial real — cubre: CA8
 
 ## Tests (antes de implementar)
-- [ ] T010 [P] Escribir las pruebas de 001 CA1 a CA7, el caso de SQL no simulado y los pendientes de 001 CA9 y CA10 — `backend/tests/auth/registro-login.test.js` — hecho cuando: pasan y los pendientes aparecen como `todo` en el resumen — cubre: CA2, CA3 — depende: T006, T007, T020, T021
-- [ ] T011 [P] Escribir las pruebas de 002 CA1 a CA7 y el pendiente de 002 CA8 — `backend/tests/auth/google.test.js` — hecho cuando: pasan y el pendiente aparece como `todo` en el resumen — cubre: CA2, CA3 — depende: T006, T007, T020, T021
-- [ ] T012 [P] Escribir las pruebas de 003 CA1 a CA8 y los pendientes de 003 CA9 y CA10, con 003 CA2 y CA3 leyendo el correo generado y 003 CA5 y CA6 exigiendo en el texto del SQL el intervalo de 15 minutos y las condiciones de expiración, estado y contraseña — `backend/tests/auth/contrasenas.test.js` — hecho cuando: pasan, los pendientes aparecen como `todo` en el resumen y las de 003 CA5 y CA6 fallan al retirar temporalmente cada condición de la consulta (se restaura; lo confirma T027) — cubre: CA2, CA3 — depende: T006, T007, T020, T021
-- [ ] T013 [P] Escribir la prueba de 001 CA8 con las tres redirecciones tras iniciar sesión — `frontend/tests/login-redireccion.test.jsx` — hecho cuando: pasa — cubre: CA2 — depende: T005
-- [ ] T014 [P] Escribir la prueba de que la suite se niega a correr con `NODE_ENV=production` y con `DB_HOST` externo — `backend/tests/seguridad/guard.test.js` — hecho cuando: falla porque aún no existe el guardián — cubre: CA6 — depende: T003
-- [ ] T015 [P] Escribir la prueba que lanza Jest sobre un caso con una salida externa forzada y comprueba que ese archivo falla — `backend/tests/seguridad/red.test.js`, `backend/tests/seguridad/casos/salida-forzada.caso.js` — hecho cuando: falla porque aún no existe el bloqueo de red — cubre: CA7 — depende: T003
-- [ ] T016 [P] Escribir la prueba de que todo correo de los datos de prueba termina en `.test` — `backend/tests/seguridad/fixtures.test.js` — hecho cuando: pasa — cubre: CA8 — depende: T007
-- [ ] T017 [P] Escribir las pruebas de cadena de suministro y workflow: herramientas solo en `devDependencies`, `dependencies` de backend y frontend iguales a la lista registrada, permisos de solo lectura, sin `pull_request_target`, paso de pruebas y linter del backend en archivos cambiados — `backend/tests/seguridad/cadena-suministro.test.js`, `backend/tests/seguridad/dependencias-produccion.json` — hecho cuando: falla solo por los pasos que faltan en el workflow — cubre: CA9, CA10 — depende: T003
+- [x] T010 [P] Escribir las pruebas de 001 CA1 a CA7, el caso de SQL no simulado y los pendientes de 001 CA9 y CA10 — `backend/tests/auth/registro-login.test.js` — hecho cuando: pasan y los pendientes aparecen como `todo` en el resumen — cubre: CA2, CA3 — depende: T006, T007, T020, T021
+  - nota: A17 — no se confirmó ningún defecto; ningún criterio pasó a pendiente.
+  - nota: Comprobado rompiendo cada regla de producción de 001 CA1 a CA7: las pruebas fallan; código restaurado (T027).
+- [x] T011 [P] Escribir las pruebas de 002 CA1 a CA7 y el pendiente de 002 CA8 — `backend/tests/auth/google.test.js` — hecho cuando: pasan y el pendiente aparece como `todo` en el resumen — cubre: CA2, CA3 — depende: T006, T007, T020, T021
+  - nota: A15 — 002 CA1 falla si se retira `audience`, comprobado rompiéndolo.
+  - nota: A17 — no se confirmó ningún defecto.
+  - nota: Comprobado rompiendo cada regla de 002 CA1 a CA7; código restaurado (T027).
+- [x] T012 [P] Escribir las pruebas de 003 CA1 a CA8 y los pendientes de 003 CA9 y CA10, con 003 CA2 y CA3 leyendo el correo generado y 003 CA5 y CA6 exigiendo en el texto del SQL el intervalo de 15 minutos y las condiciones de expiración, estado y contraseña — `backend/tests/auth/contrasenas.test.js` — hecho cuando: pasan, los pendientes aparecen como `todo` en el resumen y las de 003 CA5 y CA6 fallan al retirar temporalmente cada condición de la consulta (se restaura; lo confirma T027) — cubre: CA2, CA3 — depende: T006, T007, T020, T021
+  - nota: A17 — no se confirmó ningún defecto.
+  - nota: Comprobado rompiendo cada regla de 003 CA1 a CA8 y cada condición de SQL (intervalo, expiración, estado y contraseña): las pruebas fallan; código restaurado (T027).
+  - nota: La rotura del formato del token sobrevivió al principio; la prueba ahora exige el rechazo antes de consultar la base.
+- [x] T013 [P] Escribir la prueba de 001 CA8 con las tres redirecciones tras iniciar sesión — `frontend/tests/login-redireccion.test.jsx` — hecho cuando: pasa — cubre: CA2 — depende: T005
+  - nota: A5 — importación explícita de Vitest; pasa el linter del frontend.
+  - nota: A14 — GoogleLogin simulado; las tres redirecciones pasan sin cargar Google.
+  - nota: Comprobado rompiendo las reglas de redirección; ejecutada dos veces sin diferencias.
+- [x] T014 [P] Escribir la prueba de que la suite se niega a correr con `NODE_ENV=production` y con `DB_HOST` externo — `backend/tests/seguridad/guard.test.js` — hecho cuando: falla porque aún no existe el guardián — cubre: CA6 — depende: T003
+  - nota: A4 — "entorno" son las variables del proceso; una prueba comprueba que un `.env` con host externo no se carga.
+  - nota: Comprobado rompiendo el guardián: la prueba falla.
+- [x] T015 [P] Escribir la prueba que lanza Jest sobre un caso con una salida externa forzada y comprueba que ese archivo falla — `backend/tests/seguridad/red.test.js`, `backend/tests/seguridad/casos/salida-forzada.caso.js` — hecho cuando: falla porque aún no existe el bloqueo de red — cubre: CA7 — depende: T003
+  - nota: A21 — probado con claves presentes en el entorno; el bloqueo de `fetch` del frontend se prueba en `frontend/tests/red.test.js`.
+  - nota: A35 — el caso usa el dominio reservado `servicio-externo.invalid`.
+  - nota: Archivo adicional: `backend/tests/seguridad/casos/claves-eliminadas.caso.js`, necesario para A21.
+  - nota: Comprobado rompiendo el fallo por archivo y el borrado de claves: las pruebas fallan.
+- [x] T016 [P] Escribir la prueba de que todo correo de los datos de prueba termina en `.test` — `backend/tests/seguridad/fixtures.test.js` — hecho cuando: pasa — cubre: CA8 — depende: T007
+  - nota: A18 — recorre todos los archivos de prueba de ambos paquetes y exige `@example.test`.
+  - nota: Comprobado con un correo real temporal: la prueba falla.
+  - nota: gitleaks no está instalado localmente; se ejecuta en CI.
+- [x] T017 [P] Escribir las pruebas de cadena de suministro y workflow: herramientas solo en `devDependencies`, `dependencies` de backend y frontend iguales a la lista registrada, permisos de solo lectura, sin `pull_request_target`, paso de pruebas y linter del backend en archivos cambiados — `backend/tests/seguridad/cadena-suministro.test.js`, `backend/tests/seguridad/dependencias-produccion.json` — hecho cuando: falla solo por los pasos que faltan en el workflow — cubre: CA9, CA10 — depende: T003
+  - nota: A22 — comprueba lockfile, `--omit=dev` y `.dockerignore`; la imagen final del frontend solo recibe la build.
+  - nota: A32 — el límite aplica al paso de pruebas y su valor exacto se comprueba: la rotura a 50 minutos sobrevivió al principio y se corrigió el patrón.
+  - nota: A36 — la lista de dependencias se compara por nombre.
+  - nota: Comprobado rompiendo permisos, disparador, comando de pruebas, filtro del linter, `.dockerignore` y añadiendo una dependencia: las pruebas fallan.
 
 ## Implementación
-- [ ] T020 Crear el guardián y registrarlo como `globalSetup` — `backend/tests/support/guard.js`, `backend/jest.config.js` — hecho cuando: T014 pasa — cubre: CA6 — depende: T014
-- [ ] T021 Crear el bloqueo de red, que registra cada intento y hace fallar el archivo tras cada prueba, y registrarlo en la preparación de Jest — `backend/tests/support/net.js`, `backend/jest.config.js` — hecho cuando: T015 pasa — cubre: CA7 — depende: T015, T020
-- [ ] T022 [P] Excluir las pruebas de la imagen de producción del backend — `backend/.dockerignore` — hecho cuando: `tests` y `coverage` figuran en el archivo — depende: T003
-- [ ] T023 Crear el comando único que ejecuta ambas suites, informa cada resultado y falla si alguna falla — `package.json`, `scripts/test-all.mjs` — hecho cuando: `npm test` en la raíz muestra el resultado de cada paquete y termina en 1 si uno falla · verificación manual: salida con una prueba forzada a fallar — cubre: CA1 — depende: T010, T011, T012, T013, T021
-- [ ] T024 Añadir al workflow las pruebas con límite de 5 minutos y el linter del backend sobre archivos cambiados (ruta protegida, aprobada en esta tarea) — `.github/workflows/ai-dd.yml` — hecho cuando: T017 pasa — cubre: CA9, CA10 — depende: T017, T023
+- [x] T020 Crear el guardián y registrarlo como `globalSetup` — `backend/tests/support/guard.js`, `backend/jest.config.js` — hecho cuando: T014 pasa — cubre: CA6 — depende: T014
+  - nota: Comprobado rompiendo el control: T014 falla.
+- [x] T021 Crear el bloqueo de red, que registra cada intento y hace fallar el archivo tras cada prueba, y registrarlo en la preparación de Jest — `backend/tests/support/net.js`, `backend/jest.config.js` — hecho cuando: T015 pasa — cubre: CA7 — depende: T015, T020
+  - nota: Comprobado rompiendo el control: T015 falla.
+- [x] T022 [P] Excluir las pruebas de la imagen de producción del backend — `backend/.dockerignore` — hecho cuando: `tests` y `coverage` figuran en el archivo — depende: T003
+- [x] T023 Crear el comando único que ejecuta ambas suites, informa cada resultado y falla si alguna falla — `package.json`, `scripts/test-all.mjs` — hecho cuando: `npm test` en la raíz muestra el resultado de cada paquete y termina en 1 si uno falla · verificación manual: salida con una prueba forzada a fallar — cubre: CA1 — depende: T010, T011, T012, T013, T021
+  - nota: A19 — la comprobación de entorno corre antes de ambas suites: con NODE_ENV=production no se ejecuta ninguna y termina en 1.
+  - nota: verificación manual OK 2026-11-09 (agente): con una prueba forzada, la salida muestra `backend: FALLÓ`, `frontend: aprobó` y termina en 1.
+- [x] T024 Añadir al workflow las pruebas con límite de 5 minutos y el linter del backend sobre archivos cambiados (ruta protegida, aprobada en esta tarea) — `.github/workflows/ai-dd.yml` — hecho cuando: T017 pasa — cubre: CA9, CA10 — depende: T017, T023
+  - nota: A23 — por la Definición de terminado, un archivo tocado debe quedar limpio; los no tocados no bloquean.
+  - nota: A32 — `timeout-minutes: 5` en el paso de pruebas.
 
 ## Integración y documentación
 - [ ] T025 Ejecutar dos veces `npm test` desde un checkout limpio, sin archivos `.env` — `package.json` — hecho cuando: ambas pasan con el mismo resultado y tardan menos de 5 minutos — cubre: CA1 — depende: T023, T024
