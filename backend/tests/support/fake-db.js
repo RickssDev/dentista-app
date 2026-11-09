@@ -6,6 +6,7 @@ const ROLES = { 1: 'Administrador', 2: 'Asistente', 3: 'Paciente' };
 
 const estado = { usuarios: [], pacientes: [], tokens: [], siguienteId: 1 };
 const sqlRecibido = [];
+const transacciones = [];
 
 const normalizar = (sql) => sql.replace(/\s+/g, ' ').trim();
 
@@ -15,6 +16,7 @@ const reiniciar = () => {
   estado.tokens.length = 0;
   estado.siguienteId = 1;
   sqlRecibido.length = 0;
+  transacciones.length = 0;
 };
 
 const agregarUsuario = (datos) => {
@@ -40,7 +42,7 @@ const conRol = (usuario) => ({ ...usuario, rol: ROLES[usuario.id_rol] });
 const porId = (id) => estado.usuarios.filter((u) => u.id_usuario === id);
 
 const consultas = [
-  [/^SELECT usuarios\.\*, roles\.rol AS rol FROM usuarios/, ([correo]) => [
+  [/^SELECT usuarios\.\*, roles\.rol AS rol FROM usuarios INNER JOIN roles ON usuarios\.id_rol = roles\.id_rol WHERE usuarios\.correo = \?$/, ([correo]) => [
     estado.usuarios.filter((u) => u.correo === correo).map(conRol),
   ]],
   [/^INSERT INTO usuarios \(nombre_usuario, apellido, correo, contrasena, id_rol, estado\)/,
@@ -99,10 +101,10 @@ const pool = {
   query,
   getConnection: async () => ({
     query,
-    beginTransaction: async () => {},
-    commit: async () => {},
-    rollback: async () => {},
-    release: () => {},
+    beginTransaction: async () => { transacciones.push('begin'); },
+    commit: async () => { transacciones.push('commit'); },
+    rollback: async () => { transacciones.push('rollback'); },
+    release: () => { transacciones.push('release'); },
   }),
 };
 
@@ -111,6 +113,7 @@ module.exports = {
   testConnection: async () => {},
   estado,
   sqlRecibido,
+  transacciones,
   reiniciar,
   agregarUsuario,
   agregarToken,

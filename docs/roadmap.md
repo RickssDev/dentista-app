@@ -45,6 +45,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 **Funcional, por confirmar con el usuario**
 - El agendado usa la jornada 8:00–16:00 todos los días, y el sitio publica otro horario (spec 005).
 - Teléfono y dirección de `frontend/src/data/site.js` parecen de ejemplo (spec 017).
+- Un login sin contraseña en la petición responde 500: `bcrypt.compare` recibe `undefined` (`auth.service.js:339`). Hallado en la spec 018, con prueba pendiente en 001 CA6.
 - `backend/src/services/whatp.service.js` usa `axios` sin importarlo desde el commit `a2c3aba`: con WhatsApp encendido, todo envío falla. Detectado por el linter en la spec 018; propuesto como `/fix`.
 
 **Calidad**

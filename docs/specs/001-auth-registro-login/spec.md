@@ -23,7 +23,7 @@ Pacientes y personal necesitan una cuenta para acceder a sus funciones según su
 - [x] CA3 · Dada una contraseña de menos de 8 caracteres en producción o de más de 72 bytes, entonces responde 400.
 - [x] CA4 · Dado un correo ya registrado, entonces responde 400.
 - [x] CA5 · Dadas credenciales válidas, cuando se envían a `POST /auth/login`, entonces devuelve JWT, datos del usuario y `tienePerfilPaciente`.
-- [x] CA6 · Dadas credenciales inválidas, entonces responde 401 con mensaje genérico.
+- [x] CA6 · Dadas credenciales inválidas de una cuenta con contraseña o de un correo sin cuenta, entonces responde 401 con mensaje genérico. Una cuenta solo de Google responde 400 e indica que use Google.
 - [x] CA7 · Dada una cuenta inactiva, entonces responde 403.
 - [x] CA8 · Tras iniciar sesión, el personal va a `/admin`, y el paciente a `/paciente` o, sin perfil, a `/paciente/completar-perfil`.
 - [ ] CA9 · (abuso) Tras 10 intentos fallidos de un cliente en 15 minutos, el login se bloquea para ese cliente. **HOY NO SE CUMPLE:** detrás de varios proxies el límite no identifica al cliente real (RS4).
@@ -54,6 +54,7 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
+| 2026-11-09 | brecha | ¿Qué responde el login de una cuenta solo de Google con contraseña? (/review R2 de la spec 018) | CA6 se acota a cuentas con contraseña y se documenta la respuesta 400; lo que revela sigue pendiente en CA10 | usuario |
 
 ## Evidencia (solo si status=inferred)
 - Archivos: `backend/src/modules/auth/auth.service.js`, `auth.routes.js`, `backend/src/middlewares/rateLimiters.js`, `frontend/src/pages/admin/login.jsx`
@@ -67,3 +68,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-09 | CA6 acotado para reflejar el comportamiento actual | /review R2 de la spec 018, confirmado por el usuario |

@@ -71,7 +71,7 @@ describe('001 · registro', () => {
     expect(db.estado.usuarios).toHaveLength(0);
   });
 
-  test('001 CA3 · en producción rechaza menos de 8 caracteres aunque se configure menos', async () => {
+  const servicioEnProduccion = () => {
     const original = { ...process.env };
     process.env.NODE_ENV = 'production';
     process.env.PASSWORD_MIN_LENGTH = '4';
@@ -80,19 +80,39 @@ describe('001 · registro', () => {
       servicio = require('../../src/modules/auth/auth.service');
     });
     process.env = original;
+    return servicio;
+  };
 
+  const registrarConClave = (clave) =>
+    request(app).post(REGISTRO).send(datosRegistro({ contrasena: clave, confirmar_contrasena: clave }));
+
+  test('001 CA3 · en producción rechaza menos de 8 caracteres aunque se configure menos', async () => {
     await expect(
-      servicio.register(datosRegistro({ contrasena: 'corta12', confirmar_contrasena: 'corta12' })),
+      servicioEnProduccion().register(datosRegistro({ contrasena: 'corta12', confirmar_contrasena: 'corta12' })),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 
+  test('001 CA3 · en producción acepta exactamente 8 caracteres', async () => {
+    await expect(
+      servicioEnProduccion().register(datosRegistro({ contrasena: 'ocho1234', confirmar_contrasena: 'ocho1234' })),
+    ).resolves.toMatchObject({ correo: f.CORREO_NUEVO });
+  });
+
   test('001 CA3 · rechaza más de 72 bytes', async () => {
-    const larga = 'a'.repeat(73);
-    const r = await request(app)
-      .post(REGISTRO)
-      .send(datosRegistro({ contrasena: larga, confirmar_contrasena: larga }));
+    const r = await registrarConClave('a'.repeat(73));
     expect(r.status).toBe(400);
     expect(db.estado.usuarios).toHaveLength(0);
+  });
+
+  test('001 CA3 · cuenta bytes y no caracteres: 37 caracteres de 2 bytes se rechazan', async () => {
+    const r = await registrarConClave('ñ'.repeat(37));
+    expect(r.status).toBe(400);
+    expect(db.estado.usuarios).toHaveLength(0);
+  });
+
+  test('001 CA3 · acepta exactamente 72 bytes', async () => {
+    const r = await registrarConClave('a'.repeat(72));
+    expect(r.status).toBe(201);
   });
 
   test('001 CA4 · con un correo ya registrado responde 400', async () => {
@@ -136,6 +156,17 @@ describe('001 · inicio de sesión', () => {
     expect(contrasenaMala.body.message).toBe(correoMalo.body.message);
     expect(contrasenaMala.body.payload).toBeUndefined();
   });
+
+  test('001 CA6 · una cuenta solo de Google responde 400 e indica que use Google', async () => {
+    db.agregarUsuario({ correo: f.CORREO_GOOGLE, nombre_usuario: f.NOMBRE, google_id: f.GOOGLE_SUB });
+    const r = await request(app).post(LOGIN).send({ correo: f.CORREO_GOOGLE, contrasena: f.CLAVE });
+
+    expect(r.status).toBe(400);
+    expect(r.body.message).toMatch(/Google/);
+    expect(r.body.payload).toBeUndefined();
+  });
+
+  test.todo('001 CA6 · un login sin contraseña en la petición no debe responder 500 (defecto: hoy responde 500)');
 
   test('001 CA7 · con una cuenta inactiva responde 403', async () => {
     paciente({ estado: 'inactivo' });

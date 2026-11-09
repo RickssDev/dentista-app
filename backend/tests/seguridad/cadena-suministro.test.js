@@ -46,6 +46,8 @@ describe('TM4 · cadena de suministro', () => {
 
 describe('workflow de integración continua', () => {
   const workflow = leer(WORKFLOW);
+  const job = (nombre) =>
+    workflow.match(new RegExp(`^  ${nombre}:\\r?\\n[\\s\\S]*?(?=^  [\\w-]+:\\r?\\n|(?![\\s\\S]))`, 'm'))[0];
 
   test('TM5 · tiene permisos de solo lectura, sin pull_request_target ni secretos', () => {
     expect(workflow).toMatch(/^permissions:\r?\n\s+contents: read/m);
@@ -55,10 +57,20 @@ describe('workflow de integración continua', () => {
 
   test('CA9 · ejecuta las pruebas en cada propuesta de cambio, con límite de 5 minutos', () => {
     expect(workflow).toMatch(/^\s+pull_request:/m);
-    const paso = workflow.match(/- name: Pruebas[\s\S]*?(?=\r?\n\s+- )/);
+    const calidad = job('calidad');
+    expect(calidad).toMatch(/if: github\.event_name == 'pull_request'/);
+    expect(calidad).not.toMatch(/continue-on-error/);
+    const paso = calidad.match(/^\s+- name: Pruebas\s*?\r?\n[\s\S]*?(?=\r?\n\s+- )/m);
     expect(paso).not.toBeNull();
+    expect(paso[0]).not.toMatch(/^\s+if:/m);
     expect(paso[0]).toMatch(/^\s*timeout-minutes: 5\s*$/m);
     expect(paso[0]).toMatch(/npm test/);
+  });
+
+  test('P11 · audita las dependencias de ambos paquetes en cada PR', () => {
+    const seguridad = job('seguridad-pr');
+    expect(seguridad).toMatch(/npm --prefix backend audit --audit-level=high/);
+    expect(seguridad).toMatch(/npm --prefix frontend audit --audit-level=high/);
   });
 
   test('CA10 · revisa el estilo del backend solo en los archivos cambiados', () => {

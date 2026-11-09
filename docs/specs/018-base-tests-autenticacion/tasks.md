@@ -118,6 +118,39 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
   - nota: A16 — los 28 identificadores existen en las pruebas (23 con prueba y 5 pendientes).
   - nota: A17 — no hubo defectos confirmados: 23 marcados y 5 incumplidos sin marcar.
 - [x] T030 Actualizar comandos de prueba (ruta protegida, aprobada en esta tarea), CHANGELOG y verificación — `AGENTS.md`, `CHANGELOG.md`, `.ai/project.yaml` — hecho cuando: `AGENTS.md` documenta `npm test`, y `.ai/project.yaml` registra el resultado real de T025 — depende: T025
+- [x] T031 Escribir la prueba que lanza la suite de autenticación y exige ver los cinco pendientes por nombre — `backend/tests/seguridad/pendientes.test.js` — hecho cuando: falla porque los nombres no aparecen — cubre: CA3
+  - nota: la prueba falla sin la configuración de reportes; comprobado.
+  - nota: añadida por /review: R1
+- [x] T032 Mostrar por nombre cada prueba y pendiente en la salida de Jest — `backend/jest.config.js` — hecho cuando: T031 pasa — cubre: CA3 — depende: T031
+  - nota: además de `verbose` se fija `reporters: ['default']`, porque Jest 30 usa un reporte reducido al detectar un agente de IA y ocultaba los nombres.
+  - nota: añadida por /review: R1
+- [x] T033 Acotar 001 CA6 a cuentas con contraseña y caracterizar la respuesta 400 de una cuenta solo de Google — `docs/specs/001-auth-registro-login/spec.md`, `backend/tests/auth/registro-login.test.js` — hecho cuando: la prueba pasa y falla al cambiar esa respuesta en producción (se restaura) — cubre: CA2
+  - nota: comprobado rompiendo el código de estado de la respuesta; código restaurado.
+  - nota: añadida por /review: R2
+- [x] T034 Registrar como pendiente y en el roadmap que un login sin contraseña responde 500 — `backend/tests/auth/registro-login.test.js`, `docs/roadmap.md` — hecho cuando: el `test.todo` aparece en la salida y el defecto figura en "Pendientes y deuda" — cubre: CA5 — depende: T033
+  - nota: el pendiente aparece en la salida y el defecto figura en el roadmap.
+  - nota: añadida por /review: R3
+- [x] T035 Probar el límite de 72 bytes con una contraseña multibyte y los bordes aceptados de 72 bytes y 8 caracteres — `backend/tests/auth/registro-login.test.js` — hecho cuando: pasan y la multibyte falla al sustituir `Buffer.byteLength` por `.length` (se restaura) — cubre: CA2 — depende: T034
+  - nota: comprobado rompiendo `byteLength` y ambos bordes; código restaurado.
+  - nota: añadida por /review: R4
+- [x] T036 Exigir 400 ante un token inexistente con formato válido y la condición `r.token_hash = ?` en la consulta — `backend/tests/auth/contrasenas.test.js` — hecho cuando: pasan y fallan al retirar la condición (se restaura) — cubre: CA2
+  - nota: comprobado retirando la condición `r.token_hash = ?`; código restaurado.
+  - nota: añadida por /review: R5
+- [x] T037 Hacer que la base simulada exija la consulta completa de búsqueda por correo — `backend/tests/support/fake-db.js` — hecho cuando: las pruebas pasan y fallan al retirar `WHERE usuarios.correo = ?` (se restaura) — cubre: CA2
+  - nota: comprobado retirando `WHERE usuarios.correo = ?`; código restaurado.
+  - nota: añadida por /review: R6
+- [x] T038 Registrar commit y rollback en la base simulada y comprobarlos en el restablecimiento de contraseña — `backend/tests/support/fake-db.js`, `backend/tests/auth/contrasenas.test.js` — hecho cuando: pasan y fallan al retirar `connection.commit()` (se restaura) — cubre: CA2 — depende: T036, T037
+  - nota: comprobado retirando `commit` y cada `rollback`; código restaurado.
+  - nota: añadida por /review: R7
+- [x] T039 Exigir en la prueba de red el registro del intento por socket — `backend/tests/seguridad/red.test.js` — hecho cuando: pasa y falla al retirar el parche de sockets (se restaura) — cubre: CA7
+  - nota: comprobado retirando el parche de sockets y el bloqueo de `fetch`.
+  - nota: añadida por /review: R8
+- [x] T040 Exigir que el paso de pruebas esté activo y sea bloqueante en el job `calidad` — `backend/tests/seguridad/cadena-suministro.test.js` — hecho cuando: pasa y falla con el paso comentado, con `continue-on-error` o fuera de ese job (se restaura) — cubre: CA9
+  - nota: comprobado con el paso comentado, con `continue-on-error` y con un `if`.
+  - nota: añadida por /review: R9
+- [x] T041 Exigir `npm audit --audit-level=high` en el job de seguridad de cada PR — `backend/tests/seguridad/cadena-suministro.test.js` — hecho cuando: pasa y falla al retirar el paso (se restaura) — cubre: CA9 — depende: T040
+  - nota: comprobado retirando la auditoría del backend.
+  - nota: añadida por /review: R10
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura
   - nota: A29 — añadida la sección de pruebas; la deuda ya no dice que el backend carezca de pruebas y conserva la de lint.
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
@@ -136,14 +169,14 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T025 | T023 |
-| CA2 | T010, T011, T012, T013 | T006, T029 |
-| CA3 | T010, T011, T012 | T006 |
+| CA2 | T010, T011, T012, T013, T033, T035, T036, T038 | T006, T029, T037, T038 |
+| CA3 | T010, T011, T012, T031 | T006, T032 |
 | CA4 | T027 | Ninguna: es una restricción, no se cambia código de producción |
-| CA5 | T028 | T028 |
+| CA5 | T028, T034 | T028, T034 |
 | CA6 | T014 | T020 |
-| CA7 | T015 | T021 |
+| CA7 | T015, T039 | T021 |
 | CA8 | T016 | T007 |
-| CA9 | T017, T026 | T024 |
+| CA9 | T017, T026, T040, T041 | T024 |
 | CA10 | T017, T026 | T004, T024 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
@@ -159,17 +192,17 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 | `package.json` (raíz) | T023 |
 | `scripts/test-all.mjs` | T023 |
 | `backend/package.json`, `package-lock.json` | T001 |
-| `backend/jest.config.js` | T003, T020, T021 |
+| `backend/jest.config.js` | T003, T020, T021, T032 |
 | `backend/eslint.config.js` | T004 |
 | `backend/.dockerignore` | T022 |
-| `backend/tests/support/` | T003, T006, T007, T020, T021 |
-| `backend/tests/auth/` | T010, T011, T012 |
-| `backend/tests/seguridad/` | T014, T015, T016, T017 |
+| `backend/tests/support/` | T003, T006, T007, T020, T021, T037, T038 |
+| `backend/tests/auth/` | T010, T011, T012, T033, T034, T035, T036, T038 |
+| `backend/tests/seguridad/` | T014, T015, T016, T017, T031, T039, T040, T041 |
 | `frontend/package.json`, `package-lock.json` | T002 |
 | `frontend/vitest.config.js` | T005 |
 | `frontend/tests/` | T005, T013 |
 | `.github/workflows/ai-dd.yml` | T024, T026 |
-| `docs/specs/001`, `002`, `003` | T029 |
+| `docs/specs/001`, `002`, `003` | T029, T033 |
 | `AGENTS.md`, `CHANGELOG.md`, `.ai/project.yaml` | T030 |
 | `docs/architecture.md` | T090 |
 | `docs/deployment.md` | T091 |

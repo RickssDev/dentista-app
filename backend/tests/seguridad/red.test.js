@@ -18,7 +18,9 @@ describe('las pruebas no generan comunicaciones reales', () => {
     const { status, salida } = correrCaso('salida-forzada.caso.js');
     expect(status).not.toBe(0);
     expect(salida).toMatch(/Intento de salida externa/);
-    expect(salida).toMatch(/servicio-externo\.invalid/);
+    // Con esquema lo registra el bloqueo de fetch; solo con el host, el de sockets.
+    expect(salida).toMatch(/Intento de salida externa: https:\/\/servicio-externo\.invalid/);
+    expect(salida).toMatch(/Intento de salida externa: servicio-externo\.invalid/);
   }, 60000);
 
   test('CA7 · las claves presentes en el entorno no llegan a las pruebas', () => {

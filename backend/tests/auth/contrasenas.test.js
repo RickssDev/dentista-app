@@ -124,6 +124,7 @@ describe('003 · recuperar contraseña', () => {
     expect(r.status).toBe(200);
     expect(await bcrypt.compare(f.CLAVE_NUEVA, usuario.contrasena)).toBe(true);
     expect(db.estado.tokens).toHaveLength(0);
+    expect(db.transacciones).toEqual(['begin', 'commit', 'release']);
     expect(correos.map((c) => c.to[0])).toEqual([f.CORREO_PACIENTE]);
     expect(sqlDeRestablecer()).toContain('r.fecha_expiracion > NOW()');
   });
@@ -132,6 +133,16 @@ describe('003 · recuperar contraseña', () => {
     const r = await restablecer({ token: 'no-es-un-token' });
     expect(r.status).toBe(400);
     expect(db.sqlRecibido).toHaveLength(0);
+  });
+
+  test('003 CA6 · (abuso) un token inexistente con formato válido responde 400', async () => {
+    const usuario = conContrasena();
+    const anterior = usuario.contrasena;
+    const r = await restablecer();
+
+    expect(r.status).toBe(400);
+    expect(usuario.contrasena).toBe(anterior);
+    expect(db.transacciones).toEqual(['begin', 'rollback', 'release']);
   });
 
   test('003 CA6 · (abuso) un token expirado responde 400 y no cambia la contraseña', async () => {
@@ -147,6 +158,7 @@ describe('003 · recuperar contraseña', () => {
   test('003 CA6 · la consulta exige token vigente, cuenta activa y con contraseña', async () => {
     await restablecer();
     const sql = sqlDeRestablecer();
+    expect(sql).toContain('r.token_hash = ?');
     expect(sql).toContain('r.fecha_expiracion > NOW()');
     expect(sql).toContain("u.estado = 'activo'");
     expect(sql).toContain('u.contrasena IS NOT NULL');
@@ -157,6 +169,7 @@ describe('003 · recuperar contraseña', () => {
     db.agregarToken({ id_usuario: usuario.id_usuario, token_hash: hashToken(TOKEN_VALIDO) });
     const r = await restablecer({ nueva_contrasena: f.CLAVE, confirmar_contrasena: f.CLAVE });
     expect(r.status).toBe(400);
+    expect(db.transacciones).toEqual(['begin', 'rollback', 'release']);
   });
 
   test.todo('003 CA9 · tras 5 intentos fallidos se bloquea al cliente real (hoy no se cumple)');
