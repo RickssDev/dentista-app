@@ -23,7 +23,7 @@ La clínica necesita administrar las cuentas del personal y de los pacientes. Co
 - [ ] CA4 · Dada una imagen nueva, entonces la anterior se borra del disco.
 - [ ] CA5 · Dada una cuenta con información asociada, cuando se elimina, entonces se desactiva en lugar de borrarse.
 - [ ] CA6 · Dado un usuario sin rol de personal, entonces la API rechaza el acceso.
-- [ ] CA7 · (abuso) Un Asistente no puede crear, editar ni eliminar cuentas, ni asignar roles. **HOY NO SE CUMPLE:** las rutas admiten a Asistente y aceptan `id_rol` y `password` del cuerpo (RS1).
+- [x] CA7 · (abuso) Un Asistente no puede crear, editar ni eliminar cuentas, ni asignar roles.
 - [ ] CA8 · (abuso) No se puede eliminar o degradar al último Administrador. **HOY NO SE CUMPLE:** no hay comprobación (RS1).
 
 ## Fuera de alcance
@@ -62,3 +62,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-09 | CA7 cumplido: solo el Administrador accede a las rutas de usuarios | Ficha fix-permisos-asistente |

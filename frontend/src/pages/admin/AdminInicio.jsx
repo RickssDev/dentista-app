@@ -148,6 +148,10 @@ function AvatarUsuario({ usuario }) {
 function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
   const navigate = useNavigate();
   const usuario = leerUsuario();
+  const esAsistente = localStorage.getItem("rol")?.trim().toLowerCase() === "asistente";
+  const accionesVisibles = esAsistente
+    ? ACCIONES.filter((a) => a.key !== "agregar-paciente")
+    : ACCIONES;
 
   const [resumen, setResumen] = useState(RESUMEN_VACIO);
   const [cargando, setCargando] = useState(true);
@@ -356,7 +360,7 @@ function AdminInicio({ onCrearCita, onAgregarPaciente, recargar = 0 }) {
       <h2 className="inicio-seccion">Accesos rápidos</h2>
 
       <div className="inicio-acciones">
-        {ACCIONES.map((a) => (
+        {accionesVisibles.map((a) => (
           <button
             key={a.key}
             type="button"
