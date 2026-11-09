@@ -107,7 +107,8 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 ## Integración y documentación
 - [x] T025 Ejecutar dos veces `npm test` desde un checkout limpio, sin archivos `.env` — `package.json` — hecho cuando: ambas pasan con el mismo resultado y tardan menos de 5 minutos — cubre: CA1 — depende: T023, T024
   - nota: Dos ejecuciones desde un clon limpio sin `.env`: 27 s y 13 s, mismo resultado (54 pruebas y 5 pendientes en backend, 5 en frontend).
-- [ ] T026 Comprobar el workflow en un PR borrador — `.github/workflows/ai-dd.yml` — hecho cuando: verificación manual: el job "Lint y build" pasa en el PR, falla con una prueba forzada que luego se revierte, y no falla por código previo del backend; el job de dependencias puede fallar, y el PR sigue en borrador hasta que el `/chore` en esta misma rama lo deje en verde — cubre: CA9, CA10 — depende: T024
+- [x] T026 Comprobar el workflow en un PR borrador — `.github/workflows/ai-dd.yml` — hecho cuando: verificación manual: el job "Lint y build" pasa en el PR, falla con una prueba forzada que luego se revierte, y no falla por código previo del backend; el job de dependencias puede fallar, y el PR sigue en borrador hasta que el `/chore` en esta misma rama lo deje en verde — cubre: CA9, CA10 — depende: T024
+  - nota: verificación manual OK 2026-11-09 (agente): en el PR borrador #64, "Lint y build" pasa con 54 pruebas y 5 pendientes y no le afectan los 5 errores de lint previos; "Seguridad" pasa el escaneo de secretos y falla solo en `npm audit` por las vulnerabilidades previas. En el PR temporal #65 una prueba forzada puso el job en rojo (`backend: FALLÓ`); se cerró y la rama se borró.
 - [x] T027 Comprobar que no cambió el código de producción — `backend/src`, `backend/server.js`, `frontend/src` — hecho cuando: `git diff --exit-code <impl_base> -- backend/src backend/server.js frontend/src` termina en 0 — cubre: CA4 — depende: T025
   - nota: A6 — `git diff` sin diferencias en código de producción y árbol de producción del frontend idéntico. En el backend, instalar las herramientas movió la transitiva `minimatch` de 3.1.2 a 3.1.5; aceptado por el usuario el 2026-11-09 porque es un parche que además corrige una vulnerabilidad y lo actualizaría el `/chore`.
 - [x] T028 Registrar en el roadmap los defectos hallados, cada uno con su prueba pendiente — `docs/roadmap.md` — hecho cuando: cada defecto tiene `test.todo` y línea en "Pendientes y deuda", o una nota de esta tarea dice que no hubo — cubre: CA5 — depende: T025
@@ -121,7 +122,7 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
   - nota: A29 — añadida la sección de pruebas; la deuda ya no dice que el backend carezca de pruebas y conserva la de lint.
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: en `docs/deployment.md`, RD8.a y RD8.c → en curso (spec 018); RD8.b → en curso (spec 018, solo autenticación; citas → spec 019). RD8 no queda mitigado.
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

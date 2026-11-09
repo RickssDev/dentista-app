@@ -1,7 +1,7 @@
 ---
 id: 018
 slug: base-tests-autenticacion
-status: approved
+status: implemented
 created: 2026-11-09
 extends: []
 ---
@@ -18,16 +18,16 @@ El sistema está en producción con datos de salud y no tiene ninguna prueba aut
 - Como responsable de los datos, quiero que las pruebas nunca toquen información real para proteger a los pacientes.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado el repositorio con sus dependencias instaladas y sin credenciales ni servicios reales, cuando un desarrollador ejecuta el único comando documentado, entonces corren las pruebas del servidor y de la interfaz y se informa, para cada una, si aprobó o falló.
-- [ ] CA2 · Dado cada criterio que hoy se cumple en las specs 001 (CA1 a CA8), 002 (CA1 a CA7) y 003 (CA1 a CA8), cuando corre la suite, entonces existe al menos una prueba que lo verifica y el criterio queda marcado como cubierto en su spec.
-- [ ] CA3 · Dados los criterios que hoy no se cumplen (001 CA9 y CA10, 002 CA8, 003 CA9 y CA10), cuando corre la suite, entonces cada uno aparece como prueba pendiente visible y no hace fallar el resultado.
-- [ ] CA4 · Dado el trabajo terminado de esta spec, cuando se comparan las respuestas del sistema antes y después para los criterios del CA2, entonces son las mismas: esta spec no cambia el comportamiento.
-- [ ] CA5 · Dado un defecto descubierto al escribir una prueba, cuando se confirma, entonces queda como prueba pendiente visible y registrado en el roadmap, sin corregirse en esta spec.
-- [ ] CA6 · (abuso) Dado un entorno configurado con acceso a los datos de producción, cuando alguien ejecuta la suite, entonces se niega a correr y termina con un mensaje que explica el motivo.
-- [ ] CA7 · (abuso) Dada una ejecución de la suite, cuando termina, entonces no se envió ningún correo ni mensaje real, ni se hizo ninguna verificación real ante un proveedor externo.
-- [ ] CA8 · (abuso) Dados los datos de prueba incluidos en el repositorio, cuando se revisan, entonces son ficticios y no contienen información de personas reales ni credenciales.
-- [ ] CA9 · Dada una propuesta de cambio, cuando se abre o se actualiza, entonces corren automáticamente las pruebas, y si alguna falla la propuesta muestra el estado fallido.
-- [ ] CA10 · Dada una propuesta de cambio que modifica código del servidor, cuando se valida, entonces se revisa el estilo solo de los archivos cambiados, de modo que el código previo no la bloquee.
+- [x] CA1 · Dado el repositorio con sus dependencias instaladas y sin credenciales ni servicios reales, cuando un desarrollador ejecuta el único comando documentado, entonces corren las pruebas del servidor y de la interfaz y se informa, para cada una, si aprobó o falló.
+- [x] CA2 · Dado cada criterio que hoy se cumple en las specs 001 (CA1 a CA8), 002 (CA1 a CA7) y 003 (CA1 a CA8), cuando corre la suite, entonces existe al menos una prueba que lo verifica y el criterio queda marcado como cubierto en su spec.
+- [x] CA3 · Dados los criterios que hoy no se cumplen (001 CA9 y CA10, 002 CA8, 003 CA9 y CA10), cuando corre la suite, entonces cada uno aparece como prueba pendiente visible y no hace fallar el resultado.
+- [x] CA4 · Dado el trabajo terminado de esta spec, cuando se comparan las respuestas del sistema antes y después para los criterios del CA2, entonces son las mismas: esta spec no cambia el comportamiento.
+- [x] CA5 · Dado un defecto descubierto al escribir una prueba, cuando se confirma, entonces queda como prueba pendiente visible y registrado en el roadmap, sin corregirse en esta spec.
+- [x] CA6 · (abuso) Dado un entorno configurado con acceso a los datos de producción, cuando alguien ejecuta la suite, entonces se niega a correr y termina con un mensaje que explica el motivo.
+- [x] CA7 · (abuso) Dada una ejecución de la suite, cuando termina, entonces no se envió ningún correo ni mensaje real, ni se hizo ninguna verificación real ante un proveedor externo.
+- [x] CA8 · (abuso) Dados los datos de prueba incluidos en el repositorio, cuando se revisan, entonces son ficticios y no contienen información de personas reales ni credenciales.
+- [x] CA9 · Dada una propuesta de cambio, cuando se abre o se actualiza, entonces corren automáticamente las pruebas, y si alguna falla la propuesta muestra el estado fallido.
+- [x] CA10 · Dada una propuesta de cambio que modifica código del servidor, cuando se valida, entonces se revisa el estilo solo de los archivos cambiados, de modo que el código previo no la bloquee.
 
 ## Fuera de alcance
 - Pruebas de citas y del perfil del paciente: spec 019 (prevista).
