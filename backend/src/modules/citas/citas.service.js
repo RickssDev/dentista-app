@@ -1,6 +1,6 @@
 const repo = require("./citas.repository");
 const AppError = require("../../utils/AppError");
-const { sendTemplateMessage } = require("../../services/whatp.service");
+const { sendTemplateMessage, whatsappActivo } = require("../../services/whatp.service");
 const servicioRepo = require("../servicios/servicios.repository");
 const pacienteRepo = require("../pacientes/pacientes.repository");
 
@@ -150,7 +150,7 @@ exports.createCita = async (data) => {
       ],
     );
 
-    console.log(`WhatsApp de confirmación enviado para cita ${id}`);
+    if (whatsappActivo()) console.log(`WhatsApp de confirmación enviado para cita ${id}`);
   }
 } catch (error) {
   console.error(
@@ -269,7 +269,7 @@ exports.updateCita = async (id, data) => {
           horaFormateada,
         ]);
 
-        console.log(`WhatsApp de reprogramación enviado para cita ${id}`);
+        if (whatsappActivo()) console.log(`WhatsApp de reprogramación enviado para cita ${id}`);
       }
     } catch (error) {
       console.error("ERROR WHATSAPP:", error.response?.data || error.message);
@@ -333,7 +333,7 @@ exports.cancelarCita = async (id, motivo) => {
         fechaFormateada,
       ]);
 
-      console.log(`WhatsApp de cancelación enviado para cita ${id}`);
+      if (whatsappActivo()) console.log(`WhatsApp de cancelación enviado para cita ${id}`);
     }
   } catch (error) {
     console.error("ERROR WHATSAPP:", error.response?.data || error.message);
