@@ -15,8 +15,9 @@ JavaScript · React 19 + Vite 7 · Node 22 + Express 5 · MySQL 8 con SQL manual
 npm ci --prefix backend && npm ci --prefix frontend  # instalar
 npm run dev --prefix backend                         # API local
 npm run dev --prefix frontend                        # SPA local
-# tests: no existen todavía (roadmap, objetivo 1)
-npm run lint --prefix frontend                       # lint  # ⚠ falló en /init: 10 errores previos; el backend no tiene linter
+npm test                                             # pruebas de backend y frontend (no usan datos ni servicios reales)
+npm run lint --prefix backend                        # lint del backend  # ⚠ 5 errores previos en backend/src
+npm run lint --prefix frontend                       # lint del frontend  # ⚠ 10 errores previos
 npm run build --prefix frontend                      # build
 ```
 

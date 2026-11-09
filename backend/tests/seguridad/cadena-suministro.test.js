@@ -65,7 +65,7 @@ describe('workflow de integración continua', () => {
     const paso = workflow.match(/- name: Lint de backend[\s\S]*?(?=\r?\n\s+- )/);
     expect(paso).not.toBeNull();
     expect(paso[0]).toMatch(/git diff --name-only/);
-    expect(paso[0]).toMatch(/\^backend\//);
+    expect(paso[0]).toMatch(/grep '\^backend\//);
     expect(paso[0]).toMatch(/eslint/);
   });
 });

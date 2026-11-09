@@ -18,14 +18,14 @@ Los usuarios necesitan recuperar el acceso si olvidan su contraseña y poder cam
 
 ## Criterios de aceptación
 <!-- Spec inferida: [x] = cubierto por un test; [ ] = observado en el código, sin test. -->
-- [ ] CA1 · Dado cualquier correo con formato válido, cuando se solicita recuperación, entonces la respuesta es la misma exista o no la cuenta.
-- [ ] CA2 · Dada una cuenta activa con contraseña, entonces se envía un enlace con un token de 32 bytes y solo se guarda su hash SHA-256.
-- [ ] CA3 · Dada una cuenta creada solo con Google, cuando se solicita recuperación, entonces se envía un correo que lo indica, con enlace a iniciar sesión y sin enlace para restablecer contraseña.
-- [ ] CA4 · Dado un fallo al enviar el correo, entonces el token se elimina.
-- [ ] CA5 · Dado un token válido de menos de 15 minutos, cuando se restablece, entonces la contraseña cambia y se notifica por correo.
-- [ ] CA6 · (abuso) Dado un token inválido o expirado, entonces responde 400.
-- [ ] CA7 · Dada una contraseña nueva igual a la actual, entonces responde 400.
-- [ ] CA8 · Dado un usuario autenticado, cuando cambia su contraseña con la actual correcta, entonces se actualiza.
+- [x] CA1 · Dado cualquier correo con formato válido, cuando se solicita recuperación, entonces la respuesta es la misma exista o no la cuenta.
+- [x] CA2 · Dada una cuenta activa con contraseña, entonces se envía un enlace con un token de 32 bytes y solo se guarda su hash SHA-256.
+- [x] CA3 · Dada una cuenta creada solo con Google, cuando se solicita recuperación, entonces se envía un correo que lo indica, con enlace a iniciar sesión y sin enlace para restablecer contraseña.
+- [x] CA4 · Dado un fallo al enviar el correo, entonces el token se elimina.
+- [x] CA5 · Dado un token válido de menos de 15 minutos, cuando se restablece, entonces la contraseña cambia y se notifica por correo.
+- [x] CA6 · (abuso) Dado un token inválido o expirado, entonces responde 400.
+- [x] CA7 · Dada una contraseña nueva igual a la actual, entonces responde 400.
+- [x] CA8 · Dado un usuario autenticado, cuando cambia su contraseña con la actual correcta, entonces se actualiza.
 - [ ] CA9 · (abuso) Tras 5 intentos fallidos de un cliente en 15 minutos, se bloquea para ese cliente. **HOY NO SE CUMPLE:** el límite no identifica al cliente real (RS4).
 - [ ] CA10 · (abuso) Cambiar la contraseña invalida las sesiones abiertas. **HOY NO SE CUMPLE:** no hay revocación (RS2).
 

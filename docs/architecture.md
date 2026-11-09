@@ -96,6 +96,9 @@ Los campos completos son inferidos de las consultas.
 - Versionado: prefijo `/api/v1`.
 - Cómo se regenera: no aplica.
 
+## Pruebas
+`npm test` en la raíz ejecuta ambas suites ([ADR 0004](adr/0004-herramientas-de-pruebas.md)). El backend usa Jest y Supertest sobre la API real, con la base de datos simulada en memoria (`backend/tests/support/fake-db.js`): el SQL no se ejecuta. El frontend usa Vitest y Testing Library. La suite se niega a correr contra producción y bloquea la red externa.
+
 ## Despliegue
 Docker Compose en el servidor, con build en sitio, disparado a mano. Sin CI de despliegue ni
 staging. Detalle en [deployment.md](deployment.md).
@@ -110,7 +113,7 @@ staging. Detalle en [deployment.md](deployment.md).
 
 ## Deuda técnica y riesgos observados
 - Módulos que importan el repository de otro (`citas.service` → `servicios.repository`).
-- Sin tests ni linter en el backend; 15 problemas de lint previos en el frontend.
+- 5 errores de lint previos en el backend y 15 problemas en el frontend.
 - `backend/src/middlewares/errorHandler.js` tiene funciones duplicadas y anidadas: funciona, pero
   reasigna `module.exports` al manejar un error.
 - Validación manual dispersa en services.

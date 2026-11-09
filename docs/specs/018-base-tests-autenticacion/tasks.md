@@ -105,14 +105,21 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
   - nota: A32 — `timeout-minutes: 5` en el paso de pruebas.
 
 ## Integración y documentación
-- [ ] T025 Ejecutar dos veces `npm test` desde un checkout limpio, sin archivos `.env` — `package.json` — hecho cuando: ambas pasan con el mismo resultado y tardan menos de 5 minutos — cubre: CA1 — depende: T023, T024
+- [x] T025 Ejecutar dos veces `npm test` desde un checkout limpio, sin archivos `.env` — `package.json` — hecho cuando: ambas pasan con el mismo resultado y tardan menos de 5 minutos — cubre: CA1 — depende: T023, T024
+  - nota: Dos ejecuciones desde un clon limpio sin `.env`: 27 s y 13 s, mismo resultado (54 pruebas y 5 pendientes en backend, 5 en frontend).
 - [ ] T026 Comprobar el workflow en un PR borrador — `.github/workflows/ai-dd.yml` — hecho cuando: verificación manual: el job "Lint y build" pasa en el PR, falla con una prueba forzada que luego se revierte, y no falla por código previo del backend; el job de dependencias puede fallar, y el PR sigue en borrador hasta que el `/chore` en esta misma rama lo deje en verde — cubre: CA9, CA10 — depende: T024
-- [ ] T027 Comprobar que no cambió el código de producción — `backend/src`, `backend/server.js`, `frontend/src` — hecho cuando: `git diff --exit-code <impl_base> -- backend/src backend/server.js frontend/src` termina en 0 — cubre: CA4 — depende: T025
-- [ ] T028 Registrar en el roadmap los defectos hallados, cada uno con su prueba pendiente — `docs/roadmap.md` — hecho cuando: cada defecto tiene `test.todo` y línea en "Pendientes y deuda", o una nota de esta tarea dice que no hubo — cubre: CA5 — depende: T025
-- [ ] T029 Marcar `[x]` los 23 criterios cubiertos — `docs/specs/001-auth-registro-login/spec.md`, `docs/specs/002-auth-google/spec.md`, `docs/specs/003-auth-contrasenas/spec.md` — hecho cuando: esos criterios están marcados y los 5 incumplidos siguen `[ ]` — cubre: CA2 — depende: T025
-- [ ] T030 Actualizar comandos de prueba (ruta protegida, aprobada en esta tarea), CHANGELOG y verificación — `AGENTS.md`, `CHANGELOG.md`, `.ai/project.yaml` — hecho cuando: `AGENTS.md` documenta `npm test`, y `.ai/project.yaml` registra el resultado real de T025 — depende: T025
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
+- [x] T027 Comprobar que no cambió el código de producción — `backend/src`, `backend/server.js`, `frontend/src` — hecho cuando: `git diff --exit-code <impl_base> -- backend/src backend/server.js frontend/src` termina en 0 — cubre: CA4 — depende: T025
+  - nota: A6 — `git diff` sin diferencias en código de producción y árbol de producción del frontend idéntico. En el backend, instalar las herramientas movió la transitiva `minimatch` de 3.1.2 a 3.1.5; aceptado por el usuario el 2026-11-09 porque es un parche que además corrige una vulnerabilidad y lo actualizaría el `/chore`.
+- [x] T028 Registrar en el roadmap los defectos hallados, cada uno con su prueba pendiente — `docs/roadmap.md` — hecho cuando: cada defecto tiene `test.todo` y línea en "Pendientes y deuda", o una nota de esta tarea dice que no hubo — cubre: CA5 — depende: T025
+  - nota: A30 — `docs/roadmap.md` forma parte del cambio.
+  - nota: Las pruebas no confirmaron defectos en 001 a 003. El linter halló que `whatp.service.js` no importa `axios`: es ajeno a esta spec y quedó en el roadmap.
+- [x] T029 Marcar `[x]` los 23 criterios cubiertos — `docs/specs/001-auth-registro-login/spec.md`, `docs/specs/002-auth-google/spec.md`, `docs/specs/003-auth-contrasenas/spec.md` — hecho cuando: esos criterios están marcados y los 5 incumplidos siguen `[ ]` — cubre: CA2 — depende: T025
+  - nota: A16 — los 28 identificadores existen en las pruebas (23 con prueba y 5 pendientes).
+  - nota: A17 — no hubo defectos confirmados: 23 marcados y 5 incumplidos sin marcar.
+- [x] T030 Actualizar comandos de prueba (ruta protegida, aprobada en esta tarea), CHANGELOG y verificación — `AGENTS.md`, `CHANGELOG.md`, `.ai/project.yaml` — hecho cuando: `AGENTS.md` documenta `npm test`, y `.ai/project.yaml` registra el resultado real de T025 — depende: T025
+- [x] T090 Actualizar `docs/architecture.md` si cambió la estructura
+  - nota: A29 — añadida la sección de pruebas; la deuda ya no dice que el backend carezca de pruebas y conserva la de lint.
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: en `docs/deployment.md`, RD8.a y RD8.c → en curso (spec 018); RD8.b → en curso (spec 018, solo autenticación; citas → spec 019). RD8 no queda mitigado.
 - [ ] T092 Marcar spec como `implemented`
 

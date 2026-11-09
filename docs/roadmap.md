@@ -45,7 +45,10 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 **Funcional, por confirmar con el usuario**
 - El agendado usa la jornada 8:00–16:00 todos los días, y el sitio publica otro horario (spec 005).
 - Teléfono y dirección de `frontend/src/data/site.js` parecen de ejemplo (spec 017).
+- `backend/src/services/whatp.service.js` usa `axios` sin importarlo desde el commit `a2c3aba`: con WhatsApp encendido, todo envío falla. Detectado por el linter en la spec 018; propuesto como `/fix`.
 
 **Calidad**
-- 15 problemas de lint previos en el frontend; backend sin linter.
+- 15 problemas de lint previos en el frontend y 5 errores previos en el backend.
+- Lint de estilos que exige el principio P20 de la constitución.
+- Aprobar `docs/constitution.md`, que sigue en `draft`.
 - Limpiar la duplicación de `backend/src/middlewares/errorHandler.js`.

@@ -17,13 +17,13 @@ Los pacientes pueden entrar con su cuenta de Google sin crear una contraseña. C
 
 ## Criterios de aceptación
 <!-- Spec inferida: [x] = cubierto por un test; [ ] = observado en el código, sin test. -->
-- [ ] CA1 · Dada una credencial que no verifica contra `GOOGLE_CLIENT_ID`, entonces responde 401.
-- [ ] CA2 · Dada una cuenta de Google con correo no verificado, entonces responde 401.
-- [ ] CA3 · Dada una credencial válida de un correo nuevo, cuando se envía a `/auth/google/register`, entonces se crea un usuario Paciente sin contraseña.
-- [ ] CA4 · Dado un correo ya registrado, cuando se intenta registrar con Google, entonces responde 400.
-- [ ] CA5 · Dada una cuenta existente sin `google_id`, cuando inicia sesión con Google, entonces se vincula y devuelve la sesión.
-- [ ] CA6 · (abuso) Dada una cuenta vinculada a otro `google_id`, entonces responde 401.
-- [ ] CA7 · Dada una cuenta inactiva, entonces responde 403.
+- [x] CA1 · Dada una credencial que no verifica contra `GOOGLE_CLIENT_ID`, entonces responde 401.
+- [x] CA2 · Dada una cuenta de Google con correo no verificado, entonces responde 401.
+- [x] CA3 · Dada una credencial válida de un correo nuevo, cuando se envía a `/auth/google/register`, entonces se crea un usuario Paciente sin contraseña.
+- [x] CA4 · Dado un correo ya registrado, cuando se intenta registrar con Google, entonces responde 400.
+- [x] CA5 · Dada una cuenta existente sin `google_id`, cuando inicia sesión con Google, entonces se vincula y devuelve la sesión.
+- [x] CA6 · (abuso) Dada una cuenta vinculada a otro `google_id`, entonces responde 401.
+- [x] CA7 · Dada una cuenta inactiva, entonces responde 403.
 - [ ] CA8 · (abuso) El login no revela si un correo existe. **HOY NO SE CUMPLE:** un correo sin cuenta responde 404 (RS8).
 
 ## Fuera de alcance

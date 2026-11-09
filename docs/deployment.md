@@ -127,6 +127,6 @@ Correcciones:
 ### RD8 · Alta — Sin tests ni validación automática
 No hay tests, y los cambios llegaban a producción sin validación automática.
 Correcciones:
-- RD8.a Adoptar un framework de tests en backend y frontend, con ADR — estado: pendiente
-- RD8.b Cubrir autenticación y citas con tests — estado: pendiente
-- RD8.c Activar `.github/workflows/ai-dd.yml` y añadir tests y linter del backend — estado: en curso (workflow creado, sin activar hasta integrarlo)
+- RD8.a Adoptar un framework de tests en backend y frontend, con ADR — estado: en curso (spec 018)
+- RD8.b Cubrir autenticación y citas con tests — estado: en curso (spec 018, solo autenticación; citas → spec 019)
+- RD8.c Activar `.github/workflows/ai-dd.yml` y añadir tests y linter del backend — estado: en curso (spec 018)

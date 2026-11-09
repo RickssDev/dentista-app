@@ -97,5 +97,5 @@ verification:                  # lo llena la Fase 4
   - { command: "npm ci (frontend)", result: pass, note: "" }
   - { command: "npm run lint (frontend)", result: fail, note: "10 errores y 5 avisos previos a /init" }
   - { command: "npm run build (frontend)", result: pass, note: "con VITE_API_URL=/api/v1" }
-  - { command: "tests", result: fail, note: "el repo no tiene tests ni script test" }
-  - { command: "lint (backend)", result: fail, note: "el backend no tiene linter" }
+  - { command: "npm test", result: pass, note: "spec 018, clon limpio sin .env: 59 pruebas en backend (5 pendientes visibles) y 5 en frontend; 27 s y 13 s" }
+  - { command: "npm run lint (backend)", result: fail, note: "5 errores previos en backend/src; la CI solo revisa archivos cambiados" }

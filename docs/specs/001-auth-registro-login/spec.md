@@ -18,14 +18,14 @@ Pacientes y personal necesitan una cuenta para acceder a sus funciones según su
 
 ## Criterios de aceptación
 <!-- Spec inferida: [x] = cubierto por un test; [ ] = observado en el código, sin test. -->
-- [ ] CA1 · Dado un registro con todos los campos válidos, cuando se envía a `POST /auth/register`, entonces se crea un usuario con rol Paciente y contraseña en bcrypt.
-- [ ] CA2 · Dado un registro con campos faltantes o contraseñas distintas, entonces responde 400.
-- [ ] CA3 · Dada una contraseña de menos de 8 caracteres en producción o de más de 72 bytes, entonces responde 400.
-- [ ] CA4 · Dado un correo ya registrado, entonces responde 400.
-- [ ] CA5 · Dadas credenciales válidas, cuando se envían a `POST /auth/login`, entonces devuelve JWT, datos del usuario y `tienePerfilPaciente`.
-- [ ] CA6 · Dadas credenciales inválidas, entonces responde 401 con mensaje genérico.
-- [ ] CA7 · Dada una cuenta inactiva, entonces responde 403.
-- [ ] CA8 · Tras iniciar sesión, el personal va a `/admin`, y el paciente a `/paciente` o, sin perfil, a `/paciente/completar-perfil`.
+- [x] CA1 · Dado un registro con todos los campos válidos, cuando se envía a `POST /auth/register`, entonces se crea un usuario con rol Paciente y contraseña en bcrypt.
+- [x] CA2 · Dado un registro con campos faltantes o contraseñas distintas, entonces responde 400.
+- [x] CA3 · Dada una contraseña de menos de 8 caracteres en producción o de más de 72 bytes, entonces responde 400.
+- [x] CA4 · Dado un correo ya registrado, entonces responde 400.
+- [x] CA5 · Dadas credenciales válidas, cuando se envían a `POST /auth/login`, entonces devuelve JWT, datos del usuario y `tienePerfilPaciente`.
+- [x] CA6 · Dadas credenciales inválidas, entonces responde 401 con mensaje genérico.
+- [x] CA7 · Dada una cuenta inactiva, entonces responde 403.
+- [x] CA8 · Tras iniciar sesión, el personal va a `/admin`, y el paciente a `/paciente` o, sin perfil, a `/paciente/completar-perfil`.
 - [ ] CA9 · (abuso) Tras 10 intentos fallidos de un cliente en 15 minutos, el login se bloquea para ese cliente. **HOY NO SE CUMPLE:** detrás de varios proxies el límite no identifica al cliente real (RS4).
 - [ ] CA10 · (abuso) Las respuestas no revelan si un correo existe. **HOY NO SE CUMPLE:** registro y login lo revelan (RS8).
 
