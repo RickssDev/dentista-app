@@ -20,7 +20,7 @@ El sistema está en producción con datos de salud y no tiene ninguna prueba aut
 ## Criterios de aceptación
 - [x] CA1 · Dado el repositorio con sus dependencias instaladas y sin credenciales ni servicios reales, cuando un desarrollador ejecuta el único comando documentado, entonces corren las pruebas del servidor y de la interfaz y se informa, para cada una, si aprobó o falló.
 - [x] CA2 · Dado cada criterio que hoy se cumple en las specs 001 (CA1 a CA8), 002 (CA1 a CA7) y 003 (CA1 a CA8), cuando corre la suite, entonces existe al menos una prueba que lo verifica y el criterio queda marcado como cubierto en su spec.
-- [x] CA3 · Dados los criterios que hoy no se cumplen (001 CA9 y CA10, 002 CA8, 003 CA9 y CA10), cuando corre la suite, entonces cada uno aparece como prueba pendiente visible y no hace fallar el resultado.
+- [x] CA3 · Dados los criterios aún incumplidos (001 CA9 y CA10, 002 CA8, 003 CA9 y CA10), cuando corre la suite, entonces cada uno aparece como prueba pendiente visible y no hace fallar el resultado.
 - [x] CA4 · Dado el trabajo terminado de esta spec, cuando se comparan las respuestas del sistema antes y después para los criterios del CA2, entonces son las mismas: esta spec no cambia el comportamiento.
 - [x] CA5 · Dado un defecto descubierto al escribir una prueba, cuando se confirma, entonces queda como prueba pendiente visible y registrado en el roadmap, sin corregirse en esta spec.
 - [x] CA6 · (abuso) Dado un entorno configurado con acceso a los datos de producción, cuando alguien ejecuta la suite, entonces se niega a correr y termina con un mensaje que explica el motivo.
@@ -72,7 +72,7 @@ No aplica: esta spec no cambia ningún flujo ni añade acceso a datos. La audito
 | 2026-11-09 | brecha | ¿Qué hacen las pruebas con lo que hoy no se cumple? | Sin cambiar comportamiento: quedan como pruebas pendientes visibles | usuario |
 | 2026-11-09 | implícita | ¿Cuándo se exigen pruebas? | Todo cambio de comportamiento lleva prueba antes de integrarse | docs/constitution.md P2 |
 | 2026-11-09 | implícita | ¿Las pruebas corren en cada propuesta de cambio, incluido el linter? | Sí, con validación, lint, build y tests | docs/roadmap.md objetivo 1 |
-| 2026-11-09 | implícita | ¿Cómo se registra la herramienta? | Con un ADR | docs/constitution.md P3 |
+| 2026-11-09 | implícita | ¿Cómo se registra la herramienta? | Con un ADR | docs/deployment.md RD8.a |
 | 2026-11-09 | supuesto | ¿Cómo se protege la información real? | La suite se niega a correr contra producción | /specify |
 | 2026-11-09 | supuesto | ¿Cuánto puede tardar la suite? | Menos de 5 minutos | /specify |
 | 2026-11-09 | supuesto | ¿Cómo se mide la cobertura? | Por criterio de spec cubierto, no por porcentaje de código | /specify |
@@ -89,3 +89,4 @@ No aplica: esta spec no cambia ningún flujo ni añade acceso a datos. La audito
 |---|---|---|
 | 2026-11-09 | Spec creada | /specify |
 | 2026-11-09 | Aprobada | Confirmación del usuario |
+| 2026-11-09 | Redacción de CA3 sin cambiar su significado y fuente de la fila del ADR corregida | Validador y /analyze A28 |
