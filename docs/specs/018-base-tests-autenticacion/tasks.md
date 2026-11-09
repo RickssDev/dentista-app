@@ -2,6 +2,7 @@
 spec: 018-base-tests-autenticacion
 plan: plan.md
 status: approved
+impl_base: e3d311c
 ---
 
 # Tareas · 018 Base de tests, integración continua y autenticación
@@ -42,13 +43,19 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 | P20 La interfaz usa solo el sistema de diseño | ➖ | Sin cambios de estilos | — |
 
 ## Preparación
-- [ ] T001 [P] Instalar en el backend las dependencias de desarrollo del ADR 0004 con `--before=2026-11-02` y añadir los scripts `test` y `lint` — `backend/package.json`, `backend/package-lock.json` — hecho cuando: `npm ls jest supertest eslint @eslint/js globals` muestra las versiones del ADR, todas en `devDependencies`
-- [ ] T002 [P] Instalar en el frontend las dependencias de desarrollo del ADR 0004 con `--before=2026-11-02` y añadir el script `test` — `frontend/package.json`, `frontend/package-lock.json` — hecho cuando: `npm ls vitest jsdom @testing-library/react @testing-library/user-event` muestra las versiones del ADR, todas en `devDependencies`
-- [ ] T003 Configurar Jest y las variables ficticias del entorno de pruebas — `backend/jest.config.js`, `backend/tests/support/env.js` — hecho cuando: `npm test -- --passWithNoTests` termina en 0 dentro de `backend` — depende: T001
-- [ ] T004 [P] Configurar ESLint para Node y CommonJS en el backend — `backend/eslint.config.js` — hecho cuando: `npm run lint` analiza `backend/` sin errores de configuración — cubre: CA10 — depende: T001
-- [ ] T005 [P] Configurar Vitest y la preparación del entorno simulado con `ResizeObserver`, `scrollTo` y `fetch` bloqueado — `frontend/vitest.config.js`, `frontend/tests/setup.js` — hecho cuando: `npm test -- --passWithNoTests` termina en 0 y `npm run build` sigue pasando en `frontend` — depende: T002
-- [ ] T006 [P] Crear la base simulada que responde solo a las consultas conocidas de autenticación, conserva el texto de cada consulta y lanza error ante cualquier otra — `backend/tests/support/fake-db.js` — hecho cuando: al ejecutar directamente el módulo, una consulta desconocida lanza error y el texto de las consultas queda disponible — cubre: CA2 — depende: T003
-- [ ] T007 [P] Crear los datos de prueba con correos `@example.test` y secretos de prueba evidentes — `backend/tests/support/fixtures.js` — hecho cuando: el archivo solo contiene correos `@example.test` y ningún secreto imita una credencial real — cubre: CA8
+- [x] T001 [P] Instalar en el backend las dependencias de desarrollo del ADR 0004 con `--before=2026-11-02` y añadir los scripts `test` y `lint` — `backend/package.json`, `backend/package-lock.json` — hecho cuando: `npm ls jest supertest eslint @eslint/js globals` muestra las versiones del ADR, todas en `devDependencies`
+  - nota: instaladas con versión exacta y --before=2026-11-02.
+- [x] T002 [P] Instalar en el frontend las dependencias de desarrollo del ADR 0004 con `--before=2026-11-02` y añadir el script `test` — `frontend/package.json`, `frontend/package-lock.json` — hecho cuando: `npm ls vitest jsdom @testing-library/react @testing-library/user-event` muestra las versiones del ADR, todas en `devDependencies`
+  - nota: A33 — instalado @testing-library/dom 10.4.2 y registrado en el ADR 0004.
+- [x] T003 Configurar Jest y las variables ficticias del entorno de pruebas — `backend/jest.config.js`, `backend/tests/support/env.js` — hecho cuando: `npm test -- --passWithNoTests` termina en 0 dentro de `backend` — depende: T001
+  - nota: A13 — env.js define JWT_SECRET de más de 32 caracteres y GOOGLE_CLIENT_ID.
+- [x] T004 [P] Configurar ESLint para Node y CommonJS en el backend — `backend/eslint.config.js` — hecho cuando: `npm run lint` analiza `backend/` sin errores de configuración — cubre: CA10 — depende: T001
+  - nota: A5 — globales de Jest declaradas solo para tests/. `npm run lint` analiza 71 archivos y reporta 5 errores previos en backend/src, que no bloquean porque CI solo revisa los archivos cambiados.
+- [x] T005 [P] Configurar Vitest y la preparación del entorno simulado con `ResizeObserver`, `scrollTo` y `fetch` bloqueado — `frontend/vitest.config.js`, `frontend/tests/setup.js` — hecho cuando: `npm test -- --passWithNoTests` termina en 0 y `npm run build` sigue pasando en `frontend` — depende: T002
+- [x] T006 [P] Crear la base simulada que responde solo a las consultas conocidas de autenticación, conserva el texto de cada consulta y lanza error ante cualquier otra — `backend/tests/support/fake-db.js` — hecho cuando: al ejecutar directamente el módulo, una consulta desconocida lanza error y el texto de las consultas queda disponible — cubre: CA2 — depende: T003
+  - nota: A20 — la simulación es global por moduleNameMapper en backend/jest.config.js (configurado en T003).
+  - nota: Comprobado ejecutando el módulo: una consulta desconocida lanza `SQL no simulado` y queda registrada en sqlRecibido.
+- [x] T007 [P] Crear los datos de prueba con correos `@example.test` y secretos de prueba evidentes — `backend/tests/support/fixtures.js` — hecho cuando: el archivo solo contiene correos `@example.test` y ningún secreto imita una credencial real — cubre: CA8
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Escribir las pruebas de 001 CA1 a CA7, el caso de SQL no simulado y los pendientes de 001 CA9 y CA10 — `backend/tests/auth/registro-login.test.js` — hecho cuando: pasan y los pendientes aparecen como `todo` en el resumen — cubre: CA2, CA3 — depende: T006, T007, T020, T021

@@ -26,6 +26,7 @@ Todas son dependencias de desarrollo. Se instalan con `npm install --before=2026
 | vitest | 5.0.5 | 2026-10-15 | MIT | github.com/vitest-dev/vitest | no |
 | jsdom | 30.1.3 | 2026-10-15 | MIT | github.com/jsdom/jsdom | no |
 | @testing-library/react | 16.3.3 | 2026-08-27 | MIT | github.com/testing-library/react-testing-library | no |
+| @testing-library/dom | 10.4.2 | 2026-09-13 | MIT | github.com/testing-library/dom-testing-library | no |
 | @testing-library/user-event | 14.6.8 | 2026-10-13 | MIT | github.com/testing-library/user-event | no |
 | eslint | 9.39.4 | 2026-03-06 | MIT | github.com/eslint/eslint | no |
 | @eslint/js | 9.39.4 | 2026-03-06 | MIT | github.com/eslint/eslint | no |
