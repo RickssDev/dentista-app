@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 const whatsappActivo = () =>
   process.env.WHATSAPP_ENABLED === "true" &&
   !!process.env.WHATSAPP_TOKEN &&
