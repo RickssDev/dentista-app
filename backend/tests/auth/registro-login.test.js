@@ -166,7 +166,16 @@ describe('001 · inicio de sesión', () => {
     expect(r.body.payload).toBeUndefined();
   });
 
-  test.todo('001 CA6 · un login sin contraseña en la petición no debe responder 500 (defecto: hoy responde 500)');
+  test.each([
+    ['sin contraseña', { correo: f.CORREO_PACIENTE }],
+    ['sin correo', { contrasena: f.CLAVE }],
+    ['con una contraseña que no es texto', { correo: f.CORREO_PACIENTE, contrasena: 123 }],
+  ])('001 CA6 · un login %s responde 401 con el mensaje genérico', async (_caso, cuerpo) => {
+    paciente();
+    const r = await request(app).post(LOGIN).send(cuerpo);
+    expect(r.status).toBe(401);
+    expect(r.body.message).toBe('Credenciales inválidas');
+  });
 
   test('001 CA7 · con una cuenta inactiva responde 403', async () => {
     paciente({ estado: 'inactivo' });
