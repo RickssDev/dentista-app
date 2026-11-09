@@ -1,0 +1,27 @@
+{
+  "backend": [
+    "axios",
+    "bcrypt",
+    "cors",
+    "dotenv",
+    "exceljs",
+    "express",
+    "express-rate-limit",
+    "google-auth-library",
+    "helmet",
+    "jsonwebtoken",
+    "multer",
+    "mysql2",
+    "node-cron",
+    "pdfkit",
+    "pdfkit-table"
+  ],
+  "frontend": [
+    "@fontsource-variable/jost",
+    "@react-oauth/google",
+    "react",
+    "react-dom",
+    "react-icons",
+    "react-router-dom"
+  ]
+}
