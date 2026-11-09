@@ -21,7 +21,7 @@ usuario no root), `db` (MySQL 8, sin puertos publicados) y `caddy` (perfil opcio
 Delante responde Cloudflare (`Server: cloudflare`, comprobado el 2026-11-08). Dominio en Caddy:
 `sistema.dentissa.app` (confirmado por el usuario, 2026-11-08). No hay IaC.
 
-TODO(init): confirmar el proveedor del servidor y si Cloudflare llega por túnel o por proxy DNS.
+Cloudflare llega por un túnel (`cloudflared`, en un proyecto de Compose aparte) que apunta a `http://frontend:80`; Caddy no se usa (confirmado por el usuario, 2026-11-09). TODO(init): confirmar el proveedor del servidor.
 
 ## Pipeline
 ```mermaid
@@ -34,17 +34,20 @@ flowchart LR
 ```bash
 # En el servidor, desde backend/ (inferido del compose; TODO(init): confirmar los pasos reales)
 git pull
-docker compose -f docker-compose.prod.yml --profile caddy up -d --build
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ```
 
 ## Migraciones de base de datos
 - Cuándo se aplican: a mano en MySQL, según se necesita (confirmado por el usuario, 2026-11-08).
 - Patrón: expand → migrate → contract (compatibles con la versión anterior); exigido al código nuevo (P7).
-- Comando: no existe; ver RD1.
+- Comando: no hay herramienta de migraciones. El esquema vigente está en `backend/db/schema.sql` y se regenera tras cada cambio; ver RD1.
+
+## Respaldos
+`backend/scripts/respaldo.sh` guarda MySQL y `uploads/` en `backend/backups/` y borra los de más de 14 días. Para programarlo, en el servidor: `crontab -e` con `0 3 * * * bash /ruta/al/repo/backend/scripts/respaldo.sh >> /var/log/dentissa-respaldo.log 2>&1`. Copiar los respaldos fuera del servidor sigue pendiente (RD2.b).
 
 ## Rollback
 1. En el servidor, volver al commit anterior con `git checkout <commit>` o `git revert` (confirmado por el usuario, 2026-11-08).
-2. Reconstruir con `docker compose -f docker-compose.prod.yml --profile caddy up -d --build`.
+2. Reconstruir con `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build`.
 - Tiempo estimado: TODO(init): medirlo; depende del build en el servidor.
 - Si hubo migración: restaurar desde el respaldo manual más reciente; no hay reversión de esquema. Ver RD1 y RD3.
 
@@ -70,7 +73,9 @@ docker compose -f docker-compose.prod.yml --profile caddy up -d --build
 (Solo nombres. Nunca valores.)
 
 Valores no secretos confirmados por el usuario (2026-11-08): `NODE_ENV=production` y
-`WHATSAPP_ENABLED=false` en producción; `TRUST_PROXY=1`.
+`WHATSAPP_ENABLED=false` en producción.
+
+`TRUST_PROXY` cuenta los proxies delante de Express. Con el túnel (confirmado por el usuario, 2026-11-09) debe ser `2` si el túnel apunta a nginx (cloudflared y nginx). Si apunta a Caddy, subir el número no basta: Caddy descarta por defecto la IP del cliente y hay que configurar `trusted_proxies`. Se cambia en `.env.prod` del servidor; `backend/tests/seguridad/proxy.test.js` documenta el cálculo.
 
 ## Verificación post-deploy
 - Health check: `GET /health` (no comprueba MySQL; ver RD5).
