@@ -493,9 +493,15 @@ exports.getHorariosDisponibles = async (fecha, id_servicio) => {
 
   const horariosDisponibles = [];
 
-  // Jornada laboral
+  // Jornada laboral: lunes a viernes de 8 a 16, sábado de 8 a 14, domingo cerrado
+  const diaSemana = new Date(`${fecha}T00:00:00Z`).getUTCDay();
+
+  if (diaSemana === 0) {
+    return [];
+  }
+
   const inicioLaboral = 8 * 60;
-  const finLaboral = 16 * 60;
+  const finLaboral = (diaSemana === 6 ? 14 : 16) * 60;
 
   let inicio = inicioLaboral;
   const hoy = new Date();

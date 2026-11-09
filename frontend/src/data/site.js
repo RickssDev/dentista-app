@@ -17,8 +17,8 @@ export const CLINIC = {
 };
 
 export const HOURS = [
-  { day: "Lunes - Viernes", time: "9:00 AM - 7:00 PM" },
-  { day: "Sábado", time: "9:00 AM - 2:00 PM" },
+  { day: "Lunes - Viernes", time: "8:00 AM - 4:00 PM" },
+  { day: "Sábado", time: "8:00 AM - 2:00 PM" },
   { day: "Domingo", time: "Cerrado", closed: true },
 ];
 
