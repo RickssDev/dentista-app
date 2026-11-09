@@ -1,0 +1,106 @@
+---
+status: inferred
+updated: 2026-11-08
+---
+
+# SEO técnico de Dentissa
+
+Fuente de verdad de lo que un buscador puede rastrear, indexar e interpretar del sitio público y de
+cómo se ve al compartirlo (`shared/contract.md` → "SEO técnico"). Los temas que se comprueban están
+en `shared/seo-checklist.md`; aquí van las reglas del sitio, el estado de cada ruta y las brechas.
+No incluye palabras clave, estrategia de contenido ni enlaces externos.
+
+## Reglas del sitio
+- URL canónica: https://sistema.dentissa.app (confirmado por el usuario, 2026-11-08) · variante única: sin `www`, sin barra final (las demás redirigen con `301`/`308`).
+- Idiomas: es.
+- Renderizado: spa — todas las rutas reciben el mismo `index.html`; el contenido lo pinta JavaScript.
+- No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `noindex`; hoy no existe.
+- Páginas de error: 404 propia en `frontend/src/pages/Legal.jsx`, servida con código 200; rutas privadas sin sesión → redirección en cliente a `/login`.
+- Archivos generados: `robots.txt` y `sitemap.xml` no existen.
+- Compartir: Open Graph no existe.
+- Íconos: `favicon.jpeg` propio; `theme-color` `#0f766e`.
+- Datos estructurados: ninguno.
+- Presupuesto: TODO(init): la constitución no fija presupuesto de JavaScript ni de Lighthouse.
+
+## Inventario de rutas
+| Ruta | Indexable | Título | Descripción | Canónica | `h1` | Open Graph | Datos estructurados | Evidencia |
+|---|---|---|---|---|---|---|---|---|
+| `/` | sí | ❌ genérico | ❌ genérica | ❌ | ❌ | ❌ | ❌ | `frontend/dist/index.html`, producción |
+| `/nosotros` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
+| `/galeria` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
+| `/contacto` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
+| `/aviso-de-privacidad` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
+| `/terminos-de-servicio` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
+| `/login` | no (inicio de sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
+| `/restablecer-contrasena` | no (flujo privado) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
+| `/admin/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /admin` → 200 |
+| `/paciente/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
+| URL inexistente | no (404) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /ruta-inexistente-aidd` → 200 |
+
+Auditado sobre la build local (`npm run build`) y producción el 2026-11-08, con 5 peticiones `GET` sin sesión.
+
+## Brechas
+
+### SE1 · alta — SPA: el renderizado deja todas las rutas con el mismo HTML
+Evidencia: `frontend/dist/index.html` no tiene contenido, solo `<div id="root">`, y producción
+devuelve el mismo documento de 1140 bytes para `/`, `/admin` y una URL inexistente. El rastreador
+sin JavaScript no ve título, descripción ni contenido propios de cada ruta.
+Correcciones:
+- SE1.a Prerenderizar o renderizar en servidor las 6 rutas públicas, con ADR — estado: pendiente
+- SE1.b Título y descripción únicos por ruta indexable — estado: pendiente
+
+### SE2 · media — Sin `robots.txt` ni sitemap
+Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA).
+Correcciones:
+- SE2.a Generar `robots.txt` con la URL absoluta del sitemap — estado: pendiente
+- SE2.b Generar `sitemap.xml` con las 6 rutas indexables — estado: pendiente
+
+### SE3 · media — 404 blando y rutas privadas indexables
+Evidencia: una URL inexistente y `/admin` responden 200 sin sesión; el HTML no lleva `noindex` y
+el servidor no envía `X-Robots-Tag`.
+Correcciones:
+- SE3.a Responder 404 real a las URL inexistentes — estado: pendiente
+- SE3.b Aplicar `noindex` a login, restablecer contraseña, `/admin/*`, `/paciente/*` y a la 404 — estado: pendiente
+
+### SE4 · media — Sin canónica
+Evidencia: no hay `<link rel="canonical">` en `frontend/dist/index.html`.
+Correcciones:
+- SE4.a Canónica absoluta por ruta desde `seo.site_url` — estado: pendiente
+
+### SE5 · baja — Sin Open Graph ni imagen para compartir
+Evidencia: no hay metaetiquetas `og:*` en `frontend/dist/index.html`.
+Correcciones:
+- SE5.a Open Graph por ruta indexable — estado: pendiente
+- SE5.b Imagen general de 1200×630 — estado: pendiente
+
+### SE6 · baja — Sin datos estructurados
+Evidencia: no hay JSON-LD en `frontend/dist/index.html`.
+Correcciones:
+- SE6.a Añadir datos de negocio local de la clínica en la portada — estado: pendiente
+
+### SE7 · baja — Íconos incompletos
+Evidencia: solo `favicon.jpeg`; sin ícono PNG/SVG ni `apple-touch-icon`.
+Correcciones:
+- SE7.a Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` — estado: pendiente
+
+## Brechas por confirmar
+- Redirecciones de la variante con `www` y de HTTP a HTTPS — depende de: configuración de Cloudflare — cómo confirmarla: consultar esas variantes.
+- Si `https://dentissa.app` existe y compite con la canónica — depende de: dominios de la clínica — cómo confirmarla: el usuario.
+
+## Verificación en producción
+| Fecha | Comprobación | Resultado | Evidencia |
+|---|---|---|---|
+| 2026-11-08 | robots.txt y sitemap.xml responden 200 | ❌ | Responden 200 con HTML de la SPA |
+| 2026-11-08 | Producción sin noindex en rutas indexables | ✅ | Sin `noindex` en `/` ni `X-Robots-Tag` |
+| 2026-11-08 | URL inexistente responde 404 | ❌ | `/ruta-inexistente-aidd` → 200 |
+
+## Exclusiones deliberadas
+
+## Pendientes operativos
+- Alta del sitio y envío del sitemap en las consolas de los buscadores, cuando exista el sitemap.
+- Decidir si el sitio público debe vivir en un dominio distinto del subdominio `sistema`.
+
+## Historial
+| Fecha | Cambio | Origen |
+|---|---|---|
+| 2026-11-08 | Documento creado | /init |

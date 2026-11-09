@@ -1,0 +1,97 @@
+---
+id: {{NNN}}
+slug: {{slug}}
+status: {{draft|inferred|approved|implemented|released}}
+confidence: {{alta|media|baja}}   # solo si status=inferred
+created: {{date}}
+extends: []   # specs cuyo comportamiento cambia esta spec, p. ej. [005, 006]
+---
+
+# {{NNN}} · {{nombre de la feature}}
+
+## Problema
+{{qué necesidad resuelve y para quién}}
+
+## Historias de usuario
+- Como {{rol}}, quiero {{acción}} para {{beneficio}}.
+
+## Criterios de aceptación
+- [ ] CA1 · Dado {{contexto}}, cuando {{acción}}, entonces {{resultado}}.   <!-- numerar CA1, CA2… -->
+
+## Fuera de alcance
+- {{…}}
+
+## Seguridad y privacidad
+- Datos sensibles involucrados: {{ninguno · cuáles, según docs/security.md}}
+- Quién puede hacer qué: {{rol → acción permitida / denegada}}
+- Casos de abuso (cada uno con su criterio `CA` marcado `(abuso)`):
+  - Como {{atacante o usuario malintencionado}}, intento {{acción}} → {{resultado esperado: se rechaza, se limita, se registra}}
+
+<!-- if la spec atiende riesgos o brechas documentados (RS/OB/RD/SE) -->
+
+## Cobertura de riesgos
+Cada corrección de cada riesgo citado, dentro o fuera de alcance. Si alguna queda fuera, el
+Problema dice que la spec atiende el riesgo **parcialmente**.
+
+| Corrección | Alcance | Criterios / motivo y destino |
+|---|---|---|
+| {{RS1.a — texto}} | dentro | {{CA3, CA5}} |
+| {{RS1.b — texto}} | fuera | {{motivo}} → {{spec, objetivo o excepción}} |
+<!-- endif -->
+
+<!-- if la feature toca datos sensibles, autenticación o permisos -->
+
+## Auditoría
+Eventos que deben quedar registrados, cada uno como criterio `CA` verificable (si
+`.ai/project.yaml → observability.audit.required` es `false`, "No aplica" y el motivo):
+- {{evento}} → registra {{actor, acción, recurso, resultado}} (ver `docs/observability.md`)
+<!-- endif -->
+
+<!-- if la spec tiene interfaz -->
+
+## Diseño
+{{qué debe sentir quien la usa y qué pantallas toca}}. Sistema: [docs/design/system.md](../../design/system.md).
+{{Si es un rediseño: "Rediseño de <pantallas>: /design-spec NNN genera los candidatos."}}
+
+## Criterios de diseño
+<!-- Lo que el diseño tiene que lograr, medible. /design-spec los completa con los valores por defecto
+     del modo de cada pantalla y los copia a design/criterios.json. Cada criterio de aceptación con
+     interfaz tiene al menos un KPI o una puerta. -->
+Modo: {{persuadir · operar · leer}} · umbral {{80}} · mínimo por punto {{3}} · presupuesto {{5}} candidatos.
+
+| ID | Qué se mide | Objetivo | Sale de |
+|---|---|---|---|
+| {{K1}} | {{La acción principal en la primera pantalla}} | {{"…" visible a 390 y 1440 px}} | {{CA1}} |
+| {{K2}} | {{JavaScript de la ruta}} | {{≤ 100 kB}} | {{constitución P…}} |
+
+Puertas: las de `design-spec/references/criterios.md` §2{{; cambios: …}}. Rúbrica: pesos por
+defecto{{; cambios: …, p. ej. `riqueza` 15 si se pide una página con fondos y movimiento (§6)}}.
+<!-- endif -->
+
+## Requisitos no funcionales
+- {{performance, seguridad, accesibilidad}}
+
+## Preguntas abiertas
+- [NECESITA ACLARACIÓN] {{…}}   <!-- máximo 3; con alguna abierta la spec no puede aprobarse -->
+
+## Decisiones
+Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract.md` → "Decisiones").
+
+| Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
+|---|---|---|---|---|
+| {{date}} | {{brecha · contradicción · implícita · supuesto · diseño · cierre}} | {{…}} | {{…}} | {{usuario · ruta del documento · /skill e ID}} |
+
+## Notas para /plan
+- {{preferencias técnicas mencionadas por el usuario; no son requisitos}}
+
+## Evidencia (solo si status=inferred)
+- Archivos: {{rutas}}
+- Tests: {{rutas o "sin tests"}}
+
+## Observaciones (solo si status=inferred)
+Discrepancias, comportamiento aparentemente erróneo y deuda. Documentan lo que el código hace hoy;
+no son requisitos.
+
+## Historial
+| Fecha | Cambio | Motivo |
+|---|---|---|
