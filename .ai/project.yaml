@@ -1,0 +1,101 @@
+# Generado por /init. Lo leen todas las skills del flujo.
+name: Dentissa
+type: monorepo                 # frontend | backend | fullstack | mobile | monorepo | library
+stage: production              # prototype | mvp | production | maintenance
+origin: brownfield             # greenfield | brownfield
+language: es                   # es | en | … idioma de los documentos (shared/vocabulary.md)
+initialized_at: 2026-11-08
+stack:
+  languages: [javascript]
+  frontend: React 19 + Vite 7 + React Router 7 (SPA)
+  backend: Node 22 + Express 5 (CommonJS)
+  database: MySQL 8 (mysql2, SQL manual, sin ORM)
+  package_manager: npm
+packages:                      # solo monorepo
+  - { path: backend, type: backend }
+  - { path: frontend, type: frontend }
+constitution_version: 1.0.0
+workflow:
+  enforcement: warn            # off | warn (pide aprobación) | block — lo aplica el hook del plugin
+  lanes:                       # carriles /fix, /refactor, /chore (shared/contract.md → "Carriles")
+    max_files: 5               # más archivos de código (sin tests ni docs) → flujo completo
+    contract_paths: [backend/src/routes/index.js, frontend/src/api/normalize.js]
+models:                        # modelo de cada perfil de subagente (shared/contract.md → "Modelo de cada subagente")
+  critical: opus               # /analyze completo; /review A (spec) y S (seguridad)
+  standard: sonnet             # /analyze delta; /review C+D, accesibilidad, SEO; carriles; exploración
+  mechanical: haiku            # exploración de /plan; comprobar que un hallazgo existe
+  implementation: inherit      # /implement --parallel (inherit = el modelo de la sesión)
+sync:
+  last: null                   # commit hasta el que /sync concilió la deriva
+skills_version: 1.19.0         # versión del paquete de skills con que se inicializó
+deploy:
+  strategy: manual             # none | manual | ci-on-merge | ci-on-tag
+  platform: Docker Compose en servidor propio, con Caddy y Cloudflare delante
+  environments: [dev, prod]
+  prod_approval: human         # innegociable
+  rollback: volver al commit previo en el servidor y reconstruir con docker compose
+security:
+  owasp_top10_edition: 2025
+  asvs_level: 2                # backend propio
+  masvs_level: null            # solo mobile
+  sensitive_data: [personal, health, credentials]
+  tools:                       # status: propuesta | instalada | en-ci | no-aplica
+    secrets: { command: "gitleaks git --no-banner", status: en-ci }
+    sast: { command: null, status: no-aplica }   # decisión del usuario, 2026-11-08 (docs/security.md)
+    sca: { command: "npm --prefix backend audit --audit-level=high && npm --prefix frontend audit --audit-level=high", status: en-ci }
+    containers: { command: "trivy fs --scanners vuln,misconfig .", status: en-ci }
+    dast: { command: null, status: no-aplica }   # no hay staging contra el que ejecutarlo
+  agent:
+    min_package_age_days: 7
+    protected_paths: [backend/docker-compose.prod.yml, backend/Dockerfile.prod, backend/Caddyfile, frontend/nginx.conf, frontend/Dockerfile]
+observability:
+  log_level_prod: info
+  correlation_header: X-Request-Id
+  audit:
+    required: true
+    events: [login, login_failed, access_denied, sensitive_read, sensitive_write, role_change, admin_action, export]
+    retention: 5 años
+design:                        # solo proyectos con interfaz
+  status: draft
+  source: extracted
+  system: docs/design/system.md
+  html: docs/design/system.html
+  canvas: null
+  widths: [390, 1440]
+  threshold: 80
+  floor: 3
+  budget: 5
+seo:                           # solo sitios web públicos
+  status: inferred
+  indexable: true
+  site_url: https://sistema.dentissa.app
+  rendering: spa
+skills:
+  enabled: []                  # el plugin design de Anthropic no está en esta sesión
+paths:
+  constitution: docs/constitution.md
+  architecture: docs/architecture.md
+  roadmap: docs/roadmap.md
+  deployment: docs/deployment.md
+  security: docs/security.md
+  observability: docs/observability.md
+  seo: docs/seo.md
+  changelog: CHANGELOG.md
+  specs: docs/specs
+  changes: docs/changes
+  adr: docs/adr
+  templates: docs/templates
+template_hashes:               # huellas de docs/templates/ al copiarlas (aidd.py templates --yaml)
+  adr.md: 479eaebd1fed
+  change.md: 776fe7c0b58d
+  plan.md: 2a5c45f54da9
+  review.md: b307b807a00f
+  spec.md: e637a4225050
+  tasks.md: 77ed236f954b
+verification:                  # lo llena la Fase 4
+  - { command: "npm ci (backend)", result: pass, note: "Node 24.21 local; Docker usa Node 22" }
+  - { command: "npm ci (frontend)", result: pass, note: "" }
+  - { command: "npm run lint (frontend)", result: fail, note: "10 errores y 5 avisos previos a /init" }
+  - { command: "npm run build (frontend)", result: pass, note: "con VITE_API_URL=/api/v1" }
+  - { command: "tests", result: fail, note: "el repo no tiene tests ni script test" }
+  - { command: "lint (backend)", result: fail, note: "el backend no tiene linter" }
