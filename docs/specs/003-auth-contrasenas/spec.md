@@ -20,7 +20,7 @@ Los usuarios necesitan recuperar el acceso si olvidan su contraseña y poder cam
 <!-- Spec inferida: [x] = cubierto por un test; [ ] = observado en el código, sin test. -->
 - [ ] CA1 · Dado cualquier correo con formato válido, cuando se solicita recuperación, entonces la respuesta es la misma exista o no la cuenta.
 - [ ] CA2 · Dada una cuenta activa con contraseña, entonces se envía un enlace con un token de 32 bytes y solo se guarda su hash SHA-256.
-- [ ] CA3 · Dada una cuenta creada solo con Google, entonces se envía un correo que lo indica, sin enlace.
+- [ ] CA3 · Dada una cuenta creada solo con Google, cuando se solicita recuperación, entonces se envía un correo que lo indica, con enlace a iniciar sesión y sin enlace para restablecer contraseña.
 - [ ] CA4 · Dado un fallo al enviar el correo, entonces el token se elimina.
 - [ ] CA5 · Dado un token válido de menos de 15 minutos, cuando se restablece, entonces la contraseña cambia y se notifica por correo.
 - [ ] CA6 · (abuso) Dado un token inválido o expirado, entonces responde 400.
@@ -56,6 +56,7 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
+| 2026-11-09 | brecha | ¿Qué enlace lleva el correo de recuperación de una cuenta solo de Google? (/analyze A2 de la spec 018) | Enlace a iniciar sesión, porque esas cuentas no tienen contraseña; las cuentas normales reciben el enlace para restablecer | usuario |
 
 ## Evidencia (solo si status=inferred)
 - Archivos: `backend/src/modules/auth/auth.service.js:22-183,350-412`, `backend/src/services/email.service.js`, `frontend/src/pages/admin/RestablecerContrasena.jsx`
@@ -68,3 +69,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-09 | Corregida la redacción de CA3 para reflejar el comportamiento actual | /analyze A2 de la spec 018, confirmado por el usuario |
