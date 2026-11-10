@@ -75,10 +75,10 @@ completo, incluidos `id_rol` y `password`. Un Asistente puede crear Administrado
 y restablecer la contraseña de cualquier cuenta. Debe ser exclusivo del Administrador (decisión del usuario, 2026-11-08). Atendido por el objetivo 1 de [roadmap](roadmap.md).
 
 Correcciones:
-- RS1.a Restringir las rutas de `/usuarios` al rol Administrador — estado: pendiente
+- RS1.a Restringir las rutas de `/usuarios` al rol Administrador — estado: mitigada (v1.1.0)
 - RS1.b Limitar con lista de campos permitidos lo que aceptan alta y edición — estado: pendiente
 - RS1.c Impedir que se elimine o degrade al último Administrador — estado: pendiente
-- RS1.d Cubrir con tests de autorización cada rol y ruta — estado: pendiente
+- RS1.d Cubrir con tests de autorización cada rol y ruta — estado: mitigada (v1.1.0)
 
 ### RS2 · Media — Sesión en `localStorage` sin revocación (A07 Authentication Failures)
 El JWT se guarda en `localStorage`, expuesto ante un XSS, y sigue válido hasta caducar: no hay
@@ -93,8 +93,8 @@ Correcciones:
 moderadas, 2 bajas. Hay corrección disponible para todas las críticas y altas. Bloquea `/release` (P11).
 
 Correcciones:
-- RS3.a Actualizar las dependencias del backend hasta cero críticas y altas — estado: pendiente
-- RS3.b Actualizar las dependencias del frontend hasta cero críticas y altas — estado: pendiente
+- RS3.a Actualizar las dependencias del backend hasta cero críticas y altas — estado: mitigada (v1.1.0)
+- RS3.b Actualizar las dependencias del frontend hasta cero críticas y altas — estado: mitigada (v1.1.0)
 
 ### RS4 · Alta — Los limitadores no identifican al cliente real (A07 Authentication Failures)
 `TRUST_PROXY=1` (confirmado por el usuario, 2026-11-08), pero delante de Express hay más de un
@@ -102,8 +102,8 @@ proxy (Cloudflare, Caddy, nginx). `req.ip` no es el cliente: los límites de log
 entre usuarios o no frenan a un atacante. Además viven en memoria y se reinician con el proceso.
 
 Correcciones:
-- RS4.a Fijar `TRUST_PROXY` según la cadena real o tomar la IP de una cabecera confiable — estado: pendiente
-- RS4.b Comprobar con un test que `req.ip` es el cliente detrás de la cadena — estado: pendiente
+- RS4.a Fijar `TRUST_PROXY` según la cadena real o tomar la IP de una cabecera confiable — estado: mitigada (v1.1.0)
+- RS4.b Comprobar con un test que `req.ip` es el cliente detrás de la cadena — estado: mitigada (v1.1.0)
 - RS4.c Persistir los contadores en un almacén compartido — estado: pendiente
 
 ### RS5 · Media — Subida de archivos confía en el cliente (A06 Insecure Design)

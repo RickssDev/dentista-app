@@ -1,7 +1,8 @@
 ---
 id: 018
 slug: base-tests-autenticacion
-status: implemented
+status: released
+released: v1.1.0 (2026-11-09)
 created: 2026-11-09
 extends: []
 ---
@@ -90,3 +91,4 @@ No aplica: esta spec no cambia ningún flujo ni añade acceso a datos. La audito
 | 2026-11-09 | Spec creada | /specify |
 | 2026-11-09 | Aprobada | Confirmación del usuario |
 | 2026-11-09 | Redacción de CA3 sin cambiar su significado y fuente de la fila del ADR corregida | Validador y /analyze A28 |
+| 2026-11-09 | Liberada en v1.1.0 | /release |

@@ -63,3 +63,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | CA7 cumplido: solo el Administrador accede a las rutas de usuarios | Ficha fix-permisos-asistente |
+| 2026-11-09 | Corregido por la ficha 2026-11-09-fix-permisos-asistente en v1.1.0 (CA7) | /release |
