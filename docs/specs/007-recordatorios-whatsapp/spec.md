@@ -23,7 +23,7 @@ Los pacientes deben enterarse de sus citas y de sus cambios para reducir las ina
 - [ ] CA3 · Dada una cita creada, reprogramada o cancelada, entonces se envía la plantilla correspondiente.
 - [ ] CA4 · Dado un fallo de WhatsApp, entonces la operación de la cita no falla.
 - [ ] CA5 · Dado `WHATSAPP_ENABLED` distinto de `true`, entonces no se llama a WhatsApp y no se lanza error.
-- [ ] CA6 · Dado un aviso que no se pudo enviar, entonces la cita no queda marcada como enviada. **HOY NO SE CUMPLE:** con WhatsApp apagado se marca como enviada (OB6).
+- [x] CA6 · Dado un aviso que no se pudo enviar, entonces la cita no queda marcada como enviada.
 - [ ] CA7 · (abuso) Los logs de los envíos no contienen el teléfono del paciente. **HOY NO SE CUMPLE:** se imprime la respuesta completa de WhatsApp (OB2).
 
 ## Fuera de alcance
@@ -64,3 +64,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-09 | CA6 cumplido y `axios` importado | Fichas fix-recordatorios-apagado y fix-whatsapp-axios |

@@ -323,6 +323,10 @@ exports.register = async ({
 };
 
 exports.login = async ({ correo, contrasena }) => {
+  if (typeof correo !== 'string' || typeof contrasena !== 'string') {
+    throw new AppError("Credenciales inválidas", 401);
+  }
+
   const user = await repo.findUserByEmail(correo);
 
   if (!user) {

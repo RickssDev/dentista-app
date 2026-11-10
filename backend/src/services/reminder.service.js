@@ -1,8 +1,11 @@
 const cron = require("node-cron");
 const citasRepo = require("../modules/citas/citas.repository");
-const { sendTemplateMessage } = require("./whatp.service");
+const { sendTemplateMessage, whatsappActivo } = require("./whatp.service");
 
 cron.schedule("* * * * *", async () => {
+  // Con WhatsApp apagado no se envía nada: las citas no deben marcarse como recordadas.
+  if (!whatsappActivo()) return;
+
   try {
     const citas = await citasRepo.getCitasParaRecordatorio();
 

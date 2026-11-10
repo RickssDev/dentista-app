@@ -18,7 +18,7 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 
 ## Criterios de aceptación
 <!-- Spec inferida: [x] = cubierto por un test; [ ] = observado en el código, sin test. -->
-- [ ] CA1 · Dada una fecha y un servicio, entonces `/citas/horarios-disponibles` devuelve bloques por hora entre 8:00 y 16:00 que no se traslapan con otras citas según su duración.
+- [ ] CA1 · Dada una fecha y un servicio, entonces `/citas/horarios-disponibles` devuelve bloques por hora de lunes a viernes de 8:00 a 16:00 y el sábado de 8:00 a 14:00, sin ofrecer horarios en domingo, que no se traslapan con otras citas según su duración.
 - [ ] CA2 · Dado el día de hoy, entonces solo se ofrecen horarios a partir de la hora actual de México.
 - [ ] CA3 · Dado un paciente sin perfil, cuando agenda, entonces responde 404 con el aviso de completar perfil.
 - [ ] CA4 · Dada una fecha u hora pasada, entonces responde 400.
@@ -48,7 +48,7 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 - Tests: sin tests
 
 ## Observaciones (solo si status=inferred)
-- **Horario contradictorio:** el agendado ofrece 8:00–16:00 todos los días, domingo incluido, y `frontend/src/data/site.js` publica lunes a viernes 9:00–19:00, sábado 9:00–14:00 y domingo cerrado.
+- El sitio y el agendado usan el mismo horario: lunes a viernes 8:00–16:00, sábado 8:00–14:00 y domingo cerrado (confirmado por el usuario, 2026-11-09).
 - Las rutas de paciente solo exigen token: el personal también puede usarlas si tiene perfil.
 - Las citas canceladas liberan su horario: `getCitasDelDia` las excluye.
 
@@ -56,3 +56,4 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-09 | Horario definido para el sitio y el agendado | Ficha fix-horario-sitio |

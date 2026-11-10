@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const AppError = require('./AppError');
 
 // Carpeta donde se guardarán las imágenes
 const storage = multer.diskStorage({
@@ -17,7 +18,7 @@ const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten imágenes'), false);
+    cb(new AppError('Solo se permiten imágenes', 400), false);
   }
 };
 

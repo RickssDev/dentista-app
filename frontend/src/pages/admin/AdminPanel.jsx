@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import "../../styles/adminpanel.css";
 
 import Sidebar from "../../components/sidebar";
@@ -22,6 +22,7 @@ function AdminPanel() {
   const [recargarInicio, setRecargarInicio] = useState(0);
 
   const refrescarInicio = () => setRecargarInicio((n) => n + 1);
+  const esAsistente = localStorage.getItem("rol")?.trim().toLowerCase() === "asistente";
 
   return (
     <div className="admin-container">
@@ -42,7 +43,10 @@ function AdminPanel() {
             }
           />
 
-          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route
+            path="usuarios"
+            element={esAsistente ? <Navigate to="/admin" replace /> : <AdminUsuarios />}
+          />
           <Route path="citas" element={<CitasAdmin />} />
           <Route path="servicios" element={<AdminServicios />} />
           <Route path="historial" element={<AdminHistorial />} />
