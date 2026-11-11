@@ -33,8 +33,9 @@ RS1.d ya se mitigaron en v1.1.0. Cierra el objetivo 2 del roadmap.
 - [ ] CA3 · Dada una contraseña que no cumple las reglas del registro (001 CA3: al menos 8
   caracteres en producción y no más de 72 bytes), en un alta o al cambiarla en una edición,
   entonces se rechaza con el aviso de esas reglas y la cuenta no cambia.
-- [ ] CA4 · Dado un correo con formato inválido, o que ya usa otra cuenta, en un alta o una
-  edición, entonces se rechaza con un aviso claro y la cuenta no cambia.
+- [ ] CA4 · Dado un correo con formato inválido, o que ya usa otra cuenta, en un alta o al
+  cambiar el correo en una edición, entonces se rechaza con un aviso claro y la cuenta no cambia.
+  Editar otros datos de una cuenta cuyo correo guardado no cumple el formato se permite.
 - [ ] CA5 · Dado un rol que no es Administrador, Asistente ni Paciente, o un estado que no es
   activo ni inactivo, entonces se rechaza con un aviso claro y la cuenta no cambia.
 - [ ] CA6 · (abuso) Dado un dato que no es texto donde se espera texto, o más largo de lo que la
@@ -44,7 +45,8 @@ RS1.d ya se mitigaron en v1.1.0. Cierra el objetivo 2 del roadmap.
 - [ ] CA7 · Dada una sola cuenta de Administrador activa, cuando se intenta eliminarla,
   desactivarla o cambiarle el rol, incluso si lo hace ese mismo Administrador sobre su cuenta,
   entonces se rechaza con el aviso "Debe quedar al menos un Administrador activo" y la cuenta no
-  cambia. Reemplaza 004 CA8.
+  cambia, tampoco se desactiva en lugar de eliminarse. Reemplaza 004 CA8 y modifica 004 CA5 para
+  el último Administrador activo.
 - [ ] CA8 · Dados dos o más Administradores activos, cuando uno elimina, desactiva o cambia el rol
   de otro Administrador o el suyo, entonces se permite como hoy.
 - [ ] CA9 · Dado el único Administrador activo, cuando se edita su nombre, apellido, correo,
@@ -56,8 +58,8 @@ RS1.d ya se mitigaron en v1.1.0. Cierra el objetivo 2 del roadmap.
 
 **Panel (H1, H2)**
 - [ ] CA11 · Dado un rechazo de CA2 a CA7, cuando el Administrador guarda o elimina desde el
-  panel, entonces ve el aviso en el propio formulario o diálogo, el formulario conserva lo escrito
-  y la lista de cuentas no cambia.
+  panel, entonces ve el motivo en un aviso que también se anuncia a lectores de pantalla, el
+  formulario conserva lo escrito y la lista de cuentas no cambia.
 
 ## Fuera de alcance
 - Registro de auditoría de altas, bajas y cambios de rol: lo crea el objetivo 3 del roadmap
@@ -120,6 +122,9 @@ Ninguna.
 | 2026-11-11 | contradicción | `docs/observability.md` exige auditar los cambios de rol, pero el registro de auditoría no existe | Fuera de esta spec; lo implementa el objetivo 3 (OB1.e) | usuario |
 | 2026-11-11 | implícita | Reglas de la contraseña en el alta | Las mismas del registro (001 CA3) | `docs/specs/001-auth-registro-login/spec.md` CA3 |
 | 2026-11-11 | implícita | Solo el Administrador gestiona cuentas | Sin cambios | `docs/specs/004-gestion-usuarios/spec.md` CA7, `docs/security.md` RS1 |
+| 2026-11-11 | brecha | Al editar, ¿se valida el formato de los datos que no cambian (cuentas antiguas)? | Solo se valida lo que cambia; una cuenta antigua se puede editar (CA4) | usuario (/analyze A8) |
+| 2026-11-11 | cierre | CA7 también cambia 004 CA5 (eliminar al último Administrador con información asociada ya no lo desactiva) | Declarado en CA7 | /analyze A6 |
+| 2026-11-11 | cierre | El aviso de eliminar aparece en otro diálogo, no en el propio | CA11 dice "en un aviso" que se anuncia a lectores de pantalla | /analyze A9 |
 | 2026-11-11 | supuesto | ¿Qué cuenta como "último"? | El único Administrador con cuenta activa; los inactivos no cuentan | /specify |
 | 2026-11-11 | supuesto | ¿El Administrador puede seguir creando cuentas de Paciente desde el panel? | Sí: los tres roles existentes son válidos | /specify |
 | 2026-11-11 | brecha | ¿Una spec o dos (datos válidos y último Administrador)? | Una sola: ambas cierran el objetivo 2 y tocan la misma pantalla | usuario (al aprobar) |
@@ -141,3 +146,5 @@ Ninguna.
 | 2026-11-11 | Spec creada en borrador | /specify, objetivo 2 del roadmap |
 | 2026-11-11 | Aprobada | usuario |
 | 2026-11-11 | Diseño pasa a "No aplica" (sin cambios visuales); se quitan los criterios de diseño | /specify --edit, decisión del usuario |
+| 2026-11-11 | CA4 (solo se valida el correo que cambia), CA7 (modifica 004 CA5) y CA11 (aviso anunciado); vuelve a draft | /analyze A6, A8, A9 |
+| 2026-11-11 | Aprobada de nuevo | usuario |
