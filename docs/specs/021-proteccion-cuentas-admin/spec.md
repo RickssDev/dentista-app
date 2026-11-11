@@ -100,19 +100,10 @@ de permisos o roles" (`docs/observability.md`) lo implementa el objetivo 3 del r
 por decisión del usuario.
 
 ## Diseño
-Sin pantallas nuevas: el Administrador sigue usando la pantalla de usuarios del panel y su
-formulario. Debe sentir que el sistema le explica por qué no puede guardar, sin perder lo que
-escribió. Se reutilizan los avisos de error que el sistema de diseño ya tiene
-([docs/design/system.md](../../design/system.md)).
-
-## Criterios de diseño
-Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 1 candidato (sin cambio visual).
-
-| ID | Qué se mide | Objetivo | Sale de |
-|---|---|---|---|
-| K1 | Aviso de rechazo visible junto al formulario o diálogo | el texto del aviso aparece a 390 y 1440 px sin cerrar el formulario | CA11 |
-
-Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica: pesos por defecto.
+No aplica: sin cambios visuales. El Administrador sigue usando la pantalla de usuarios del panel;
+los rechazos se muestran con el aviso que ya tiene el formulario y con el aviso que ya tiene el
+diálogo de eliminar ([docs/design/system.md](../../design/system.md)). CA11 se comprueba con
+pruebas, sin ciclo de diseño.
 
 ## Requisitos no funcionales
 - Accesibilidad: el aviso de rechazo se anuncia a lectores de pantalla y cumple el contraste de la
@@ -132,6 +123,7 @@ Ninguna.
 | 2026-11-11 | supuesto | ¿Qué cuenta como "último"? | El único Administrador con cuenta activa; los inactivos no cuentan | /specify |
 | 2026-11-11 | supuesto | ¿El Administrador puede seguir creando cuentas de Paciente desde el panel? | Sí: los tres roles existentes son válidos | /specify |
 | 2026-11-11 | brecha | ¿Una spec o dos (datos válidos y último Administrador)? | Una sola: ambas cierran el objetivo 2 y tocan la misma pantalla | usuario (al aprobar) |
+| 2026-11-11 | diseño | ¿Hace falta /design-spec si no hay cambios visuales? | No: Diseño "No aplica"; se reutilizan los avisos existentes del formulario y del diálogo | usuario |
 
 ## Notas para /plan
 - El repositorio ya filtra con un mapa de campos al editar (`user.repository.js` → `updateUsuario`);
@@ -148,3 +140,4 @@ Ninguna.
 |---|---|---|
 | 2026-11-11 | Spec creada en borrador | /specify, objetivo 2 del roadmap |
 | 2026-11-11 | Aprobada | usuario |
+| 2026-11-11 | Diseño pasa a "No aplica" (sin cambios visuales); se quitan los criterios de diseño | /specify --edit, decisión del usuario |
