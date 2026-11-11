@@ -316,7 +316,18 @@ exports.updateCita = async (id, data) => {
 exports.deleteCita = async (id) => {
   if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
 
-  await repo.deleteCita(id);
+  try {
+    await repo.deleteCita(id);
+  } catch (error) {
+    // Otra tabla apunta a la cita (comentarios, registros): MySQL lo impide con el error 1451
+    if (error.errno === 1451 || error.code === "ER_ROW_IS_REFERENCED_2") {
+      throw new AppError(
+        "La cita tiene información asociada y no se puede eliminar; cancélala en su lugar",
+        409,
+      );
+    }
+    throw error;
+  }
   return { message: "Cita eliminada correctamente" };
 };
 exports.getCitasPorPeriodo = async (tipo) => {
