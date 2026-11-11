@@ -158,12 +158,18 @@ Referencia: `plan.md`. Se revisa lo que el desglose podría romper.
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
+  - nota: No hay staging. Antes de liberar: `npm audit --audit-level=high` sin hallazgos en ambos paquetes y Trivy sin vulnerabilidades altas ni críticas (2026-11-09).
+  - nota: A7 — Trivy ejecutado sobre lockfiles y Dockerfiles: 0 vulnerabilidades; 2 configuraciones DS002 (root) anotadas en el roadmap.
   - No hay staging ni cambio funcional que desplegar (`plan.md` → Rollout).
   - Antes de liberar: `/chore` de dependencias hecho y `npm audit --audit-level=high` sin hallazgos en `backend` y `frontend`.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+- [x] T096 Aprobación humana para producción
+  - nota: aprobado por RickssDev el 2026-11-09 para v1.1.0; desplegó él mismo con el procedimiento de `docs/deployment.md`.
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: A31 — sin cambio funcional propio de la spec; el despliegue incluyó las fichas de la versión. Funcionamiento confirmado por el usuario el 2026-11-09.
+- [x] T098 Marcar spec como `released`
+  - nota: A25 — RD8.b sigue en curso: autenticación mitigada en v1.1.0 y citas → spec 019.
+  - nota: Los cambios de código posteriores a la revisión son de las fichas de la versión, con su propia revisión ligera y CI en verde (confirmado por el usuario, 2026-11-09).
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

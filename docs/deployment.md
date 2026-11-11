@@ -90,7 +90,7 @@ Valores no secretos confirmados por el usuario (2026-11-08): `NODE_ENV=productio
 El esquema vive solo en MySQL y se cambia a mano; un `ALTER TABLE` está documentado dentro de
 `comen.repository.js:10`. No se puede reconstruir la base ni revertir un cambio.
 Correcciones:
-- RD1.a Exportar a un archivo versionado el esquema actual, sin datos — estado: pendiente
+- RD1.a Exportar a un archivo versionado el esquema actual, sin datos — estado: mitigada (v1.1.0)
 - RD1.b Adoptar una herramienta de migraciones con ADR y ajustar la regla `*.sql` del `.gitignore` — estado: pendiente
 - RD1.c Mover a migraciones los cambios documentados dentro de repositories — estado: pendiente
 
@@ -98,7 +98,7 @@ Correcciones:
 Hay respaldos, pero se hacen a mano (confirmado por el usuario, 2026-11-08). Un olvido significa
 perder expedientes clínicos.
 Correcciones:
-- RD2.a Programar `mysqldump` diario y copia de `uploads/` — estado: pendiente
+- RD2.a Programar `mysqldump` diario y copia de `uploads/` — estado: en curso: script liberado en v1.1.0; falta programarlo en el servidor
 - RD2.b Guardar las copias cifradas fuera del servidor — estado: pendiente
 - RD2.c Probar periódicamente la restauración y documentar el resultado — estado: pendiente
 
@@ -132,6 +132,6 @@ Correcciones:
 ### RD8 · Alta — Sin tests ni validación automática
 No hay tests, y los cambios llegaban a producción sin validación automática.
 Correcciones:
-- RD8.a Adoptar un framework de tests en backend y frontend, con ADR — estado: en curso (spec 018)
-- RD8.b Cubrir autenticación y citas con tests — estado: en curso (spec 018, solo autenticación; citas → spec 019)
-- RD8.c Activar `.github/workflows/ai-dd.yml` y añadir tests y linter del backend — estado: en curso (spec 018)
+- RD8.a Adoptar un framework de tests en backend y frontend, con ADR — estado: mitigada (v1.1.0)
+- RD8.b Cubrir autenticación y citas con tests — estado: en curso: autenticación mitigada en v1.1.0; citas → spec 019
+- RD8.c Activar `.github/workflows/ai-dd.yml` y añadir tests y linter del backend — estado: mitigada (v1.1.0)

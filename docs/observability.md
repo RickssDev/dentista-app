@@ -104,7 +104,7 @@ Con `WHATSAPP_ENABLED=false`, `sendTemplateMessage` no envía nada, pero `remind
 imprime "Recordatorio enviado" y marca la cita como enviada; `citas.service.js:153, 272, 336`
 también afirman el envío.
 Correcciones:
-- OB6.a Distinguir "no enviado" de "enviado" en logs y en `recordatorio_enviado` — estado: pendiente
+- OB6.a Distinguir "no enviado" de "enviado" en logs y en `recordatorio_enviado` — estado: mitigada (v1.1.0)
 
 ## Brechas por confirmar
 - Pérdida de logs al recrear contenedores — depende de: configuración de Docker en el servidor — cómo confirmarla: revisar el driver y la rotación.
