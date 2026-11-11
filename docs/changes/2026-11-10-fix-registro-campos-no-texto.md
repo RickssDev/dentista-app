@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released
+released: v1.1.1 (2026-11-11)
 base: 8d19798
 relates: [001]
 covers: [CA2]
@@ -46,6 +47,7 @@ Se mantiene en el carril (ver Decisiones).
 - Lint del backend: los 4 errores previos; los archivos tocados sin errores.
 - Revisión ligera: sin bloqueantes. Los endpoints públicos de auth ya validan el tipo. La prueba
   ahora también comprueba el mensaje (mejora menor). Hallazgos fuera de alcance en Decisiones.
+- Liberada en v1.1.1 (2026-11-11), aprobada por el usuario. En producción: servicios arriba, `DELETE /api/v1/citas/1` responde 404 "Cannot DELETE", agendar, crear y cancelar funcionan y sin errores 500 en los logs.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

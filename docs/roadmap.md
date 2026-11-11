@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-08
+updated: 2026-11-11
 ---
 
 # Roadmap
@@ -46,9 +46,15 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - Teléfono y dirección de `frontend/src/data/site.js` parecen de ejemplo (spec 017).
 
 **Hallado al liberar v1.1.0**
-- La API aún acepta citas fuera de horario si se llama directamente; las pantallas ya solo ofrecen horas válidas.
-- Cambiar contraseña con valores que no son texto responde 500 (ficha 2026-11-09-fix-login-sin-contrasena).
+- La API aún acepta citas fuera de horario si se llama directamente: resuelto en v1.1.1 (nadie agenda fuera de horario).
+- Cambiar contraseña con valores que no son texto responde 500: resuelto en v1.1.1.
 - Trivy (DS002): `backend/Dockerfile` (desarrollo) y `frontend/Dockerfile` corren como root.
+
+**Hallado al liberar v1.1.1**
+- `npm audit`: 2 vulnerabilidades moderadas en producción (`uuid` < 11.1.1 vía `exceljs`) y moderadas en Jest (solo desarrollo); sin altas ni críticas.
+- El registro no normaliza el correo (sin `trim` ni minúsculas), a diferencia de la recuperación (ficha 2026-11-10-fix-registro-campos-no-texto).
+- Una fecha de cita con formato ISO completo recibe el mensaje "fuera del horario de atención" en lugar de uno de formato (ficha 2026-11-11-fix-horario-cita-personal).
+- `db.js` no usa `dateStrings`: las columnas `DATE` llegan como `Date`; revisar otros usos que comparen fechas como texto.
 
 **Deuda de la spec 018** (aceptada en /review)
 - 018/R11 Trivy se ejecutó al liberar v1.1.0 sin vulnerabilidades altas: resuelto.

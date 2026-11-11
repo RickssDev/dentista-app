@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released
+released: v1.1.1 (2026-11-11)
 base: 5327dce
 relates: [006]
 covers: []
@@ -43,6 +44,7 @@ una ruta cambia el contrato de la API; se mantiene en el carril por decisión de
 - `aidd.py validate`: 0 errores.
 - Revisión ligera: sin bloqueantes. El frontend no llama a DELETE de citas; no quedan referencias.
   Dos menores corregidos: la prueba exige "Cannot DELETE" y la ficha anterior indica que se sustituye.
+- Liberada en v1.1.1 (2026-11-11), aprobada por el usuario. En producción: servicios arriba, `DELETE /api/v1/citas/1` responde 404 "Cannot DELETE", agendar, crear y cancelar funcionan y sin errores 500 en los logs.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
