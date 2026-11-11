@@ -298,13 +298,18 @@ exports.register = async ({
   if (!nombre_usuario || !apellido || !correo || !contrasena || !confirmar_contrasena) {
     throw new AppError('Todos los campos son obligatorios', 400);
   }
- 
+
+  // Un objeto o una lista llegarían a la consulta SQL: mysql2 los expande y falla (500)
+  if ([nombre_usuario, apellido, correo].some((campo) => typeof campo !== 'string')) {
+    throw new AppError('Nombre, apellido y correo deben ser texto', 400);
+  }
+
   if (contrasena !== confirmar_contrasena) {
     throw new AppError('Las contraseñas no coinciden', 400);
   }
- 
+
   validarContrasena(contrasena);
- 
+
   const existingUser = await repo.findUserByEmail(correo);
  
   if (existingUser) {

@@ -122,6 +122,18 @@ describe('001 · registro', () => {
     expect(db.estado.usuarios).toHaveLength(1);
   });
 
+  test.each([
+    ['correo', { $ne: '' }],
+    ['correo', [f.CORREO_NUEVO]],
+    ['nombre_usuario', { nombre: 'Ana' }],
+    ['apellido', 12345],
+  ])('001 CA2 · con %s que no es texto (%j) responde 400 y no crea el usuario', async (campo, valor) => {
+    const r = await request(app).post(REGISTRO).send(datosRegistro({ [campo]: valor }));
+    expect(r.status).toBe(400);
+    expect(r.body.message).toMatch(/deben ser texto/);
+    expect(db.estado.usuarios).toHaveLength(0);
+  });
+
   test.todo('001 CA10 · las respuestas no revelan si un correo existe (hoy no se cumple)');
 });
 
