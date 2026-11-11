@@ -13,6 +13,24 @@ const exigirRolExistente = async (idRol) => {
   if (!rol) {
     throw new AppError('El rol no es válido', 400);
   }
+  return rol;
+};
+
+const ADMINISTRADOR = 'Administrador';
+const ULTIMO_ADMINISTRADOR = 'Debe quedar al menos un Administrador activo';
+
+const esAdministradorActivo = (cuenta) =>
+  cuenta.rol_nombre === ADMINISTRADOR && cuenta.estado === 'activo';
+
+// Dentro de la transacción, con las filas bloqueadas: debe quedar otro Administrador activo
+// (spec 021 CA7, CA10). La regla no exime a nadie, tampoco a quien actúa sobre su propia cuenta.
+const exigirOtroAdministradorActivo = async (conn, id) => {
+  const activos = await repo.bloquearAdministradoresActivos(conn);
+  const otros = activos.filter((cuenta) => Number(cuenta.id_usuario) !== Number(id));
+
+  if (otros.length === 0) {
+    throw new AppError(ULTIMO_ADMINISTRADOR, 409);
+  }
 };
 
 // El aviso no revela nada de la otra cuenta (spec 021 TM5)
@@ -101,8 +119,9 @@ exports.updateUsuario = async (id, body, imagen = null) => {
     throw new AppError('No hay campos para actualizar', 400);
   }
 
+  let rolNuevo = null;
   if (cambios.id_rol !== undefined) {
-    await exigirRolExistente(cambios.id_rol);
+    rolNuevo = await exigirRolExistente(cambios.id_rol);
   }
 
   if (cambios.correo !== undefined) {
@@ -118,8 +137,20 @@ exports.updateUsuario = async (id, body, imagen = null) => {
     return exists;
   }
 
+  // Quitarle el rol o desactivar a un Administrador activo pasa por la regla del último
+  const quitaElPuesto = esAdministradorActivo(exists) && (
+    cambios.estado === 'inactivo' || (rolNuevo !== null && rolNuevo.rol !== ADMINISTRADOR)
+  );
+
   try {
-    await repo.updateUsuario(id, cambios);
+    if (quitaElPuesto) {
+      await repo.conTransaccion(async (conn) => {
+        await exigirOtroAdministradorActivo(conn, id);
+        await repo.updateUsuario(id, cambios, conn);
+      });
+    } else {
+      await repo.updateUsuario(id, cambios);
+    }
   } catch (error) {
     if (esCorreoDuplicado(error)) {
       throw new AppError(CORREO_REGISTRADO, 400);
@@ -141,22 +172,37 @@ exports.deleteUsuario = async (id) => {
     throw new AppError('Usuario no encontrado', 404);
   }
 
-  try {
-    await repo.deleteUsuario(id);
-  } catch (error) {
-    if (error.errno === 1451 || error.code === 'ER_ROW_IS_REFERENCED_2') {
-      await repo.desactivarUsuario(id);
-
-      return {
-        desactivado: true,
-        message:
-          'El usuario tiene información asociada, por lo que se desactivó en lugar de eliminarse.',
-      };
+  // Con información asociada (1451) la cuenta se desactiva en lugar de eliminarse (004 CA5)
+  const eliminarODesactivar = async (conn) => {
+    try {
+      await repo.deleteUsuario(id, conn);
+      return false;
+    } catch (error) {
+      if (error.errno === 1451 || error.code === 'ER_ROW_IS_REFERENCED_2') {
+        await repo.desactivarUsuario(id, conn);
+        return true;
+      }
+      throw error;
     }
+  };
 
-    throw error;
+  // Al último Administrador activo no se le elimina ni se le desactiva (spec 021 CA7)
+  const desactivado = esAdministradorActivo(exists)
+    ? await repo.conTransaccion(async (conn) => {
+      await exigirOtroAdministradorActivo(conn, id);
+      return eliminarODesactivar(conn);
+    })
+    : await eliminarODesactivar(undefined);
+
+  if (desactivado) {
+    return {
+      desactivado: true,
+      message:
+        'El usuario tiene información asociada, por lo que se desactivó en lugar de eliminarse.',
+    };
   }
 
+  // La imagen se borra solo después del commit
   await borrarArchivo(exists.imagen);
 
   return { desactivado: false, message: 'Usuario eliminado correctamente' };
