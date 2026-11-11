@@ -23,23 +23,23 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | P1 Spec antes de implementar | ✅ | Spec y plan `approved` | manual: `aidd.py validate` |
 | P2 Tests por feature | ✅ | Cada tarea de implementación depende de su tarea de test, escrita antes | test: T010, T011, T030, T031, T050 |
 | P3 Dependencias nuevas con ADR | ➖ | Ninguna tarea añade dependencias | — |
-| P4 Arquitectura con ADR | ➖ | Sin cambios de arquitectura; T090 actualiza la fila de `users` | — |
+| P4 Arquitectura con ADR | ✅ | Dependencia `users` → `auth` sin contradecir la arquitectura; T090 actualiza la fila de `users` y su "Depende de" | manual: T090 |
 | P5 Producción solo con aprobación humana | ✅ | T096 se mantiene | manual: T096 |
 | P6 Rollback documentado | ✅ | Rollout del plan; sin migraciones | manual: T096 |
 | P7 Migraciones compatibles | ➖ | Ninguna tarea cambia el esquema | — |
 | P8 Autorización en el servidor | ✅ | Rutas sin cambios; regla en el servicio (T041) | test: `permisos.test.js` en T060, T030 |
-| P9 Entrada validada y SQL parametrizado | ✅ | Lista blanca (T020); consultas nuevas con `?` (T021, T040) | test: T010; manual: T060 busca interpolación en `user.repository.js` |
+| P9 Entrada validada y SQL parametrizado | ✅ | Lista blanca (T020); consultas nuevas con `?` (T021, T040) | test: T010, T012 (SQL capturado: los valores van en los parámetros) |
 | P10 Secretos fuera del repositorio | ✅ | Ninguna tarea toca secretos | test: gitleaks en CI |
 | P11 Sin vulnerabilidades críticas o altas | ✅ | Comprobado en T060 | test: `npm audit --audit-level=high` en T060 |
 | P12 Modelo de amenazas | ✅ | TM1–TM5 con tarea de test y de control | manual: `/analyze` |
 | P13 Auditoría | ❌ aceptado: hasta el objetivo 3 — aprobado por el usuario el 2026-11-11 | Ninguna tarea emite eventos de auditoría | — |
 | P14 Correlación por petición | ❌ aceptado: hasta el objetivo 3 — aprobado por el usuario el 2026-11-11 | Ninguna tarea añade logs | — |
-| P15 Logs sin datos sensibles | ✅ | Ninguna tarea añade logs; T010 espía `console.*` | test: T010 |
-| P16 Accesibilidad | ✅ | Avisos existentes consultados por rol | test: T050; manual: T051 |
+| P15 Logs sin datos sensibles | ✅ | Ninguna tarea añade logs; T011 espía `console.*` en la capa HTTP | test: T011 |
+| P16 Accesibilidad | ✅ | Aviso del formulario por rol; `ModalConfirmacion` con descripción accesible (T052) | test: T050, T053; manual: T051 |
 | P17 Sin lógica de negocio en las vistas | ✅ | T051 solo muestra el mensaje de la API | manual: `/review` |
 | P18 Metadatos por ruta indexable | ➖ | No toca rutas públicas | — |
 | P19 Noindex fuera de lo público | ➖ | No toca rutas | — |
-| P20 Sistema de diseño | ✅ | T051 no añade estilos ni literales | manual: `/review` del diff |
+| P20 Sistema de diseño | ✅ | T051 y T052 no añaden estilos ni literales | manual: `/review` del diff |
 
 ## Preparación
 - [ ] T001 Exportar `validarContrasena` sin cambiar su lógica — `backend/src/modules/auth/auth.service.js` — hecho cuando: `module.exports.validarContrasena` existe y `npx jest tests/auth` sigue en verde
@@ -47,36 +47,41 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ## Historia 1: datos válidos en alta y edición
 
 ### Tests (antes de implementar)
-- [ ] T010 [P] Escribir las pruebas de datos de la cuenta con el repositorio simulado — `backend/tests/usuarios/datos-cuenta.test.js` — hecho cuando: falla por la razón esperada (hoy se aceptan los datos) en: campos ajenos (`google_id`, `fecha_registro`, `id_usuario`, `imagen` en el cuerpo) ignorados en alta y edición; alta sin cada obligatorio → 400 que lo nombra; contraseña corta o de más de 72 bytes → 400 en alta y edición; correo sin formato → 400; correo de otra cuenta → 400 "El correo ya está registrado" sin nombre, id ni rol de esa cuenta; `errno 1062` en carrera → 400; rol inexistente o no entero → 400; estado fuera de activo/inactivo → 400; objeto, lista o texto más largo que la columna → 400 y nunca 500; con `console.*` espiado, ningún rechazo escribe el correo ni la contraseña — cubre: CA1, CA2, CA3, CA4, CA5, CA6
-- [ ] T011 [P] Escribir las pruebas HTTP de usuarios con supertest y el repositorio simulado — `backend/tests/usuarios/rutas-usuarios.test.js` — hecho cuando: falla por la razón esperada en: `POST` y `PUT` con datos inválidos → 400 con `message`; `imagen` en el cuerpo sin archivo no llega al repositorio; con archivo subido, llega `/uploads/<archivo>` — cubre: CA1, CA6
+- [ ] T010 [P] Escribir las pruebas de datos de la cuenta con el repositorio simulado — `backend/tests/usuarios/datos-cuenta.test.js` — hecho cuando: falla por la razón esperada (hoy se aceptan los datos) en: campos ajenos (`google_id`, `fecha_registro`, `id_usuario`, `imagen` en el cuerpo) ignorados en alta y edición; alta sin cada obligatorio → 400 que lo nombra; contraseña corta o de más de 72 bytes → 400 en alta y edición; correo sin formato → 400; correo de otra cuenta → 400 "El correo ya está registrado" sin nombre, id ni rol de esa cuenta; `errno 1062` en carrera → 400; una cuenta con correo guardado inválido: cambiar solo el teléfono → se guarda, cambiar el correo a otro inválido → 400; rol inexistente o no entero → 400; `id_rol` en texto numérico (`'1'`) → se acepta; estado fuera de activo/inactivo → 400; objeto, lista o texto más largo que la columna → 400 y nunca 500; en el máximo de cada columna de `backend/db/schema.sql` (55, 55, 100, 20) → se acepta y en máximo + 1 → 400 — cubre: CA1, CA2, CA3, CA4, CA5, CA6
+- [ ] T011 [P] Escribir las pruebas HTTP de usuarios con supertest y el repositorio simulado — `backend/tests/usuarios/rutas-usuarios.test.js` — hecho cuando: falla por la razón esperada en: `POST` y `PUT` con datos inválidos → 400 con `message`; `imagen` en el cuerpo sin archivo no llega al repositorio; con archivo subido, llega `/uploads/<archivo>`; con `console.*` espiado, ninguna respuesta 400 o 409 ni un `errno 1062` escribe el correo o la contraseña — cubre: CA1, CA6
+
+- [ ] T012 [P] Escribir la prueba de SQL parametrizado de las consultas nuevas con una conexión falsa — `backend/tests/usuarios/consultas-usuarios.test.js` — hecho cuando: falla por la razón esperada (las funciones aún no existen) y comprueba que `getRolById`, `findOtroUsuarioPorCorreo` y `bloquearAdministradoresActivos` llevan los valores enviados solo en los parámetros, nunca en el texto del SQL — cubre: CA4, CA5, CA10
 
 ### Implementación
-- [ ] T020 Crear la validación de la cuenta (`limpiarAlta`, `limpiarEdicion`) — `backend/src/modules/users/user.validacion.js` — hecho cuando: los casos de T010 de campos ajenos, obligatorios, contraseña, formato de correo, estado, tipos y largos pasan (nombre y apellido ≤ 55, correo ≤ 100, teléfono ≤ 20; `email` se acepta como alias de `correo`; `estado` solo en edición) — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T001, T010
-- [ ] T021 Añadir `getRolById` y `findOtroUsuarioPorCorreo` con parámetros `?` — `backend/src/modules/users/user.repository.js` — hecho cuando: ambas consultas existen con `?` y sin interpolación — cubre: CA4, CA5 — depende: T010
+- [ ] T020 Crear la validación de la cuenta (`limpiarAlta`, `limpiarEdicion`) — `backend/src/modules/users/user.validacion.js` — hecho cuando: los casos de T010 de campos ajenos, obligatorios, contraseña, formato de correo, estado, tipos y largos pasan (nombre y apellido ≤ 55, correo ≤ 100, teléfono ≤ 20; `email` se acepta como alias de `correo`; `estado` solo en edición; `id_rol` como número o texto numérico; en edición recibe la cuenta guardada y solo valida el formato de lo que difiere de ella) — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T001, T010
+- [ ] T021 Añadir `getRolById` y `findOtroUsuarioPorCorreo` con parámetros `?` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T012 sobre estas dos consultas pasa — cubre: CA4, CA5 — depende: T010, T012
 - [ ] T022 Usar la validación en `createUsuario` y `updateUsuario`: rol existente, correo libre, `1062` → 400, imagen como argumento aparte — `backend/src/modules/users/user.service.js` — hecho cuando: T010 pasa completo — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T020, T021
 - [ ] T023 Pasar la imagen del archivo subido como argumento y dejar de escribirla en `req.body` — `backend/src/modules/users/user.controller.js` — hecho cuando: T011 pasa — cubre: CA1 — depende: T011, T022
 
 ## Historia 2: último Administrador activo
 
 ### Tests (antes de implementar)
-- [ ] T030 [P] Escribir las pruebas del último Administrador con el repositorio simulado — `backend/tests/usuarios/ultimo-admin.test.js` — hecho cuando: falla por la razón esperada en: eliminar, desactivar y cambiar el rol al único Administrador activo → 409 "Debe quedar al menos un Administrador activo" sin escribir nada, también sobre su propia cuenta; con otro activo, las tres acciones se permiten; editar nombre o contraseña del único → se permite; reactivar un Administrador inactivo → se permite; eliminar con `1451` del único → 409 sin desactivar — cubre: CA7, CA8, CA9
-- [ ] T031 [P] Escribir las pruebas de concurrencia del último Administrador — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en: con un repositorio simulado que serializa las transacciones, de dos degradaciones cruzadas simultáneas solo una pasa y la otra recibe 409; con una conexión falsa que captura el SQL, la prueba falla si el conteo de Administradores activos no lleva `FOR UPDATE` o no se hace sobre la `conn` de la transacción (comprobado rompiéndolo) — cubre: CA10
+- [ ] T030 [P] Escribir las pruebas del último Administrador con el repositorio simulado — `backend/tests/usuarios/ultimo-admin.test.js` — hecho cuando: falla por la razón esperada en: eliminar, desactivar y cambiar el rol al único Administrador activo → 409 "Debe quedar al menos un Administrador activo" sin escribir nada, también sobre su propia cuenta; con otro activo, las tres acciones se permiten; editar nombre o contraseña del único → se permite; reactivar un Administrador inactivo → se permite; editar al único con el payload exacto del panel (todos los campos, `id_rol: '1'`, `estado: 'activo'`) → se permite; eliminar con `1451` del único → 409 sin desactivar; con dos Administradores activos, eliminar con `1451` desactiva usando la conexión de la transacción y la imagen se borra solo tras el commit — cubre: CA7, CA8, CA9
+- [ ] T031 [P] Escribir las pruebas de concurrencia del último Administrador — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en: con un repositorio simulado que serializa las transacciones, de dos degradaciones cruzadas simultáneas solo una pasa y la otra recibe 409; con una conexión falsa propia (inyectada a las funciones del repositorio, sin pasar por `tests/support/fake-db.js`, que rechaza el SQL no simulado) que captura el SQL, la prueba falla si el conteo de Administradores activos no lleva `FOR UPDATE`, si bloqueo y escritura no usan la misma `conn`, o si el orden no es begin → … → commit con rollback ante 409 (comprobado rompiéndolo) — cubre: CA10
 
 ### Implementación
-- [ ] T040 Añadir `conTransaccion`, `bloquearAdministradoresActivos` (`SELECT … FOR UPDATE` sobre rol `Administrador` y estado `activo`) y `conn` opcional en `updateUsuario`, `deleteUsuario` y `desactivarUsuario` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T031 sobre el SQL capturado pasa y las llamadas existentes sin `conn` siguen funcionando — cubre: CA10 — depende: T021, T031
+- [ ] T040 Añadir `conTransaccion`, `bloquearAdministradoresActivos` (`SELECT … FOR UPDATE` sobre rol `Administrador` y estado `activo`) y `conn` opcional en `updateUsuario`, `deleteUsuario` y `desactivarUsuario` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T031 sobre el SQL capturado y la de T012 sobre `bloquearAdministradoresActivos` pasan, y las llamadas existentes sin `conn` siguen funcionando — cubre: CA10 — depende: T012, T021, T031
 - [ ] T041 Aplicar la regla del último Administrador en `updateUsuario` y `deleteUsuario` dentro de la transacción — `backend/src/modules/users/user.service.js` — hecho cuando: T030 y T031 pasan · verificación manual: con la API y el MySQL de Docker local, dos peticiones simultáneas de degradación cruzada entre los dos únicos Administradores dejan uno activo y la otra responde 409 — cubre: CA7, CA8, CA9, CA10 — depende: T022, T030, T040
 
 ## Panel
 
 ### Tests (antes de implementar)
-- [ ] T050 [P] Escribir las pruebas de los avisos de la pantalla de usuarios — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con 409 muestra el motivo de la API" (hoy muestra el texto genérico) y pasa "guardar con 400 muestra el mensaje en un `role=\"alert\"` y conserva lo escrito" — cubre: CA11
+- [ ] T050 [P] Escribir las pruebas de los avisos de la pantalla de usuarios — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con 409 muestra el motivo de la API como descripción accesible del diálogo y no vuelve a pedir la lista" (hoy muestra el texto genérico y no lo anuncia) y pasa "guardar con 400 muestra el mensaje en un `role=alert` y conserva lo escrito" — cubre: CA11
+
+- [ ] T053 [P] Escribir la prueba de regresión de `ModalConfirmacion` — `frontend/tests/modal-confirmacion.test.jsx` — hecho cuando: falla por la razón esperada (el diálogo no tiene descripción accesible) y comprueba que una confirmación con título y mensaje expone el mensaje como descripción accesible del diálogo, con ids únicos si hay dos abiertas, y que sus botones siguen funcionando — cubre: CA11
 
 ### Implementación
-- [ ] T051 Mostrar el mensaje de la API en el aviso de eliminar (texto genérico solo si no hay) — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T050 pasa · verificación manual: en el navegador a 390 y 1440 px, alta con correo repetido y eliminación del único Administrador muestran su aviso, se leen y se cierran con teclado, y el contraste del aviso cumple `docs/design/system.md` — cubre: CA11 — depende: T050
+- [ ] T052 Exponer el mensaje de `ModalConfirmacion` como descripción accesible del diálogo, sin cambio visual — `frontend/src/components/ModalConfirmacion.jsx` — hecho cuando: T053 pasa y `npm test --prefix frontend` sigue en verde — cubre: CA11 — depende: T053
+- [ ] T051 Mostrar el mensaje de la API en el aviso de eliminar (texto genérico solo si no hay) — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T050 pasa · verificación manual: en el navegador a 390 y 1440 px, alta con correo repetido y eliminación del único Administrador muestran su aviso, se leen y se cierran con teclado, y el contraste del aviso cumple `docs/design/system.md` — cubre: CA11 — depende: T050, T052
 
 ## Integración y documentación
-- [ ] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas; `user.repository.js` sin SQL interpolado con valores del usuario · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051
-- [ ] T090 Actualizar `docs/architecture.md`: fila del módulo `users` ("valida campos permitidos y protege al último Administrador activo")
+- [ ] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051, T052
+- [ ] T090 Actualizar `docs/architecture.md`: fila del módulo `users` ("valida campos permitidos y protege al último Administrador activo") y su columna "Depende de" (añadir `auth`)
 - [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: el plan no cambia ninguno; registrar "sin cambios" al cerrar
 - [ ] T092 Marcar spec como `implemented`
@@ -95,20 +100,20 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | CA1 | T010, T011 | T020, T022, T023 |
 | CA2 | T010 | T020, T022 |
 | CA3 | T010 | T020, T022 |
-| CA4 | T010 | T020, T021, T022 |
-| CA5 | T010 | T020, T021, T022 |
+| CA4 | T010, T012 | T020, T021, T022 |
+| CA5 | T010, T012 | T020, T021, T022 |
 | CA6 | T010, T011 | T020, T022 |
 | CA7 | T030 | T041 |
 | CA8 | T030 | T041 |
 | CA9 | T030 | T041 |
-| CA10 | T031 | T040, T041 |
-| CA11 | T050 | T051 |
+| CA10 | T031, T012 | T040, T041 |
+| CA11 | T050, T053 | T051, T052 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
 | TM1 | T041 | T030 |
 | TM2 | T020, T023 | T010, T011 |
-| TM3 | T020 | T010 |
+| TM3 | T020, T021, T040 | T010, T012 |
 | TM4 | T040, T041 | T031 |
 | TM5 | T022 | T010 |
 
@@ -120,11 +125,12 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | `backend/src/modules/users/user.repository.js` | T021, T040 |
 | `backend/src/modules/users/user.controller.js` | T023 |
 | `frontend/src/pages/admin/AdminUsuarios.jsx` | T051 |
-| `backend/tests/usuarios/` | T010, T011, T030, T031 |
-| `frontend/tests/usuarios-avisos.test.jsx` | T050 |
+| `frontend/src/components/ModalConfirmacion.jsx` | T052 |
+| `backend/tests/usuarios/` | T010, T011, T012, T030, T031 |
+| `frontend/tests/` | T050, T053 |
 | `docs/architecture.md` | T090 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
-| Aviso anunciado a lectores de pantalla y con contraste AA | T050 · verificación manual en T051 |
+| Aviso anunciado a lectores de pantalla y con contraste AA | T050, T053 · verificación manual en T051 |
 | Ningún aviso revela datos de otra cuenta | T010 |
