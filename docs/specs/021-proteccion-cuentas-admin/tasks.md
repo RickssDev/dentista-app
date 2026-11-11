@@ -1,6 +1,7 @@
 ---
 spec: 021-proteccion-cuentas-admin
 plan: plan.md
+impl_base: 1e8d678
 status: approved
 ---
 
@@ -42,7 +43,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | P20 Sistema de diseño | ✅ | T051 y T052 no añaden estilos ni literales | manual: `/review` del diff |
 
 ## Preparación
-- [ ] T001 Exportar `validarContrasena` sin cambiar su lógica — `backend/src/modules/auth/auth.service.js` — hecho cuando: `module.exports.validarContrasena` existe y `npx jest tests/auth` sigue en verde
+- [x] T001 Exportar `validarContrasena` sin cambiar su lógica — `backend/src/modules/auth/auth.service.js` — hecho cuando: `module.exports.validarContrasena` existe y `npx jest tests/auth` sigue en verde
 
 ## Historia 1: datos válidos en alta y edición
 
