@@ -11,7 +11,7 @@ updated: 2026-11-08
 | Entorno | URL | Rama / disparador | Aprobación | Datos |
 |---|---|---|---|---|
 | dev | `localhost:5173` o `localhost:8080` | manual | ninguna | de desarrollo |
-| prod | https://sistema.dentissa.app | manual en el servidor (confirmado por el usuario, 2026-11-08) | **humana** | reales |
+| prod | https://sistema.dentissa.app | manual en el servidor, `git pull` de `main` (confirmado por el usuario, 2026-11-08 y 2026-11-11) | **humana** | reales |
 
 No hay staging (confirmado por el usuario, 2026-11-08).
 
