@@ -12,19 +12,16 @@ exports.getUsuarioById = catchAsync(async (req, res) => {
   return HandleResponse.success(res, 200, 'Usuario obtenido', data);
 });
 
+// La imagen solo llega del archivo subido; una `imagen` en el cuerpo se ignora (spec 021 CA1)
+const imagenSubida = (req) => (req.file ? '/uploads/' + req.file.filename : null);
+
 exports.createUsuario = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.imagen = '/uploads/' + req.file.filename;
-  }
-  const data = await service.createUsuario(req.body);
+  const data = await service.createUsuario(req.body, imagenSubida(req));
   return HandleResponse.created(res, 201, 'Usuario creado', data);
 });
 
 exports.updateUsuario = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.imagen = '/uploads/' + req.file.filename;
-  }
-  const data = await service.updateUsuario(req.params.id, req.body);
+  const data = await service.updateUsuario(req.params.id, req.body, imagenSubida(req));
   return HandleResponse.success(res, 200, 'Usuario actualizado', data);
 });
 
