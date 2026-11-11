@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-11
+### Fixed
+- Nadie puede agendar ni reprogramar citas fuera del horario de atención (lunes a viernes de 8:00 a 16:00, sábado de 8:00 a 14:00, domingo cerrado), ni pacientes ni personal, aunque se llame directamente al sistema (fix 2026-11-10-horario-cita-paciente, fix 2026-11-11-horario-cita-personal).
+- Reprogramar una cita cambiando solo la hora ya detecta si la fecha está en el pasado (fix 2026-11-11-horario-cita-personal).
+- En "Mi perfil", dejar el género en "Seleccionar..." ya no produce un error al guardar (fix 2026-11-10-tipos-entrada-paciente).
+- Datos con formato inválido en el registro, el cambio de contraseña, el perfil del paciente, las reseñas y las citas reciben un aviso claro en lugar de un error del servidor (fix 2026-11-10-registro-campos-no-texto, fix 2026-11-10-cambiar-contrasena-tipos, fix 2026-11-10-tipos-entrada-paciente).
+
+### Removed
+- Las citas ya no se pueden eliminar; solo se cancelan, lo que conserva su historial. La opción no se usaba en la web (fix 2026-11-10-retirar-eliminar-cita).
+
 ## [1.1.0] - 2026-11-09
 ### Added
 - Flujo de desarrollo guiado por specs (ai-dd): constitución, arquitectura, specs inferidas y validación en PR.
