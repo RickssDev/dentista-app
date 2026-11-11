@@ -16,6 +16,38 @@ const durationToMinutes = (duration) => {
   return Number(h) * 60 + Number(m);
 };
 
+// Horario de atención: lunes a viernes de 8 a 16, sábado de 8 a 14, domingo cerrado (null).
+const jornadaLaboral = (fecha) => {
+  const diaSemana = new Date(`${fecha}T00:00:00Z`).getUTCDay();
+
+  if (diaSemana === 0) {
+    return null;
+  }
+
+  return { inicio: 8 * 60, fin: (diaSemana === 6 ? 14 : 16) * 60 };
+};
+
+// La cita del paciente debe empezar y terminar dentro del horario de atención (005 CA1).
+const validarHorarioDeAtencion = (fecha, hora, duracion) => {
+  const dia = new Date(`${fecha}T00:00:00Z`);
+  // Una fecha imposible (2030-02-31) se recorre al mes siguiente: se compara de vuelta
+  const esFechaValida =
+    !Number.isNaN(dia.getTime()) && dia.toISOString().slice(0, 10) === fecha;
+  const jornada = esFechaValida ? jornadaLaboral(fecha) : null;
+  const esHoraValida =
+    typeof hora === "string" && /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(hora);
+  const inicio = esHoraValida ? timeToMinutes(hora) : NaN;
+
+  if (
+    !jornada ||
+    !Number.isFinite(inicio) ||
+    inicio < jornada.inicio ||
+    inicio + duracion > jornada.fin
+  ) {
+    throw new AppError("El horario elegido está fuera del horario de atención", 400);
+  }
+};
+
 const formatearHora = (hora) => {
   const [h, m] = hora.split(":");
 
@@ -408,6 +440,8 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   const servicio = await servicioRepo.getServicioById(id_servicio);
 
+  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicio.duracion));
+
   const citasDelDia = await repo.getCitasDelDia(fecha_agendada);
 
   const nuevaInicio = timeToMinutes(hora);
@@ -493,15 +527,14 @@ exports.getHorariosDisponibles = async (fecha, id_servicio) => {
 
   const horariosDisponibles = [];
 
-  // Jornada laboral: lunes a viernes de 8 a 16, sábado de 8 a 14, domingo cerrado
-  const diaSemana = new Date(`${fecha}T00:00:00Z`).getUTCDay();
+  const jornada = jornadaLaboral(fecha);
 
-  if (diaSemana === 0) {
+  if (!jornada) {
     return [];
   }
 
-  const inicioLaboral = 8 * 60;
-  const finLaboral = (diaSemana === 6 ? 14 : 16) * 60;
+  const inicioLaboral = jornada.inicio;
+  const finLaboral = jornada.fin;
 
   let inicio = inicioLaboral;
   const hoy = new Date();
@@ -587,7 +620,12 @@ exports.updateMiCita = async (idUsuario, id, data = {}) => {
   if (!fecha_agendada || !hora) {
     throw new AppError("La fecha y la hora son obligatorias", 400);
   }
- 
+
+  // Solo el paciente queda limitado al horario de atención; el personal no (spec 006)
+  const cita = await repo.getCitaById(id);
+  const servicio = await servicioRepo.getServicioById(cita.id_servicio);
+  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicio.duracion));
+
   // Solo se aceptan estos tres campos; cualquier otro del body se ignora
   return exports.updateCita(id, { fecha_agendada, hora, motivo });
 };
