@@ -77,7 +77,7 @@ exports.getCitas = async () => {
 };
 
 exports.getCitaById = async (id) => {
-  if (!id || isNaN(id)) throw new Error("ID de cita inválido");
+  if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
 
   const c = await repo.getCitaById(id);
   if (!c) throw new AppError("Cita no encontrada", 404);
@@ -331,6 +331,11 @@ exports.cancelarCita = async (id, motivo) => {
     throw new AppError("Debe proporcionar un motivo para cancelar", 400);
   }
 
+  // Un objeto o una lista llegaría a MySQL y respondería 500
+  if (typeof motivo !== "string") {
+    throw new AppError("El motivo debe ser texto", 400);
+  }
+
   const cita = await repo.getCitaById(id);
 
   if (!cita) {
@@ -404,6 +409,16 @@ exports.createCitaPaciente = async (idUsuario, data) => {
     throw new AppError("Faltan campos obligatorios", 400);
   }
 
+  // Un objeto o un texto no numérico llegaría a MySQL y respondería 500
+  const servicioValido =
+    (typeof id_servicio === "number" || typeof id_servicio === "string") &&
+    Number.isInteger(Number(id_servicio)) &&
+    Number(id_servicio) > 0;
+
+  if (!servicioValido) {
+    throw new AppError("El servicio no es válido", 400);
+  }
+
 const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
@@ -433,6 +448,10 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
   }
 
   const servicio = await servicioRepo.getServicioById(id_servicio);
+
+  if (!servicio) {
+    throw new AppError("Servicio no encontrado", 404);
+  }
 
   validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicio.duracion));
 
@@ -613,6 +632,11 @@ exports.updateMiCita = async (idUsuario, id, data = {}) => {
  
   if (!fecha_agendada || !hora) {
     throw new AppError("La fecha y la hora son obligatorias", 400);
+  }
+
+  // Un objeto o una lista como motivo llegaría a MySQL y respondería 500
+  if (motivo !== undefined && motivo !== null && typeof motivo !== "string") {
+    throw new AppError("El motivo debe ser texto", 400);
   }
 
   // Solo el paciente queda limitado al horario de atención; el personal no (spec 006)
