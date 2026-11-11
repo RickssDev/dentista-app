@@ -32,11 +32,6 @@ exports.updateCita = catchAsync(async (req, res) => {
   return HandleResponse.success(res, 200, data.message);
 });
 
-exports.deleteCita = catchAsync(async (req, res) => {
-  const data = await service.deleteCita(req.params.id);
-  return HandleResponse.success(res, 200, data.message);
-});
-
 exports.getCitasPorPeriodo = async (req, res, next) => {
   try {
     const { tipo } = req.params;

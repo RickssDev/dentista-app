@@ -1,39 +1,36 @@
-jest.mock('../../src/modules/citas/citas.repository');
-jest.mock('../../src/modules/servicios/servicios.repository');
-jest.mock('../../src/modules/pacientes/pacientes.repository');
-jest.mock('../../src/services/whatp.service');
+const request = require('supertest');
 
-const repo = require('../../src/modules/citas/citas.repository');
-const citas = require('../../src/modules/citas/citas.service');
+jest.mock('google-auth-library', () => ({
+  OAuth2Client: jest.fn(() => ({ verifyIdToken: jest.fn() })),
+}));
 
-const errorReferenciada = () =>
-  Object.assign(new Error('Cannot delete or update a parent row: a foreign key constraint fails'), {
-    errno: 1451,
-    code: 'ER_ROW_IS_REFERENCED_2',
-  });
+const db = require('../../src/config/db');
+const JWTFactory = require('../../src/utils/JWTFactory');
+const { createApp } = require('../../src/config/app');
+const f = require('../support/fixtures');
+
+const app = createApp();
+
+const sesion = (rol) => {
+  const usuario = db.agregarUsuario({ correo: f.CORREO_PERSONAL, nombre_usuario: f.NOMBRE });
+  return `Bearer ${new JWTFactory().createToken({ id: usuario.id_usuario, rol })}`;
+};
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  db.reiniciar();
+  jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
-describe('006 · eliminar una cita', () => {
-  test('una cita sin información asociada se elimina', async () => {
-    repo.deleteCita.mockResolvedValue();
-    await expect(citas.deleteCita(5)).resolves.toEqual({ message: 'Cita eliminada correctamente' });
-  });
+describe('006 · las citas se cancelan, no se eliminan', () => {
+  test.each(['Administrador', 'Asistente'])(
+    'DELETE /citas/:id no existe para %s y no borra nada',
+    async (rol) => {
+      const r = await request(app).delete('/api/v1/citas/1').set('Authorization', sesion(rol));
 
-  test('una cita con información asociada responde 409 con un mensaje claro', async () => {
-    repo.deleteCita.mockRejectedValue(errorReferenciada());
-    await expect(citas.deleteCita(5)).rejects.toMatchObject({
-      statusCode: 409,
-      isOperational: true,
-      message: expect.stringMatching(/cancélala/i),
-    });
-  });
-
-  test('cualquier otro error de la base de datos no se disfraza de 409', async () => {
-    const otro = Object.assign(new Error('conexión perdida'), { code: 'PROTOCOL_CONNECTION_LOST' });
-    repo.deleteCita.mockRejectedValue(otro);
-    await expect(citas.deleteCita(5)).rejects.toBe(otro);
-  });
+      expect(r.status).toBe(404);
+      // Es el 404 de Express por ruta inexistente, no un "cita no encontrada" del servicio
+      expect(r.text).toMatch(/Cannot DELETE/);
+      expect(db.sqlRecibido.some((sql) => /DELETE\s+FROM\s+citas/i.test(sql))).toBe(false);
+    },
+  );
 });

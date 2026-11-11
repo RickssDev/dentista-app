@@ -9,6 +9,10 @@ escalated_to: null
 
 # Fix: eliminar una cita con información asociada responde 500
 
+> **Sustituida** por la ficha `2026-11-10-fix-retirar-eliminar-cita`: el mismo día, el usuario
+> decidió retirar `DELETE /citas/:id` (la web no lo usa; las citas solo se cancelan), así que el
+> 409 descrito aquí ya no existe en el código.
+
 ## Problema
 `DELETE /api/v1/citas/:id` (solo Administrador; la web no lo usa) responde 500 cuando la cita tiene
 filas que la referencian. Hoy pasa con un comentario o testimonio ligado a la cita
