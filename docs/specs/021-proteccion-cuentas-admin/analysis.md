@@ -1,54 +1,55 @@
 ---
-result: fail
-round: 1
-mode: full
+result: pass
+round: 2
+mode: delta
 constitution_version: 1.0.0
 date: 2026-11-11
-spec_sha: ca8e0f9dff10
-plan_sha: 375d8221821f
-tasks_sha: 9eb789938529
+spec_sha: 82182a883989
+plan_sha: f211520383d5
+tasks_sha: 6c05fb077acf
 ---
 
 # Análisis · 021 Protección de las cuentas del personal
 
 ## Resumen
-Sin hallazgos críticos. Tres altos que conviene corregir antes de implementar: el tipo de `id_rol`
-y el reenvío completo del panel romperían la edición (A1), el aviso de eliminar no se anuncia a
-lectores de pantalla (A2) y la prohibición de SQL interpolado solo se verifica a mano (A3). El
-usuario decidió corregirlos, así que el resultado es `fail` hasta la siguiente ronda.
-Conteo: CRÍTICA 0 · ALTA 3 · MEDIA 5 · BAJA 2
+Los diez hallazgos de la ronda 1 quedaron resueltos sin efectos nuevos graves. La revisión delta
+(con subagente, el diff superaba ~30 KB) encontró tres hallazgos de redacción de tareas, uno medio
+y dos bajos, que el usuario aceptó como notas para `/implement`. Resultado `pass`.
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 1 · BAJA 2
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
 | Criterios con tarea de test e implementación | 11 / 11 |
-| Amenazas con control y test | 5 / 5 (TM4 débil en lo automático, A4) |
-| Principios de la constitución evaluados | 20 / 20 |
+| Amenazas con control y test | 5 / 5 |
+| Principios de la constitución evaluados | 20 / 20 (ronda 1; sin cambio de versión) |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | ALTA | resuelto | `plan.md` Cambios y Regla ("cambiar" = valor distinto del guardado); T010 acepta `id_rol: '1'`; T030 "payload exacto del panel → se permite" |
+| A2 | ALTA | resuelto con efecto nuevo (→ A11) | `plan.md` P16 y Cambios (`ModalConfirmacion.jsx`); T053, T052, T050, T051 |
+| A3 | ALTA | resuelto con efecto nuevo (→ A12) | T012 `consultas-usuarios.test.js`; P9 de plan y tareas |
+| A4 | MEDIA | resuelto | T031 declara una conexión falsa propia y comprueba misma `conn` y begin/commit/rollback |
+| A5 | MEDIA | resuelto | T011 espía `console.*` en 400, 409 y `1062`; P15 apunta a T011 |
+| A6 | MEDIA | resuelto | `spec.md` CA7 ("modifica 004 CA5"); T030 cubre `1451` con uno y con dos Administradores |
+| A7 | MEDIA | resuelto | T090 añade `auth` a "Depende de"; P4 en plan y tareas |
+| A8 | MEDIA | resuelto | `spec.md` CA4 y Decisiones; T010; T020; Riesgos del plan |
+| A9 | BAJA | resuelto | `spec.md` CA11; T050 "no vuelve a pedir la lista" |
+| A10 | BAJA | resuelto | `plan.md` Contratos: `estado` en el alta se ignora |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Inconsistencia | ALTA | `plan.md` Cambios (`user.validacion`: "`id_rol` entero positivo"), Contratos; T010, T020, T030 | El panel envía `FormData`: `id_rol` llega como texto ("1") y, al editar, reenvía siempre `nombre`, `apellido`, `correo`, `estado` e `id_rol` aunque no cambien. Exigir número o tratar la mera presencia como cambio rompe el panel y CA9 | Un `id_rol` numérico en texto se acepta; "cambiar rol o estado" significa un valor distinto del guardado (test: T010 acepta `id_rol: "1"`; T030 edita al único Administrador con el payload exacto del panel → 200) — `/plan 021 --fix A1`, `/tasks 021 --fix A1` |
-| A2 | Constitución P16 | ALTA | `plan.md` P16, Trazabilidad RNF; T050, T051 | El aviso "No se pudo eliminar" usa `ModalConfirmacion`, cuyo mensaje (`<p class="mf-mensaje">`) no tiene `role="alert"` ni es descripción accesible del diálogo: el motivo no se anuncia. El componente se usa en 32 lugares y no está en Cambios por módulo | El mensaje de `ModalConfirmacion` se anuncia como descripción accesible del diálogo en todas sus pantallas (decisión del usuario, 2026-11-11), sin cambio visual (test: T050 consulta el diálogo por su descripción accesible con el motivo del 409; prueba de regresión de otra confirmación) — `/plan 021 --fix A2`, `/tasks 021 --fix A2` |
-| A3 | Constitución P9 | ALTA | `plan.md` P9; T060 | La prohibición de SQL interpolado solo se verifica a mano | Las consultas nuevas llevan los valores del usuario solo en los parámetros (test: capturar el SQL de `getRolById`, `findOtroUsuarioPorCorreo`, `bloquearAdministradoresActivos` y comprobar que el texto no contiene el valor enviado) — `/plan 021 --fix A3`, `/tasks 021 --fix A3` |
-| A4 | Cobertura | MEDIA | T031, T040 | `jest.config.js` sustituye `config/db` por `tests/support/fake-db.js`, que rechaza cualquier SQL no simulado y comparte `query` en `getConnection()`: `conTransaccion` y `FOR UPDATE` no se pueden ejercitar sin extenderlo o sin una conexión propia; no figura en el plan | Lo automatizable de CA10 se prueba: bloqueo con `FOR UPDATE`, misma conexión para bloquear y escribir, orden begin/commit/rollback y rollback ante 409 (test: T031 con una conexión falsa o `fake-db.js` extendido, declarado en la tarea) — `/tasks 021 --fix A4` |
-| A5 | Constitución P15 | MEDIA | T010 | Espiar `console.*` en la prueba del servicio no detecta nada: el único log de un rechazo es `errorHandler` en la capa HTTP, y un `1062` sin convertir lleva el correo en su mensaje | Ninguna respuesta 400/409 ni un `1062` deja el correo o la contraseña en `console.*` (test: T011, con supertest) — `/plan 021 --fix A5`, `/tasks 021 --fix A5` |
-| A6 | Inconsistencia (`extends`) | MEDIA | `spec.md` CA7 | CA7 también cambia 004 CA5 (eliminar al último Administrador con información asociada ya no lo desactiva: 409) y solo declara "Reemplaza 004 CA8". La rama de CA8 con `1451` dentro de la transacción no tiene test | La spec declara que modifica 004 CA5 (`/specify --edit 021`); con dos Administradores, eliminar con `1451` desactiva usando la conexión de la transacción y la imagen se borra solo tras el commit (test: T030) — `/tasks 021 --fix A6` |
-| A7 | Constitución P4 | MEDIA | `plan.md` Impacto en arquitectura; T090 | `users` pasa a depender de `auth.service`; `docs/architecture.md` dice que depende de `utils` | T090 actualiza también la columna "Depende de" — `/plan 021 --fix A7`, `/tasks 021 --fix A7` |
-| A8 | Ambigüedad | MEDIA | `plan.md` Riesgos ("Cuentas antiguas") | El panel reenvía siempre correo, nombre y apellido: una cuenta con un dato antiguo inválido no se podría editar en nada | Al editar se valida solo lo que cambia respecto a lo guardado (decisión del usuario, 2026-11-11) (test: T010 edita una cuenta con correo antiguo inválido cambiando solo el teléfono → 200; cambiar el correo a otro inválido → 400) — `/plan 021 --fix A8`, `/tasks 021 --fix A8` |
-| A9 | Cobertura | BAJA | T050; `spec.md` CA11 | No se comprueba "la lista de cuentas no cambia"; el aviso de eliminar aparece en otro diálogo, no "en el propio diálogo" | T050: tras un 409 no se vuelve a pedir la lista; CA11 dice "en un aviso" — `/specify --edit 021`, `/tasks 021 --fix A9` |
-| A10 | Inconsistencia | BAJA | `plan.md` Contratos | En el alta el panel envía `estado` y se ignora (la cuenta nace activa, como hoy) | Indicarlo en el plan como comportamiento esperado — `/plan 021 --fix A10` |
-
-Descartados al verificar: largos sin fuente (`backend/db/schema.sql` está versionado: 55, 55, 100,
-20) y P14 sin decisión registrada (está en Decisiones del plan, decisión del usuario 2026-11-11).
+| A11 | Inconsistencia | MEDIA | T052, T050 | T052 exige `npm test --prefix frontend` en verde, pero T050 sigue en rojo hasta T051 | El criterio de T052 se cumple con T053 en verde y el resto de la suite del frontend en verde salvo las pruebas de T050 aún pendientes (test: `npm test --prefix frontend` con la lista de fallos esperados) — nota de T052 |
+| A12 | Constitución P9 / TM3 | BAJA | T012, T040 | T012 no captura las consultas que modifica T040 (`updateUsuario` arma el SQL de forma dinámica, `deleteUsuario`, `desactivarUsuario`), y `bloquearAdministradoresActivos` no recibe valores del usuario | Las consultas modificadas llevan los valores del usuario solo en los parámetros (test: T012 captura el SQL de `updateUsuario` con valores marcados y comprueba que no aparecen en el texto) — nota de T012 |
+| A13 | Ambigüedad | BAJA | T012; `tasks.md` Constitution Check P2 | T012 no dice cómo llega la conexión falsa a `getRolById` y `findOtroUsuarioPorCorreo` (usan el pool, sustituido por `fake-db.js`); la fila P2 no lista T012 ni T053 | T012 declara cómo inyecta la conexión falsa, como T031; la fila P2 lista todas las tareas de test — nota de T012 |
 
 ## Decisiones pendientes del usuario
-Resueltas el 2026-11-11:
-- A2: arreglar `ModalConfirmacion` para todas sus pantallas.
-- A8: al editar, validar solo lo que cambia.
+Ninguna.
 
 ## Aceptados
-Ninguno: el usuario decidió corregir todos en esta vuelta.
+Aceptados por el usuario el 2026-11-11:
+- **A11** → nota de T052: el criterio de hecho excluye las pruebas de T050 que siguen pendientes hasta T051.
+- **A12** → nota de T012: capturar también el SQL de `updateUsuario`, `deleteUsuario` y `desactivarUsuario` con valores marcados.
+- **A13** → nota de T012: declarar cómo se inyecta la conexión falsa en las consultas que usan el pool, y añadir T012 y T053 a la fila P2 del Constitution Check al marcarla.
