@@ -22,7 +22,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | Principio | Resultado | Justificación / ajuste | Cómo se verifica |
 |---|---|---|---|
 | P1 Spec antes de implementar | ✅ | Spec y plan `approved` | manual: `aidd.py validate` |
-| P2 Tests por feature | ✅ | Cada tarea de implementación depende de su tarea de test, escrita antes | test: T010, T011, T030, T031, T050 |
+| P2 Tests por feature | ✅ | Cada tarea de implementación depende de su tarea de test, escrita antes | test: T010, T011, T012, T030, T031, T050, T053 |
 | P3 Dependencias nuevas con ADR | ➖ | Ninguna tarea añade dependencias | — |
 | P4 Arquitectura con ADR | ✅ | Dependencia `users` → `auth` sin contradecir la arquitectura; T090 actualiza la fila de `users` y su "Depende de" | manual: T090 |
 | P5 Producción solo con aprobación humana | ✅ | T096 se mantiene | manual: T096 |
@@ -53,7 +53,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T011 [P] Escribir las pruebas HTTP de usuarios con supertest y el repositorio simulado — `backend/tests/usuarios/rutas-usuarios.test.js` — hecho cuando: falla por la razón esperada en: `POST` y `PUT` con datos inválidos → 400 con `message`; `imagen` en el cuerpo sin archivo no llega al repositorio; con archivo subido, llega `/uploads/<archivo>`; con `console.*` espiado, ninguna respuesta 400 o 409 ni un `errno 1062` escribe el correo o la contraseña — cubre: CA1, CA6
   - nota: falla 6 de 7 por la razón esperada; "con archivo subido llega /uploads/<archivo>" pasa desde el principio y se comprueba rompiendo el controller en T023. `upload` se simula sin escribir en disco
 
-- [ ] T012 [P] Escribir la prueba de SQL parametrizado de las consultas nuevas con una conexión falsa — `backend/tests/usuarios/consultas-usuarios.test.js` — hecho cuando: falla por la razón esperada (las funciones aún no existen) y comprueba que `getRolById`, `findOtroUsuarioPorCorreo` y `bloquearAdministradoresActivos` llevan los valores enviados solo en los parámetros, nunca en el texto del SQL — cubre: CA4, CA5, CA10
+- [x] T012 [P] Escribir la prueba de SQL parametrizado de las consultas nuevas con una conexión falsa — `backend/tests/usuarios/consultas-usuarios.test.js` — hecho cuando: falla por la razón esperada (las funciones aún no existen) y comprueba que `getRolById`, `findOtroUsuarioPorCorreo` y `bloquearAdministradoresActivos` llevan los valores enviados solo en los parámetros, nunca en el texto del SQL — cubre: CA4, CA5, CA10
+  - nota: A12 — también captura el SQL de `updateUsuario`, `deleteUsuario` y `desactivarUsuario` con valores marcados
+  - nota: A13 — la conexión falsa se pasa como último argumento (`conn`) a cada función del repositorio, sin `fake-db.js`; fila P2 del Constitution Check con T012 y T053
+  - nota: falla 6 de 6 por la razón esperada (funciones inexistentes; las existentes ignoran `conn`)
 
 ### Implementación
 - [ ] T020 Crear la validación de la cuenta (`limpiarAlta`, `limpiarEdicion`) — `backend/src/modules/users/user.validacion.js` — hecho cuando: los casos de T010 de campos ajenos, obligatorios, contraseña, formato de correo, estado, tipos y largos pasan (nombre y apellido ≤ 55, correo ≤ 100, teléfono ≤ 20; `email` se acepta como alias de `correo`; `estado` solo en edición; `id_rol` como número o texto numérico; en edición recibe la cuenta guardada y solo valida el formato de lo que difiere de ella) — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T001, T010
