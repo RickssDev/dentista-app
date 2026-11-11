@@ -1,7 +1,7 @@
 ---
 id: 021
 slug: proteccion-cuentas-admin
-status: approved
+status: implemented
 created: 2026-11-11
 extends: [004]
 ---
@@ -25,39 +25,39 @@ RS1.d ya se mitigaron en v1.1.0. Cierra el objetivo 2 del roadmap.
 
 ## Criterios de aceptación
 **Datos de las cuentas (H1)**
-- [ ] CA1 · Dado un alta o una edición con campos que no son de la cuenta (por ejemplo, fecha de
+- [x] CA1 · Dado un alta o una edición con campos que no son de la cuenta (por ejemplo, fecha de
   registro, identificador de Google o identificador de la cuenta), cuando se guarda, entonces esos
   campos se ignoran y no cambian en la cuenta.
-- [ ] CA2 · Dado un alta sin nombre, apellido, correo, contraseña o rol, cuando se guarda,
+- [x] CA2 · Dado un alta sin nombre, apellido, correo, contraseña o rol, cuando se guarda,
   entonces se rechaza con un aviso que nombra lo que falta y no se crea la cuenta.
-- [ ] CA3 · Dada una contraseña que no cumple las reglas del registro (001 CA3: al menos 8
+- [x] CA3 · Dada una contraseña que no cumple las reglas del registro (001 CA3: al menos 8
   caracteres en producción y no más de 72 bytes), en un alta o al cambiarla en una edición,
   entonces se rechaza con el aviso de esas reglas y la cuenta no cambia.
-- [ ] CA4 · Dado un correo con formato inválido, o que ya usa otra cuenta, en un alta o al
+- [x] CA4 · Dado un correo con formato inválido, o que ya usa otra cuenta, en un alta o al
   cambiar el correo en una edición, entonces se rechaza con un aviso claro y la cuenta no cambia.
   Editar otros datos de una cuenta cuyo correo guardado no cumple el formato se permite.
-- [ ] CA5 · Dado un rol que no es Administrador, Asistente ni Paciente, o un estado que no es
+- [x] CA5 · Dado un rol que no es Administrador, Asistente ni Paciente, o un estado que no es
   activo ni inactivo, entonces se rechaza con un aviso claro y la cuenta no cambia.
-- [ ] CA6 · (abuso) Dado un dato que no es texto donde se espera texto, o más largo de lo que la
+- [x] CA6 · (abuso) Dado un dato que no es texto donde se espera texto, o más largo de lo que la
   cuenta admite, entonces se rechaza con un aviso claro, nunca con un error del servidor.
 
 **Último Administrador (H2)**
-- [ ] CA7 · Dada una sola cuenta de Administrador activa, cuando se intenta eliminarla,
+- [x] CA7 · Dada una sola cuenta de Administrador activa, cuando se intenta eliminarla,
   desactivarla o cambiarle el rol, incluso si lo hace ese mismo Administrador sobre su cuenta,
   entonces se rechaza con el aviso "Debe quedar al menos un Administrador activo" y la cuenta no
   cambia, tampoco se desactiva en lugar de eliminarse. Reemplaza 004 CA8 y modifica 004 CA5 para
   el último Administrador activo.
-- [ ] CA8 · Dados dos o más Administradores activos, cuando uno elimina, desactiva o cambia el rol
+- [x] CA8 · Dados dos o más Administradores activos, cuando uno elimina, desactiva o cambia el rol
   de otro Administrador o el suyo, entonces se permite como hoy.
-- [ ] CA9 · Dado el único Administrador activo, cuando se edita su nombre, apellido, correo,
+- [x] CA9 · Dado el único Administrador activo, cuando se edita su nombre, apellido, correo,
   teléfono, imagen o contraseña sin cambiar su rol ni su estado, entonces se permite; y reactivar
   a un Administrador inactivo siempre se permite.
-- [ ] CA10 · (abuso) Dados dos Administradores activos que, al mismo tiempo, se quitan el rol o
+- [x] CA10 · (abuso) Dados dos Administradores activos que, al mismo tiempo, se quitan el rol o
   se desactivan entre sí, entonces al terminar queda al menos un Administrador activo: una de las
   dos acciones se rechaza con el aviso de CA7.
 
 **Panel (H1, H2)**
-- [ ] CA11 · Dado un rechazo de CA2 a CA7, cuando el Administrador guarda o elimina desde el
+- [x] CA11 · Dado un rechazo de CA2 a CA7, cuando el Administrador guarda o elimina desde el
   panel, entonces ve el motivo en un aviso que también se anuncia a lectores de pantalla, el
   formulario conserva lo escrito y la lista de cuentas no cambia.
 
@@ -148,3 +148,4 @@ Ninguna.
 | 2026-11-11 | Diseño pasa a "No aplica" (sin cambios visuales); se quitan los criterios de diseño | /specify --edit, decisión del usuario |
 | 2026-11-11 | CA4 (solo se valida el correo que cambia), CA7 (modifica 004 CA5) y CA11 (aviso anunciado); vuelve a draft | /analyze A6, A8, A9 |
 | 2026-11-11 | Aprobada de nuevo | usuario |
+| 2026-11-11 | Implementada: CA1–CA11 con sus pruebas en verde | /implement |

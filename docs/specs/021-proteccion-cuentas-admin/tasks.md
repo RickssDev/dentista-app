@@ -102,11 +102,13 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: verificación manual OK 2026-11-11 (usuario): en el navegador a 390 y 1440 px, alta con correo repetido y eliminación del único Administrador muestran su aviso, se leen y se cierran con teclado; contraste correcto
 
 ## Integración y documentación
-- [ ] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051, T052
-- [ ] T090 Actualizar `docs/architecture.md`: fila del módulo `users` ("valida campos permitidos y protege al último Administrador activo") y su columna "Depende de" (añadir `auth`)
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
-  - nota: el plan no cambia ninguno; registrar "sin cambios" al cerrar
-- [ ] T092 Marcar spec como `implemented`
+- [x] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051, T052
+  - nota: backend 241 pasan (5 `todo`), frontend 15/15; lint: los 4 errores previos del backend y los 15 problemas previos del frontend, ninguno en archivos tocados; `npm audit --audit-level=high` sin altas ni críticas en ambos (una primera ejecución falló por red y repetida dio 0); build del frontend correcto; gitleaks no está instalado en local (corre en CI). Verificación manual OK 2026-11-11 (usuario): alta y edición desde el panel funcionan como antes
+- [x] T090 Actualizar `docs/architecture.md`: fila del módulo `users` ("valida campos permitidos y protege al último Administrador activo") y su columna "Depende de" (añadir `auth`)
+  - nota: fila de `users`: responsabilidad y dependencia de `auth.service`
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
+  - nota: sin cambios: no hay variables, entornos, pasos de deploy, logs, eventos de auditoría ni métricas nuevos
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

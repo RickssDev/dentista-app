@@ -38,7 +38,7 @@ flowchart LR
 | Módulo | Ruta | Responsabilidad | Depende de |
 |---|---|---|---|
 | auth | `backend/src/modules/auth` | Registro, login, Google, contraseñas | pacientes.repository, email |
-| users | `backend/src/modules/users` | CRUD de usuarios y personal | utils |
+| users | `backend/src/modules/users` | CRUD de usuarios y personal; valida campos permitidos y protege al último Administrador activo (spec 021) | utils, auth.service (validación de contraseña) |
 | citas | `backend/src/modules/citas` | Citas de paciente y personal | servicios.repository, pacientes.repository, whatsapp |
 | pacientes | `backend/src/modules/pacientes` | Perfil del paciente | — |
 | historial | `backend/src/modules/historial` | Historial clínico y alta de pacientes | db |
