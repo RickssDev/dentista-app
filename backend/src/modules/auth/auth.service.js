@@ -362,7 +362,12 @@ exports.cambiarContrasena = async (
   if (!contrasena_actual || !nueva_contrasena || !confirmar_contrasena) {
     throw new AppError('Todos los campos son obligatorios', 400);
   }
- 
+
+  // bcrypt.compare lanza un error (500) si recibe algo que no es texto.
+  if (typeof contrasena_actual !== 'string') {
+    throw new AppError('La contraseña actual es incorrecta', 400);
+  }
+
   const user = await repo.findUserById(idUsuario);
  
   if (!user) {
