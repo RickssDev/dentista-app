@@ -63,7 +63,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: los casos de T010 se ejecutan al integrarla en el servicio (T022); en edición devuelve `{ cambios, recibidos }` para distinguir "nada cambió" (200 sin escribir) de "no llegó ningún campo" (400, como hoy)
 - [x] T021 Añadir `getRolById` y `findOtroUsuarioPorCorreo` con parámetros `?` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T012 sobre estas dos consultas pasa — cubre: CA4, CA5 — depende: T010, T012
   - nota: comprobado rompiendo: con el id interpolado en el SQL de `getRolById`, su caso de T012 falla; restaurado pasa
-- [ ] T022 Usar la validación en `createUsuario` y `updateUsuario`: rol existente, correo libre, `1062` → 400, imagen como argumento aparte — `backend/src/modules/users/user.service.js` — hecho cuando: T010 pasa completo — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T020, T021
+- [x] T022 Usar la validación en `createUsuario` y `updateUsuario`: rol existente, correo libre, `1062` → 400, imagen como argumento aparte — `backend/src/modules/users/user.service.js` — hecho cuando: T010 pasa completo — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T020, T021
+  - nota: T010 pasa completo (31/31). Comprobado rompiendo: (1) validar el correo aunque no cambie hace fallar "cambiar solo el teléfono se guarda"; (2) reenviar el cuerpo al repositorio (TM2) hace fallar "en el alta"; (3) poner el id de la otra cuenta en el aviso (TM5) hace fallar su caso. Restaurado, todo pasa
+  - nota: si el panel guarda sin cambios, responde con la cuenta guardada sin escribir; un PUT sin ningún campo sigue respondiendo 400 "No hay campos para actualizar"
 - [ ] T023 Pasar la imagen del archivo subido como argumento y dejar de escribirla en `req.body` — `backend/src/modules/users/user.controller.js` — hecho cuando: T011 pasa — cubre: CA1 — depende: T011, T022
 
 ## Historia 2: último Administrador activo

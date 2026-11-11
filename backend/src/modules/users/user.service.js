@@ -2,6 +2,26 @@ const repo = require('./user.repository');
 const PasswordHash = require('../../utils/PasswordHash');
 const AppError = require('../../utils/AppError');
 const borrarArchivo = require('../../utils/borrarArchivo');
+const { limpiarAlta, limpiarEdicion } = require('./user.validacion');
+
+const CORREO_REGISTRADO = 'El correo ya está registrado';
+
+const esCorreoDuplicado = (error) => error?.errno === 1062 || error?.code === 'ER_DUP_ENTRY';
+
+const exigirRolExistente = async (idRol) => {
+  const rol = await repo.getRolById(idRol);
+  if (!rol) {
+    throw new AppError('El rol no es válido', 400);
+  }
+};
+
+// El aviso no revela nada de la otra cuenta (spec 021 TM5)
+const exigirCorreoLibre = async (correo, idExcluido = null) => {
+  const otra = await repo.findOtroUsuarioPorCorreo(correo, idExcluido);
+  if (otra) {
+    throw new AppError(CORREO_REGISTRADO, 400);
+  }
+};
 
 
 exports.getUsuarios = async () => {
@@ -44,50 +64,75 @@ exports.getUsuarioById = async (id) => {
   };
 };
  
-exports.createUsuario = async (data) => {
+// La imagen llega aparte, solo desde el archivo subido (spec 021 CA1)
+exports.createUsuario = async (body, imagen = null) => {
+  const datos = limpiarAlta(body);
 
-  const hashedPassword = await PasswordHash.apply(data.password);
-  const newData = { ...data, password: hashedPassword, imagen: data.imagen };
+  await exigirRolExistente(datos.id_rol);
+  await exigirCorreoLibre(datos.correo);
 
-  const id = await repo.createUsuario(newData);
+  const password = await PasswordHash.apply(datos.password);
 
-  return { id };
+  try {
+    const id = await repo.createUsuario({ ...datos, password, imagen });
+    return { id };
+  } catch (error) {
+    if (esCorreoDuplicado(error)) {
+      throw new AppError(CORREO_REGISTRADO, 400);
+    }
+    throw error;
+  }
 };
 
-exports.updateUsuario = async (id, data) => {
-
-const exists = await repo.getUsuarioById(id);
+exports.updateUsuario = async (id, body, imagen = null) => {
+  const exists = await repo.getUsuarioById(id);
 
   if (!exists) {
     throw new AppError('Usuario no encontrado', 404);
   }
 
-  const cleanedData = {};
-  for (const key in data) {
-    if (
-      data[key] !== '' &&
-      data[key] !== undefined &&
-      data[key] !== null
-    ) {
-      cleanedData[key] = data[key];
-    }
+  const { cambios, recibidos } = limpiarEdicion(body, exists);
+
+  if (imagen) {
+    cambios.imagen = imagen;
   }
 
-  if (cleanedData.password) {
-    cleanedData.password = await PasswordHash.apply(cleanedData.password);
-  }
-
-  if (Object.keys(cleanedData).length === 0) {
+  if (recibidos === 0 && !imagen) {
     throw new AppError('No hay campos para actualizar', 400);
   }
 
-  await repo.updateUsuario(id, cleanedData);
-  if (cleanedData.imagen && cleanedData.imagen !== exists.imagen) {
+  if (cambios.id_rol !== undefined) {
+    await exigirRolExistente(cambios.id_rol);
+  }
+
+  if (cambios.correo !== undefined) {
+    await exigirCorreoLibre(cambios.correo, id);
+  }
+
+  if (cambios.password) {
+    cambios.password = await PasswordHash.apply(cambios.password);
+  }
+
+  // El panel reenvía todos los campos: si nada cambió, no se escribe
+  if (Object.keys(cambios).length === 0) {
+    return exists;
+  }
+
+  try {
+    await repo.updateUsuario(id, cambios);
+  } catch (error) {
+    if (esCorreoDuplicado(error)) {
+      throw new AppError(CORREO_REGISTRADO, 400);
+    }
+    throw error;
+  }
+
+  if (cambios.imagen && cambios.imagen !== exists.imagen) {
     await borrarArchivo(exists.imagen);
   }
 
   return await repo.getUsuarioById(id);
-  };
+};
 
 exports.deleteUsuario = async (id) => {
   const exists = await repo.getUsuarioById(id);
