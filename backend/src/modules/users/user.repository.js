@@ -39,6 +39,25 @@ exports.getUsuarioById = async (id) => {
   return rows[0];
 };
 
+exports.getRolById = async (idRol, conn = pool) => {
+  const [rows] = await conn.query(
+    'SELECT id_rol, rol FROM roles WHERE id_rol = ?',
+    [idRol]
+  );
+
+  return rows[0];
+};
+
+// Otra cuenta con el mismo correo (excluye la cuenta que se edita; null en un alta)
+exports.findOtroUsuarioPorCorreo = async (correo, idExcluido = null, conn = pool) => {
+  const [rows] = await conn.query(
+    'SELECT id_usuario FROM usuarios WHERE correo = ? AND (? IS NULL OR id_usuario <> ?) LIMIT 1',
+    [correo, idExcluido, idExcluido]
+  );
+
+  return rows[0];
+};
+
 exports.createUsuario = async (data) => {
   const { nombre, telefono, correo, apellido, password, id_rol, imagen } = data;
 

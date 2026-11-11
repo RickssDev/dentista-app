@@ -61,7 +61,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ### Implementación
 - [x] T020 Crear la validación de la cuenta (`limpiarAlta`, `limpiarEdicion`) — `backend/src/modules/users/user.validacion.js` — hecho cuando: los casos de T010 de campos ajenos, obligatorios, contraseña, formato de correo, estado, tipos y largos pasan (nombre y apellido ≤ 55, correo ≤ 100, teléfono ≤ 20; `email` se acepta como alias de `correo`; `estado` solo en edición; `id_rol` como número o texto numérico; en edición recibe la cuenta guardada y solo valida el formato de lo que difiere de ella) — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T001, T010
   - nota: los casos de T010 se ejecutan al integrarla en el servicio (T022); en edición devuelve `{ cambios, recibidos }` para distinguir "nada cambió" (200 sin escribir) de "no llegó ningún campo" (400, como hoy)
-- [ ] T021 Añadir `getRolById` y `findOtroUsuarioPorCorreo` con parámetros `?` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T012 sobre estas dos consultas pasa — cubre: CA4, CA5 — depende: T010, T012
+- [x] T021 Añadir `getRolById` y `findOtroUsuarioPorCorreo` con parámetros `?` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T012 sobre estas dos consultas pasa — cubre: CA4, CA5 — depende: T010, T012
+  - nota: comprobado rompiendo: con el id interpolado en el SQL de `getRolById`, su caso de T012 falla; restaurado pasa
 - [ ] T022 Usar la validación en `createUsuario` y `updateUsuario`: rol existente, correo libre, `1062` → 400, imagen como argumento aparte — `backend/src/modules/users/user.service.js` — hecho cuando: T010 pasa completo — cubre: CA1, CA2, CA3, CA4, CA5, CA6 — depende: T020, T021
 - [ ] T023 Pasar la imagen del archivo subido como argumento y dejar de escribirla en `req.body` — `backend/src/modules/users/user.controller.js` — hecho cuando: T011 pasa — cubre: CA1 — depende: T011, T022
 
