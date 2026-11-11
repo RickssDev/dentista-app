@@ -70,3 +70,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | Corregida la redacción de CA3 para reflejar el comportamiento actual | /analyze A2 de la spec 018, confirmado por el usuario |
+| 2026-11-11 | Corregido por la ficha 2026-11-10-fix-cambiar-contrasena-tipos en v1.1.1 (CA8) | /release |

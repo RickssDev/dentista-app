@@ -70,3 +70,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | CA6 acotado para reflejar el comportamiento actual | /review R2 de la spec 018, confirmado por el usuario |
 | 2026-11-09 | Corregido por la ficha 2026-11-09-fix-login-sin-contrasena en v1.1.0 (CA6) | /release |
+| 2026-11-11 | Corregido por la ficha 2026-11-10-fix-registro-campos-no-texto en v1.1.1 (CA2) | /release |

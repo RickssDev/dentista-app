@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released
+released: v1.1.1 (2026-11-11)
 base: 2ba6154
 relates: [003]
 covers: [CA8]
@@ -43,6 +44,7 @@ mantiene en el carril (ver Decisiones).
 - Lint del backend: los 4 errores previos de siempre; los archivos tocados sin errores.
 - Revisión ligera: sin bloqueantes. La causa explica el síntoma y el arreglo la ataca; los demás
   caminos a bcrypt están cubiertos. Un hallazgo menor aceptado y uno fuera de alcance (Decisiones).
+- Liberada en v1.1.1 (2026-11-11), aprobada por el usuario. En producción: servicios arriba, `DELETE /api/v1/citas/1` responde 404 "Cannot DELETE", agendar, crear y cancelar funcionan y sin errores 500 en los logs.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

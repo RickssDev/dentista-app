@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released
+released: v1.1.1 (2026-11-11)
 base: ef297b6
 relates: [006]
 covers: []
@@ -47,6 +48,7 @@ asociada`.
 - Revisión ligera: sin bloqueantes. Un AppError 409 llega al cliente por `catchAsync` y
   `errorHandler`; `fk_comentario_cita` es la única llave hacia `citas` y `citas.repository.js` es
   el único borrado. Hallazgos menores en Decisiones.
+- Liberada en v1.1.1 (2026-11-11), aprobada por el usuario. En producción: servicios arriba, `DELETE /api/v1/citas/1` responde 404 "Cannot DELETE", agendar, crear y cancelar funcionan y sin errores 500 en los logs.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

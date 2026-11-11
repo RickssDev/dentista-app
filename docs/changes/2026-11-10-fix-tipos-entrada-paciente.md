@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released
+released: v1.1.1 (2026-11-11)
 base: 2d44f97
 relates: [005, 006, 008, 015]
 covers: []
@@ -62,6 +63,7 @@ comprobaba que el servicio existiera.
 - Revisión ligera: sin bloqueantes y sin regresiones con la web. Revisados los envíos de
   `CompletarPerfil`, `PerfilPaciente`, `CitasPaciente`, `InicioPaciente` y `CitasAdmin`; todos
   cumplen las nuevas reglas. Hallazgo menor corregido: el motivo al cancelar tenía el mismo defecto.
+- Liberada en v1.1.1 (2026-11-11), aprobada por el usuario. En producción: servicios arriba, `DELETE /api/v1/citas/1` responde 404 "Cannot DELETE", agendar, crear y cancelar funcionan y sin errores 500 en los logs.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
