@@ -1,7 +1,7 @@
 ---
 spec: 021-proteccion-cuentas-admin
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 021 Protección de las cuentas del personal
