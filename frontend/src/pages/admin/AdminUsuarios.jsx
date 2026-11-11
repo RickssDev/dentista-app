@@ -209,9 +209,12 @@ function AdminUsuarios({
       }
     } catch (error) {
       console.error(error);
+      // El motivo viene de la API (p. ej., "Debe quedar al menos un Administrador activo")
       setAviso({
         titulo: "No se pudo eliminar",
-        mensaje: "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
+        mensaje:
+          error.message ||
+          "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
       });
     }
   };
