@@ -78,7 +78,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: falla 5 de 5 por la razón esperada (hoy las dos degradaciones cruzadas pasan y quedan cero Administradores; `conTransaccion` no existe). La conexión falsa propia llega como segundo argumento de `conTransaccion` (origen de conexiones), sin `fake-db.js`
 
 ### Implementación
-- [ ] T040 Añadir `conTransaccion`, `bloquearAdministradoresActivos` (`SELECT … FOR UPDATE` sobre rol `Administrador` y estado `activo`) y `conn` opcional en `updateUsuario`, `deleteUsuario` y `desactivarUsuario` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T031 sobre el SQL capturado y la de T012 sobre `bloquearAdministradoresActivos` pasan, y las llamadas existentes sin `conn` siguen funcionando — cubre: CA10 — depende: T012, T021, T031
+- [x] T040 Añadir `conTransaccion`, `bloquearAdministradoresActivos` (`SELECT … FOR UPDATE` sobre rol `Administrador` y estado `activo`) y `conn` opcional en `updateUsuario`, `deleteUsuario` y `desactivarUsuario` — `backend/src/modules/users/user.repository.js` — hecho cuando: la parte de T031 sobre el SQL capturado y la de T012 sobre `bloquearAdministradoresActivos` pasan, y las llamadas existentes sin `conn` siguen funcionando — cubre: CA10 — depende: T012, T021, T031
+  - nota: pasan las partes de T012 y del repositorio real de T031. Comprobado rompiendo: sin `FOR UPDATE` y sin rollback fallan esos 3 casos; restaurado pasan. Las llamadas existentes sin `conn` usan `pool` por defecto
 - [ ] T041 Aplicar la regla del último Administrador en `updateUsuario` y `deleteUsuario` dentro de la transacción — `backend/src/modules/users/user.service.js` — hecho cuando: T030 y T031 pasan · verificación manual: con la API y el MySQL de Docker local, dos peticiones simultáneas de degradación cruzada entre los dos únicos Administradores dejan uno activo y la otra responde 409 — cubre: CA7, CA8, CA9, CA10 — depende: T022, T030, T040
 
 ## Panel

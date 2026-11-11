@@ -69,7 +69,39 @@ exports.createUsuario = async (data) => {
   return result.insertId;
 };
 
-exports.updateUsuario = async (id, data) => {
+// Ejecuta `fn(conn)` en una transacción: commit si termina, rollback si lanza (spec 021 CA10).
+// `origen` permite inyectar otro proveedor de conexiones en las pruebas.
+exports.conTransaccion = async (fn, origen = pool) => {
+  const conn = await origen.getConnection();
+
+  try {
+    await conn.beginTransaction();
+    const resultado = await fn(conn);
+    await conn.commit();
+    return resultado;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+};
+
+// Bloquea las filas de los Administradores activos hasta que termine la transacción, para que
+// dos cambios simultáneos no dejen a la clínica sin Administrador.
+exports.bloquearAdministradoresActivos = async (conn) => {
+  const [rows] = await conn.query(`
+    SELECT u.id_usuario
+    FROM usuarios u
+    JOIN roles r ON u.id_rol = r.id_rol
+    WHERE r.rol = 'Administrador' AND u.estado = 'activo'
+    FOR UPDATE
+  `);
+
+  return rows;
+};
+
+exports.updateUsuario = async (id, data, conn = pool) => {
   const fieldMap = {
     nombre: 'nombre_usuario',
     telefono: 'telefono',
@@ -90,15 +122,15 @@ exports.updateUsuario = async (id, data) => {
 
   const query = `UPDATE usuarios SET ${fields} WHERE id_usuario = ?`;
 
-  await pool.query(query, [...values, id]);
+  await conn.query(query, [...values, id]);
 };
 
-exports.deleteUsuario = async (id) => {
-  await pool.query(`DELETE FROM usuarios WHERE id_usuario = ?`, [id]);
+exports.deleteUsuario = async (id, conn = pool) => {
+  await conn.query(`DELETE FROM usuarios WHERE id_usuario = ?`, [id]);
 };
 
-exports.desactivarUsuario = async (id) => {
-  await pool.query(
+exports.desactivarUsuario = async (id, conn = pool) => {
+  await conn.query(
     "UPDATE usuarios SET estado = 'inactivo' WHERE id_usuario = ?",
     [id]
   );
