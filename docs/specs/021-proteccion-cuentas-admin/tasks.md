@@ -87,7 +87,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ## Panel
 
 ### Tests (antes de implementar)
-- [ ] T050 [P] Escribir las pruebas de los avisos de la pantalla de usuarios — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con 409 muestra el motivo de la API como descripción accesible del diálogo y no vuelve a pedir la lista" (hoy muestra el texto genérico y no lo anuncia) y pasa "guardar con 400 muestra el mensaje en un `role=alert` y conserva lo escrito" — cubre: CA11
+- [x] T050 [P] Escribir las pruebas de los avisos de la pantalla de usuarios — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con 409 muestra el motivo de la API como descripción accesible del diálogo y no vuelve a pedir la lista" (hoy muestra el texto genérico y no lo anuncia) y pasa "guardar con 400 muestra el mensaje en un `role=alert` y conserva lo escrito" — cubre: CA11
+  - nota: "eliminar con 409" falla por la razón esperada (el diálogo no tiene la descripción accesible); "guardar con 400" pasa desde el principio y se comprobó rompiendo el mensaje del formulario (falla) y restaurando (pasa). Ejecutadas dos veces
 
 - [ ] T053 [P] Escribir la prueba de regresión de `ModalConfirmacion` — `frontend/tests/modal-confirmacion.test.jsx` — hecho cuando: falla por la razón esperada (el diálogo no tiene descripción accesible) y comprueba que una confirmación con título y mensaje expone el mensaje como descripción accesible del diálogo, con ids únicos si hay dos abiertas, y que sus botones siguen funcionando — cubre: CA11
 
