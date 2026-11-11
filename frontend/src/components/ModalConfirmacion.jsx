@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import ModalFormulario from "./ModalFormulario";
 
 /**
@@ -18,6 +18,8 @@ function ModalConfirmacion({
   onCancelar,
 }) {
   const [procesando, setProcesando] = useState(false);
+  // El mensaje describe el diálogo: los lectores de pantalla lo leen al abrirse
+  const idMensaje = useId();
 
   // Si onConfirmar es async, los botones se bloquean hasta que termine
   const confirmar = async () => {
@@ -42,8 +44,9 @@ function ModalConfirmacion({
       peligro={peligro}
       ancho={420}
       superior
+      idDescripcion={idMensaje}
     >
-      <p className="mf-mensaje">{mensaje}</p>
+      <p id={idMensaje} className="mf-mensaje">{mensaje}</p>
     </ModalFormulario>
   );
 }
