@@ -27,8 +27,18 @@ const jornadaLaboral = (fecha) => {
   return { inicio: 8 * 60, fin: (diaSemana === 6 ? 14 : 16) * 60 };
 };
 
-// La cita del paciente debe empezar y terminar dentro del horario de atención (005 CA1).
-const validarHorarioDeAtencion = (fecha, hora, duracion) => {
+// mysql2 entrega las columnas DATE como Date a medianoche local: se pasa a AAAA-MM-DD
+const fechaComoTexto = (fecha) => {
+  if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) return fecha;
+
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+};
+
+// Toda cita (paciente o personal) debe empezar y terminar dentro del horario de atención.
+const validarHorarioDeAtencion = (fechaRecibida, hora, duracion) => {
+  const fecha = fechaComoTexto(fechaRecibida);
   const dia = new Date(`${fecha}T00:00:00Z`);
   // Una fecha imposible (2030-02-31) se recorre al mes siguiente: se compara de vuelta
   const esFechaValida =
@@ -151,6 +161,14 @@ exports.createCita = async (data) => {
     );
   }
 
+  const servicioCita = await servicioRepo.getServicioById(id_servicio);
+
+  if (!servicioCita) {
+    throw new AppError("Servicio no encontrado", 404);
+  }
+
+  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicioCita.duracion));
+
   const citaExistente = await repo.findCitaExistente(fecha_agendada, hora);
 
   if (citaExistente) {
@@ -227,7 +245,8 @@ exports.updateCita = async (id, data) => {
   }
 
   if (cleanedData.fecha_agendada || cleanedData.hora) {
-    const nuevaFecha = cleanedData.fecha_agendada || citaActual.fecha_agendada;
+    // La fecha guardada llega como Date: se compara como texto AAAA-MM-DD
+    const nuevaFecha = fechaComoTexto(cleanedData.fecha_agendada || citaActual.fecha_agendada);
 
     const nuevaHora = cleanedData.hora || citaActual.hora;
 
@@ -250,6 +269,8 @@ exports.updateCita = async (id, data) => {
     }
 
     const servicio = await servicioRepo.getServicioById(citaActual.id_servicio);
+
+    validarHorarioDeAtencion(nuevaFecha, nuevaHora, durationToMinutes(servicio.duracion));
 
     const citasDelDia = await repo.getCitasDelDia(nuevaFecha);
 
@@ -639,11 +660,7 @@ exports.updateMiCita = async (idUsuario, id, data = {}) => {
     throw new AppError("El motivo debe ser texto", 400);
   }
 
-  // Solo el paciente queda limitado al horario de atención; el personal no (spec 006)
-  const cita = await repo.getCitaById(id);
-  const servicio = await servicioRepo.getServicioById(cita.id_servicio);
-  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicio.duracion));
-
+  // El horario de atención lo valida updateCita, igual que para el personal
   // Solo se aceptan estos tres campos; cualquier otro del body se ignora
   return exports.updateCita(id, { fecha_agendada, hora, motivo });
 };

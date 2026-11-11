@@ -66,17 +66,69 @@ describe('005 · el paciente solo agenda dentro del horario de atención', () =>
   });
 });
 
-describe('006 · el personal no tiene validación de horario (decisión del usuario, 2026-11-10)', () => {
-  test('el personal puede crear una cita en domingo', async () => {
+describe('006 · el personal tampoco agenda fuera de horario (decisión del usuario, 2026-11-11)', () => {
+  beforeEach(() => {
     repo.findCitaExistente.mockResolvedValue(null);
+  });
+
+  test.each(fueraDeHorario)('crear %s responde 400 y no crea la cita', async (_caso, fecha, hora) => {
     await expect(
-      citas.createCita({ id_paciente: 3, fecha_agendada: DOMINGO, hora: '10:00', id_servicio: 1 }),
+      citas.createCita({ id_paciente: 3, fecha_agendada: fecha, hora, id_servicio: 1 }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(repo.createCita).not.toHaveBeenCalled();
+  });
+
+  test.each(fueraDeHorario)('reprogramar %s responde 400 y no cambia la cita', async (_caso, fecha, hora) => {
+    await expect(
+      citas.updateCita(ID_CITA, { fecha_agendada: fecha, hora, motivo: 'cambio' }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(repo.updateCita).not.toHaveBeenCalled();
+  });
+
+  test('crear dentro del horario crea la cita', async () => {
+    await expect(
+      citas.createCita({ id_paciente: 3, fecha_agendada: SABADO, hora: '13:00', id_servicio: 1 }),
     ).resolves.toBeDefined();
     expect(repo.createCita).toHaveBeenCalled();
   });
 
-  test('el personal puede reprogramar una cita a domingo', async () => {
-    await citas.updateCita(ID_CITA, { fecha_agendada: DOMINGO, hora: '10:00', motivo: 'urgencia' });
+  test('crear con un servicio que no existe responde 404', async () => {
+    servicioRepo.getServicioById.mockResolvedValue(null);
+    await expect(
+      citas.createCita({ id_paciente: 3, fecha_agendada: LUNES, hora: '10:00', id_servicio: 555 }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(repo.createCita).not.toHaveBeenCalled();
+  });
+
+  test('cambiar solo la hora usa la fecha guardada, que mysql2 entrega como Date', async () => {
+    // mysql2 sin dateStrings devuelve DATE como Date a medianoche local
+    repo.getCitaById.mockResolvedValue({
+      id_cita: ID_CITA, estado: 'pendiente', id_servicio: 1, fecha_agendada: new Date(2030, 0, 7), hora: '10:00',
+    });
+    await citas.updateCita(ID_CITA, { hora: '11:00', motivo: 'cambio' });
     expect(repo.updateCita).toHaveBeenCalled();
+  });
+
+  test('cambiar solo la hora a fuera de horario sobre la fecha guardada responde 400', async () => {
+    repo.getCitaById.mockResolvedValue({
+      id_cita: ID_CITA, estado: 'pendiente', id_servicio: 1, fecha_agendada: new Date(2030, 0, 6), hora: '10:00',
+    });
+    await expect(citas.updateCita(ID_CITA, { hora: '11:00', motivo: 'cambio' }))
+      .rejects.toMatchObject({ statusCode: 400 });
+    expect(repo.updateCita).not.toHaveBeenCalled();
+  });
+
+  test('cambiar solo la hora de una cita con fecha pasada (Date) responde 400', async () => {
+    repo.getCitaById.mockResolvedValue({
+      id_cita: ID_CITA, estado: 'pendiente', id_servicio: 1, fecha_agendada: new Date(2020, 0, 6), hora: '10:00',
+    });
+    await expect(citas.updateCita(ID_CITA, { hora: '11:00', motivo: 'cambio' }))
+      .rejects.toMatchObject({ statusCode: 400, message: expect.stringMatching(/pasada/) });
+    expect(repo.updateCita).not.toHaveBeenCalled();
+  });
+
+  test('editar solo el motivo de una cita no revisa el horario', async () => {
+    await citas.updateCita(ID_CITA, { motivo: 'nota nueva' });
+    expect(repo.updateCita).toHaveBeenCalledWith(ID_CITA, { motivo: 'nota nueva' });
   });
 });
