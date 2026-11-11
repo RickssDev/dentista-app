@@ -212,6 +212,19 @@ describe('003 · cambiar contraseña', () => {
     expect(r.status).toBe(401);
   });
 
+  test.each([
+    ['un número', 12345678],
+    ['un objeto', { valor: 'x' }],
+    ['una lista', ['x']],
+  ])('003 CA8 · una contraseña actual que es %s responde 400 y no se actualiza', async (_caso, valor) => {
+    const usuario = conContrasena();
+    const anterior = usuario.contrasena;
+    const r = await cambiar(usuario, { contrasena_actual: valor });
+
+    expect(r.status).toBe(400);
+    expect(usuario.contrasena).toBe(anterior);
+  });
+
   test('003 CA7 · al cambiarla, una contraseña igual a la actual responde 400', async () => {
     const usuario = conContrasena();
     const r = await cambiar(usuario, { nueva_contrasena: f.CLAVE, confirmar_contrasena: f.CLAVE });

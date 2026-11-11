@@ -136,10 +136,6 @@ exports.updateCita = async (id, data) => {
   return result;
 };
 
-exports.deleteCita = async (id) => {
-  await pool.query(`DELETE FROM citas WHERE id_cita = ?`, [id]);
-};
-
 exports.findCitaExistente = async (fecha_agendada, hora) => {
   const [rows] = await pool.query(
     `

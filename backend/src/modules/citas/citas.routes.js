@@ -24,7 +24,7 @@ router.patch("/mias/:id/cancelar", verifyToken, controller.cancelarMiCita);
 router.post("/", verifyToken, personal, controller.createCita);
 router.patch("/:id/cancelar", verifyToken, personal, controller.cancelarCita);
 router.put("/:id", verifyToken, personal, controller.updateCita);
-router.delete("/:id", verifyToken, authorizeRoles("Administrador"), controller.deleteCita);
+// Las citas no se eliminan: se cancelan, y así se conserva el historial
 
 router.get("/", verifyToken, personal, controller.getCitas);
 router.get("/:id", verifyToken, personal, controller.getCitaById);

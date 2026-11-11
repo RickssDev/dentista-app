@@ -16,6 +16,48 @@ const durationToMinutes = (duration) => {
   return Number(h) * 60 + Number(m);
 };
 
+// Horario de atención: lunes a viernes de 8 a 16, sábado de 8 a 14, domingo cerrado (null).
+const jornadaLaboral = (fecha) => {
+  const diaSemana = new Date(`${fecha}T00:00:00Z`).getUTCDay();
+
+  if (diaSemana === 0) {
+    return null;
+  }
+
+  return { inicio: 8 * 60, fin: (diaSemana === 6 ? 14 : 16) * 60 };
+};
+
+// mysql2 entrega las columnas DATE como Date a medianoche local: se pasa a AAAA-MM-DD
+const fechaComoTexto = (fecha) => {
+  if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) return fecha;
+
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+};
+
+// Toda cita (paciente o personal) debe empezar y terminar dentro del horario de atención.
+const validarHorarioDeAtencion = (fechaRecibida, hora, duracion) => {
+  const fecha = fechaComoTexto(fechaRecibida);
+  const dia = new Date(`${fecha}T00:00:00Z`);
+  // Una fecha imposible (2030-02-31) se recorre al mes siguiente: se compara de vuelta
+  const esFechaValida =
+    !Number.isNaN(dia.getTime()) && dia.toISOString().slice(0, 10) === fecha;
+  const jornada = esFechaValida ? jornadaLaboral(fecha) : null;
+  const esHoraValida =
+    typeof hora === "string" && /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(hora);
+  const inicio = esHoraValida ? timeToMinutes(hora) : NaN;
+
+  if (
+    !jornada ||
+    !Number.isFinite(inicio) ||
+    inicio < jornada.inicio ||
+    inicio + duracion > jornada.fin
+  ) {
+    throw new AppError("El horario elegido está fuera del horario de atención", 400);
+  }
+};
+
 const formatearHora = (hora) => {
   const [h, m] = hora.split(":");
 
@@ -45,7 +87,7 @@ exports.getCitas = async () => {
 };
 
 exports.getCitaById = async (id) => {
-  if (!id || isNaN(id)) throw new Error("ID de cita inválido");
+  if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
 
   const c = await repo.getCitaById(id);
   if (!c) throw new AppError("Cita no encontrada", 404);
@@ -118,6 +160,14 @@ exports.createCita = async (data) => {
       400,
     );
   }
+
+  const servicioCita = await servicioRepo.getServicioById(id_servicio);
+
+  if (!servicioCita) {
+    throw new AppError("Servicio no encontrado", 404);
+  }
+
+  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicioCita.duracion));
 
   const citaExistente = await repo.findCitaExistente(fecha_agendada, hora);
 
@@ -195,7 +245,8 @@ exports.updateCita = async (id, data) => {
   }
 
   if (cleanedData.fecha_agendada || cleanedData.hora) {
-    const nuevaFecha = cleanedData.fecha_agendada || citaActual.fecha_agendada;
+    // La fecha guardada llega como Date: se compara como texto AAAA-MM-DD
+    const nuevaFecha = fechaComoTexto(cleanedData.fecha_agendada || citaActual.fecha_agendada);
 
     const nuevaHora = cleanedData.hora || citaActual.hora;
 
@@ -218,6 +269,8 @@ exports.updateCita = async (id, data) => {
     }
 
     const servicio = await servicioRepo.getServicioById(citaActual.id_servicio);
+
+    validarHorarioDeAtencion(nuevaFecha, nuevaHora, durationToMinutes(servicio.duracion));
 
     const citasDelDia = await repo.getCitasDelDia(nuevaFecha);
 
@@ -281,12 +334,6 @@ exports.updateCita = async (id, data) => {
   };
 };
 
-exports.deleteCita = async (id) => {
-  if (!id || isNaN(id)) throw new AppError("ID de cita inválido", 400);
-
-  await repo.deleteCita(id);
-  return { message: "Cita eliminada correctamente" };
-};
 exports.getCitasPorPeriodo = async (tipo) => {
   const tiposValidos = ["diaria", "semanal", "mensual"];
 
@@ -303,6 +350,11 @@ exports.cancelarCita = async (id, motivo) => {
 
   if (!motivo) {
     throw new AppError("Debe proporcionar un motivo para cancelar", 400);
+  }
+
+  // Un objeto o una lista llegaría a MySQL y respondería 500
+  if (typeof motivo !== "string") {
+    throw new AppError("El motivo debe ser texto", 400);
   }
 
   const cita = await repo.getCitaById(id);
@@ -378,6 +430,16 @@ exports.createCitaPaciente = async (idUsuario, data) => {
     throw new AppError("Faltan campos obligatorios", 400);
   }
 
+  // Un objeto o un texto no numérico llegaría a MySQL y respondería 500
+  const servicioValido =
+    (typeof id_servicio === "number" || typeof id_servicio === "string") &&
+    Number.isInteger(Number(id_servicio)) &&
+    Number(id_servicio) > 0;
+
+  if (!servicioValido) {
+    throw new AppError("El servicio no es válido", 400);
+  }
+
 const paciente = await pacienteRepo.findByUserId(idUsuario);
 
   if (!paciente) {
@@ -407,6 +469,12 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
   }
 
   const servicio = await servicioRepo.getServicioById(id_servicio);
+
+  if (!servicio) {
+    throw new AppError("Servicio no encontrado", 404);
+  }
+
+  validarHorarioDeAtencion(fecha_agendada, hora, durationToMinutes(servicio.duracion));
 
   const citasDelDia = await repo.getCitasDelDia(fecha_agendada);
 
@@ -493,15 +561,14 @@ exports.getHorariosDisponibles = async (fecha, id_servicio) => {
 
   const horariosDisponibles = [];
 
-  // Jornada laboral: lunes a viernes de 8 a 16, sábado de 8 a 14, domingo cerrado
-  const diaSemana = new Date(`${fecha}T00:00:00Z`).getUTCDay();
+  const jornada = jornadaLaboral(fecha);
 
-  if (diaSemana === 0) {
+  if (!jornada) {
     return [];
   }
 
-  const inicioLaboral = 8 * 60;
-  const finLaboral = (diaSemana === 6 ? 14 : 16) * 60;
+  const inicioLaboral = jornada.inicio;
+  const finLaboral = jornada.fin;
 
   let inicio = inicioLaboral;
   const hoy = new Date();
@@ -587,7 +654,13 @@ exports.updateMiCita = async (idUsuario, id, data = {}) => {
   if (!fecha_agendada || !hora) {
     throw new AppError("La fecha y la hora son obligatorias", 400);
   }
- 
+
+  // Un objeto o una lista como motivo llegaría a MySQL y respondería 500
+  if (motivo !== undefined && motivo !== null && typeof motivo !== "string") {
+    throw new AppError("El motivo debe ser texto", 400);
+  }
+
+  // El horario de atención lo valida updateCita, igual que para el personal
   // Solo se aceptan estos tres campos; cualquier otro del body se ignora
   return exports.updateCita(id, { fecha_agendada, hora, motivo });
 };

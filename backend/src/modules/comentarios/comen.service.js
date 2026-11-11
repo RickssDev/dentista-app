@@ -27,6 +27,23 @@ exports.createComentario = async (data, usuario) => {
     throw new AppError("Faltan campos obligatorios", 400);
   }
 
+  // Un objeto, una lista o un texto no numérico llegaría a MySQL y respondería 500
+  const esEntero = (valor) =>
+    (typeof valor === "number" || typeof valor === "string") &&
+    Number.isInteger(Number(valor));
+
+  if (typeof comentario !== "string") {
+    throw new AppError("El comentario debe ser texto", 400);
+  }
+
+  if (!esEntero(calificacion)) {
+    throw new AppError("La calificación debe ser un número entero entre 1 y 5", 400);
+  }
+
+  if (!esEntero(id_cita) || Number(id_cita) < 1) {
+    throw new AppError("La cita no es válida", 400);
+  }
+
   const cita = await citaRepo.getCitaConUsuario(id_cita);
 
   if (!cita) {
@@ -47,11 +64,15 @@ exports.createComentario = async (data, usuario) => {
     throw new AppError("La cita ya tiene una reseña", 400);
   }
 
-  if (calificacion < 1 || calificacion > 5) {
+  if (Number(calificacion) < 1 || Number(calificacion) > 5) {
     throw new AppError("La calificación debe estar entre 1 y 5", 400);
   }
 
-  const id = await comentarioRepo.createComentario(data);
+  const id = await comentarioRepo.createComentario({
+    comentario,
+    calificacion: Number(calificacion),
+    id_cita: Number(id_cita),
+  });
 
   return { id };
 };
