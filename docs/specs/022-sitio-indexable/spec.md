@@ -27,23 +27,23 @@ en SVG. Cierra el objetivo 4 del roadmap.
 
 ## Criterios de aceptación
 **Páginas públicas (H1)** — inicio, nosotros, galería, contacto, aviso de privacidad y términos
-- [ ] CA1 · Dada cualquiera de las seis páginas públicas, cuando se audita con Lighthouse en su
+- [x] CA1 · Dada cualquiera de las seis páginas públicas, cuando se audita con Lighthouse en su
   categoría SEO, entonces obtiene 100.
-- [ ] CA2 · Dada una página pública, cuando un rastreador la pide sin ejecutar JavaScript, entonces
+- [x] CA2 · Dada una página pública, cuando un rastreador la pide sin ejecutar JavaScript, entonces
   recibe su encabezado principal y sus textos propios (no una página vacía); las secciones que
   dependen de datos del sistema (servicios, promociones, reseñas, galería, preguntas) pueden
   completarse después en el navegador.
-- [ ] CA3 · Dadas las seis páginas públicas, entonces cada una tiene un título y una descripción
+- [x] CA3 · Dadas las seis páginas públicas, entonces cada una tiene un título y una descripción
   propios, distintos entre sí; el título incluye "Dentissa" y la descripción tiene entre 70 y 160
   caracteres.
-- [ ] CA4 · Dada una página pública, entonces declara como dirección oficial su URL absoluta en
+- [x] CA4 · Dada una página pública, entonces declara como dirección oficial su URL absoluta en
   `https://sistema.dentissa.app`, sin barra final.
-- [ ] CA5 · Dado un rastreador, cuando pide las instrucciones para rastreadores del sitio, entonces
+- [x] CA5 · Dado un rastreador, cuando pide las instrucciones para rastreadores del sitio, entonces
   recibe un archivo de texto válido que permite rastrear las páginas públicas e indica la dirección
   absoluta del mapa del sitio.
-- [ ] CA6 · Dado un rastreador, cuando pide el mapa del sitio, entonces recibe uno válido con
+- [x] CA6 · Dado un rastreador, cuando pide el mapa del sitio, entonces recibe uno válido con
   exactamente las seis páginas públicas, con su dirección absoluta.
-- [ ] CA7 · Dada la portada, entonces incluye, en el formato de negocio local que entienden los
+- [x] CA7 · Dada la portada, entonces incluye, en el formato de negocio local que entienden los
   buscadores, el nombre de la clínica, su dirección separada en calle, ciudad, estado, código
   postal y país, su teléfono, su horario de atención, su sitio web y una imagen, tomados de la
   misma fuente de datos que muestra el sitio; si el horario de esa fuente no se puede
@@ -51,23 +51,23 @@ en SVG. Cierra el objetivo 4 del roadmap.
   equivocado.
 
 **Páginas que no deben aparecer (H2)**
-- [ ] CA8 · Dadas las páginas de inicio de sesión, restablecer contraseña, los paneles del personal
+- [x] CA8 · Dadas las páginas de inicio de sesión, restablecer contraseña, los paneles del personal
   y del paciente, y la página de "no encontrada", entonces piden a los buscadores no indexarlas y no
   aparecen en el mapa del sitio.
-- [ ] CA9 · Dada una dirección que no existe, cuando se pide, entonces el servidor responde
+- [x] CA9 · Dada una dirección que no existe, cuando se pide, entonces el servidor responde
   "no encontrada" (404) y muestra la página de error propia del sitio.
-- [ ] CA10 · (abuso) Dado el contenido que se genera para los rastreadores, entonces no incluye
+- [x] CA10 · (abuso) Dado el contenido que se genera para los rastreadores, entonces no incluye
   datos de pacientes, del personal, de citas ni de ninguna pantalla que requiere sesión.
 
 **Compartir e íconos (H3)**
-- [ ] CA11 · Dada una página pública, cuando se comparte su enlace, entonces la vista previa usa su
+- [x] CA11 · Dada una página pública, cuando se comparte su enlace, entonces la vista previa usa su
   título y su descripción, y una imagen general de 1200×630 de la clínica.
-- [ ] CA12 · Dado un navegador o un dispositivo, entonces el sitio ofrece su ícono en PNG de 32,
+- [x] CA12 · Dado un navegador o un dispositivo, entonces el sitio ofrece su ícono en PNG de 32,
   192 y 512 px y un ícono de 180 px para la pantalla de inicio de los teléfonos, todos a partir del
   logo actual.
 
 **Sin regresiones**
-- [ ] CA13 · Dadas las páginas públicas y las privadas, entonces se ven y funcionan como antes:
+- [x] CA13 · Dadas las páginas públicas y las privadas, entonces se ven y funcionan como antes:
   navegación, inicio de sesión, paneles, formulario de contacto y secciones con datos del sistema.
 
 ## Fuera de alcance

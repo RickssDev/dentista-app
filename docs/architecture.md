@@ -9,8 +9,12 @@ updated: 2026-11-08
 Monorepo de dos paquetes npm independientes, sin workspaces. `backend/` es un monolito modular en
 Express 5 (CommonJS), organizado por dominio y con capas routes → controller → service →
 repository sobre MySQL con SQL manual. `frontend/` es una SPA en React 19 con Vite, organizada por
-tipo de archivo. En producción, nginx sirve la SPA y hace de proxy hacia la API, lo que deja a
-ambos en el mismo origen.
+tipo de archivo. Las seis páginas públicas se prerenderizan en el build (ADR 0009, spec 022):
+`npm run build` hace el build del cliente, un segundo build con `--ssr` y `scripts/prerender.mjs`,
+que escribe un HTML por página, `404.html`, `app.html` (armazón con `noindex` para las rutas
+privadas), `robots.txt` y `sitemap.xml`; en el navegador se hidratan. En producción, nginx sirve
+cada página por su ruta, `app.html` a las privadas, un 404 real al resto y hace de proxy hacia la
+API, lo que deja a ambos en el mismo origen.
 
 ## Diagrama de componentes
 ```mermaid
@@ -50,7 +54,8 @@ flowchart LR
 | comentarios | `backend/src/modules/comentarios` | Reseñas y moderación | citas.repository |
 | faqs | `backend/src/modules/faqs` | Preguntas frecuentes | — |
 | Transversal | `backend/src/{config,middlewares,utils,services}` | Pool, auth, errores, correo, WhatsApp, cron | — |
-| SPA | `frontend/src` | Sitio público, panel y portal del paciente | API `/api/v1` |
+| SPA | `frontend/src` | Sitio público (prerenderizado), panel y portal del paciente | API `/api/v1` |
+| SEO y prerender | `frontend/src/seo`, `frontend/src/entry-prerender.jsx`, `frontend/scripts/prerender.mjs` | Metadatos por ruta, robots, sitemap, JSON-LD y HTML de las páginas públicas | `src/data/site.js`, `App.jsx` (`AppRoutes`) |
 
 ## Flujo principal
 Un paciente agenda una cita: `InicioPaciente` llama a `services/api.js`, que envía el JWT de
@@ -108,7 +113,7 @@ staging. Detalle en [deployment.md](deployment.md).
 |---|---|---|
 | Capas por módulo | `backend/src/modules/*`, `backend/src/routes/index.js` | alta |
 | SQL manual sin esquema versionado | `backend/src/modules/*/*.repository.js`, `backend/.gitignore` | alta |
-| SPA con proxy nginx | `frontend/src/App.jsx`, `frontend/nginx.conf` | alta |
+| SPA con proxy nginx y páginas públicas prerenderizadas | `frontend/src/App.jsx`, `frontend/nginx.conf`, ADR 0009 | alta |
 | Cloudflare y Caddy delante | respuesta de producción, `backend/Caddyfile` | alta |
 
 ## Deuda técnica y riesgos observados

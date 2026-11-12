@@ -119,10 +119,15 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: se marca al ver el job en verde en el PR de esta spec
 
 ## Integración y documentación
-- [ ] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual con el contenedor local: Lighthouse 13.6.0 SEO = 100 en las seis rutas, con el resultado anotado por ruta (CA1); Rendimiento de la portada igual o mayor que la línea base de T002, con el mismo contenedor (RNF); login, paneles y contacto funcionan como antes (CA13); teclado en la portada y el menú (RNF) — cubre: CA1, CA13 — depende: T022, T025, T026, T027, T028, T029, T032
-- [ ] T090 Actualizar `docs/architecture.md` (renderizado del frontend, build en dos pasos, `nginx.conf`) y `.ai/project.yaml` (`seo.rendering: hybrid`)
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
-  - nota: el plan no cambia ninguno (el frontend se reconstruye como siempre); registrar "sin cambios" al cerrar
+- [x] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual con el contenedor local: Lighthouse 13.6.0 SEO = 100 en las seis rutas, con el resultado anotado por ruta (CA1); Rendimiento de la portada igual o mayor que la línea base de T002, con el mismo contenedor (RNF); login, paneles y contacto funcionan como antes (CA13); teclado en la portada y el menú (RNF) — cubre: CA1, CA13 — depende: T022, T025, T026, T027, T028, T029, T032
+  - nota: frontend 78/78 (dos ejecuciones), backend 256 + 5 `todo`; lint del frontend con los 15 problemas previos (se corrigió `process` en la prueba de hidratación); build con prerender correcto; `npm audit --audit-level=high` sin altas ni críticas
+  - nota: Lighthouse 13.6.0 contra el contenedor de nginx nuevo (`--add-host backend:127.0.0.1`), SEO = 100 en `/`, `/nosotros`, `/galeria`, `/contacto`, `/aviso-de-privacidad` y `/terminos-de-servicio` (las tres primeras repetidas por `NO_FCP` de Chrome sin cabeza)
+  - nota: Rendimiento de la portada, 3 corridas: 68/76/75 (mediana 75), igual a la línea base de T002 (mediana 75); CLS 0; LCP 6.6–7.0 s frente a 6.1–6.3 s (foto de portada de Unsplash, dentro del ruido). El usuario pide mejorar el rendimiento en una spec aparte
+  - nota: verificación manual OK 2026-11-12 (usuario): páginas públicas, navegación, login, paneles, contacto y teclado en el contenedor local (http://localhost:8094)
+- [x] T090 Actualizar `docs/architecture.md` (renderizado del frontend, build en dos pasos, `nginx.conf`) y `.ai/project.yaml` (`seo.rendering: hybrid`)
+  - nota: `docs/architecture.md` (resumen, módulo "SEO y prerender", fila de patrones) y `.ai/project.yaml` (`seo.rendering: hybrid`)
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
+  - nota: sin cambios: el frontend se reconstruye como siempre (`docker compose … up -d --build`); no hay variables, logs ni métricas nuevos
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
