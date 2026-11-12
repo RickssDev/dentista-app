@@ -20,7 +20,9 @@ const ETIQUETAS = {
 
 const OBLIGATORIOS_ALTA = ['nombre', 'apellido', 'correo', 'password', 'id_rol'];
 
-const vacio = (valor) => valor === undefined || valor === null || valor === '';
+// Un texto de solo espacios cuenta como vacío (spec 021, /review R5)
+const vacio = (valor) =>
+  valor === undefined || valor === null || (typeof valor === 'string' && valor.trim() === '');
 
 const exigirTexto = (campo, valor) => {
   if (typeof valor !== 'string') {

@@ -127,8 +127,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T081 Borrar la imagen subida cuando el alta o la edición se rechazan — `backend/src/modules/users/user.controller.js` — hecho cuando: los casos de imagen de T070 pasan — cubre: CA1 — depende: T070
   - nota: añadida por /review: R4
   - nota: T070 pasa completo (13/13). Comprobado rompiendo: borrar la imagen también en un alta válida hace fallar "alta válida no borra la imagen"; restaurado pasa
-- [ ] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
+- [x] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
   - nota: añadida por /review: R5
+  - nota: T071 pasa completo (37/37)
 - [ ] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
   - nota: añadida por /review: R6
 - [ ] T084 Mostrar el motivo de la API solo cuando viene de una respuesta; ante un error de red (`TypeError`), el texto genérico — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T074 pasa, ejecutada dos veces — cubre: CA11 — depende: T074
