@@ -1,53 +1,63 @@
 ---
-result: fail
-round: 1
-mode: full
+result: pass
+round: 2
+mode: delta
 constitution_version: 1.0.0
 date: 2026-11-12
-spec_sha: fc435c5d193d
-plan_sha: 73a2a3d4783d
-tasks_sha: 73958f819dcd
+spec_sha: 8eddad670fa3
+plan_sha: 08df3f652f69
+tasks_sha: 093ab24c6b35
 ---
 
 # Análisis · 022 Sitio indexable
 
 ## Resumen
-Sin críticos. Dos altos que el usuario decidió corregir: las suites en entorno node no arrancan con
-el `setup.js` actual (A1) y lo de nginx solo se verifica a mano, contra P2 (A2). Seis medios y cinco
-bajos, todos con corrección localizada en spec, plan o tareas.
-Conteo: CRÍTICA 0 · ALTA 2 · MEDIA 6 · BAJA 5
+Los trece hallazgos de la ronda 1 quedaron resueltos (A2 y A12 con un efecto nuevo menor). La
+revisión delta, con subagente porque el diff superaba ~30 KB, encontró un hallazgo medio y cuatro
+bajos de realización de tareas, que el usuario aceptó como notas para `/implement`. Resultado
+`pass`.
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 1 · BAJA 4
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 11 / 13 (CA1 y CA9 solo manuales) |
-| Amenazas con control y test | 3 / 3 (TM2 parcial: `X-Robots-Tag` manual) |
-| Principios de la constitución evaluados | 20 / 20 |
+| Criterios con tarea de test e implementación | 13 / 13 |
+| Amenazas con control y test | 3 / 3 |
+| Principios de la constitución evaluados | 20 / 20 (ronda 1; sin cambio de versión) |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | ALTA | resuelto | T003 (`setup.js` solo con `window`); T013 y T016 dependen de T003 |
+| A2 | ALTA | resuelto con efecto nuevo (→ A14, A15) | T017 (`probar-nginx.mjs`) y T032 (CI) |
+| A3 | MEDIA | resuelto | Plan: `location =` exactos y `absolute_redirect off`; T017 prueba 200 sin redirección y 301 en un salto |
+| A4 | MEDIA | resuelto (→ A17) | T016 con otro año; T031 en el pie |
+| A5 | MEDIA | resuelto parcialmente (→ A16) | T025 enlaza el CSS por ruta y la guarda del build |
+| A6 | MEDIA | resuelto | T030 (`site.js`), T012 (`PostalAddress`, JSON válido, horario no interpretable); CA7 |
+| A7 | MEDIA | resuelto | SE7.b fuera en spec, plan, `docs/seo.md` y roadmap |
+| A8 | MEDIA | resuelto | T013 (comprobaciones de Lighthouse SEO sobre el HTML), T017, T060 registrado por ruta |
+| A9 | BAJA | resuelto | T001 sin dependencia de `seo/rutas.js` |
+| A10 | BAJA | resuelto | T002 y T060 con el mismo contenedor |
+| A11 | BAJA | resuelto | T013 (sin canónica, Open Graph ni JSON-LD en `app.html` y `404.html`); Decisiones del plan |
+| A12 | BAJA | resuelto con efecto nuevo (→ A15) | T004 |
+| A13 | BAJA | resuelto | Decisiones de la spec |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Realizabilidad | ALTA | T010–T013; `frontend/vitest.config.js`, `frontend/tests/setup.js` | `setup.js` ejecuta `window.scrollTo = …` al cargar; en entorno node lanza `ReferenceError` y las suites fallan antes de empezar. Ninguna tarea lo toca | Las suites en entorno node arrancan sin `window` (test: T013 falla solo porque `entry-prerender` no existe) — `/plan --fix A1`, `/tasks --fix A1` |
-| A2 | Constitución P2 | ALTA | Trazabilidad CA8/CA9; T029 | 404 real, 301 de la barra final, `X-Robots-Tag` y tipo de `robots.txt` solo con verificación manual | Prueba automática sobre el contenedor del frontend, en local y en CI (decisión del usuario, 2026-11-12) — `/plan --fix A2`, `/tasks --fix A2` |
-| A3 | Realizabilidad | MEDIA | `nginx.conf`; T029 | Con `dist/nosotros/` nginx puede redirigir `/nosotros` → `/nosotros/` y chocar con la regla contraria (bucle); detrás de Caddy, un `Location` absoluto saldría con `http://` | `/nosotros` → 200 sin redirección; `/nosotros/` → 301 en un salto hacia la ruta sin barra (test: la prueba de nginx de A2) |
-| A4 | Hidratación / CA13 | MEDIA | `Footer.jsx:71`; plan "Riesgos" | `new Date().getFullYear()` difiere entre build y navegador al cambiar el año: React repinta la raíz. El plan no exige el mismo árbol de providers en el prerender | Hidratar el HTML prerenderizado de cada ruta sin errores recuperables, también con otro año (test automático) |
-| A5 | Rendimiento / CA13 | MEDIA | `About.jsx`, `Gallery.jsx`, `Contact.jsx` | Su CSS va en chunks lazy: el HTML prerenderizado se pinta sin estilos un momento (CLS) | El HTML de cada ruta enlaza todo su CSS (test sobre la página construida; CLS en Lighthouse) |
-| A6 | Ambigüedad CA7 | MEDIA | T012; `site.js` | Dirección en un solo texto y horario en texto libre: insuficiente para la ficha enriquecida; parseo frágil | `PostalAddress` con campos separados en `site.js` (decisión del usuario, 2026-11-12); T012 valida el JSON y un horario mal escrito — `/specify --edit`, `/plan --fix A6`, `/tasks --fix A6` |
-| A7 | Riesgos SE7 | MEDIA | spec "Cobertura de riesgos"; plan | SE7.a "dentro" aunque `favicon.svg` queda fuera | Separar: PNG dentro y SVG fuera, con destino en `docs/seo.md` — `/specify --edit` |
-| A8 | Cobertura CA1 | MEDIA | Trazabilidad CA1; T060 | Lighthouse SEO 100 solo a mano; enlaces rastreables, `alt` y código HTTP sin test | Las comprobaciones de Lighthouse SEO que el código puede romper con test automático; Lighthouse manual registrado por ruta |
-| A9 | Orden | BAJA | T001 frente a T020 | T001 usaría `SITIO` de `rutas.js`, que nace en T020 | `api.js` no depende de `rutas.js` |
-| A10 | RNF | BAJA | T002 frente a T060 | Línea base con `vite preview`, después con nginx | Medir antes y después con el mismo servidor |
-| A11 | P19 | BAJA | T013 | No se comprueba que `app.html` y `404.html` vayan sin canónica, Open Graph ni JSON-LD; entornos no productivos sin decidir | Añadirlo a T013; registrar que no hay entornos no productivos públicos (RD4) |
-| A12 | Lint | BAJA | `eslint.config.js` | No ignora `dist-ssr`; `scripts/*.mjs` sin globals de Node ni revisión | Los archivos nuevos pasan lint con globals de Node |
-| A13 | Extends 017 | BAJA | spec 022 | No declara que resuelve 017 CA6 ni que modifica 017 CA5 (404 real) | Declararlo en la spec — `/specify --edit` |
+| A14 | Realizabilidad | MEDIA | T017, T032, T002; `frontend/nginx.conf` | `proxy_pass http://backend:3000`: un contenedor suelto sin host `backend` resoluble no arranca | La prueba levanta la imagen con el upstream resoluble sin backend real (test: T017 contra la imagen actual falla solo por `/no-existe` → 200) — nota de T017 y T002 |
+| A15 | Inconsistencia | BAJA | `.github/workflows/ai-dd.yml` (lint) frente a T004 | El lint del CI solo revisa `*.js` y `*.jsx`: los `.mjs` nuevos no se revisan en CI | Los `.mjs` cambiados se revisan en CI — nota de T032 |
+| A16 | Cobertura RNF | BAJA | T013 | Solo se prueba que `construirPagina` inserta los `<link>` recibidos, no que cada ruta lazy recibe el suyo | El HTML construido de `/nosotros`, `/galeria` y `/contacto` enlaza el CSS de su chunk (test) — nota de T013 |
+| A17 | Orden | BAJA | T031 | T031 depende de que T016 pase, que necesita `entry-prerender` (T024) | Hacer T031 después de T024 — nota de T031 |
+| A18 | Seguridad (proceso) | BAJA | T029 | `frontend/nginx.conf` es ruta protegida y la tarea no lo marca | Marcar T029 como ruta protegida con tarea aprobada — nota de T029 |
 
 ## Decisiones pendientes del usuario
-Resueltas el 2026-11-12:
-- A2: prueba automática de nginx con Docker, en local y en CI.
-- A6: dirección separada en `site.js` para `PostalAddress`.
+Ninguna.
 
 ## Aceptados
-Ninguno: se corrigen todos en esta vuelta.
+Aceptados por el usuario el 2026-11-12:
+- **A14** → nota de T017, T002: levantar la imagen con el host `backend` resoluble (sin backend real) para que nginx arranque.
+- **A15** → nota de T032: que el CI también pase el lint por los `.mjs` cambiados.
+- **A16** → nota de T013: comprobar que el HTML construido de `/nosotros`, `/galeria` y `/contacto` enlaza el CSS de su chunk lazy.
+- **A17** → nota de T031: ejecutarla después de T024.
+- **A18** → nota de T029: `frontend/nginx.conf` es ruta protegida; se modifica con esta tarea aprobada.

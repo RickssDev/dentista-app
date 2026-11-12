@@ -1,7 +1,7 @@
 ---
 spec: 022-sitio-indexable
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 022 Sitio indexable
