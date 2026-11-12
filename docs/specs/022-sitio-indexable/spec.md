@@ -58,8 +58,9 @@ brechas SE1 a SE7 de `docs/seo.md` y cierra el objetivo 4 del roadmap.
 **Compartir e íconos (H3)**
 - [ ] CA11 · Dada una página pública, cuando se comparte su enlace, entonces la vista previa usa su
   título y su descripción, y una imagen general de 1200×630 de la clínica.
-- [ ] CA12 · Dado un navegador o un dispositivo, entonces el sitio ofrece su ícono en un formato
-  nítido a cualquier tamaño y un ícono para la pantalla de inicio de los teléfonos.
+- [ ] CA12 · Dado un navegador o un dispositivo, entonces el sitio ofrece su ícono en PNG de 32,
+  192 y 512 px y un ícono de 180 px para la pantalla de inicio de los teléfonos, todos a partir del
+  logo actual.
 
 **Sin regresiones**
 - [ ] CA13 · Dadas las páginas públicas y las privadas, entonces se ven y funcionan como antes:
@@ -96,7 +97,7 @@ brechas SE1 a SE7 de `docs/seo.md` y cierra el objetivo 4 del roadmap.
 | SE5.a — Open Graph por ruta indexable | dentro | CA11 |
 | SE5.b — Imagen general de 1200×630 | dentro | CA11 |
 | SE6.a — Añadir datos de negocio local de la clínica en la portada | dentro | CA7 |
-| SE7.a — Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` | dentro | CA12 |
+| SE7.a — Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` | dentro | CA12 (en PNG; el SVG espera un logo vectorial, decisión del usuario 2026-11-12) |
 
 ## Auditoría
 No aplica: la spec no toca datos sensibles, autenticación ni permisos.
@@ -127,6 +128,7 @@ Ninguna.
 | 2026-11-12 | brecha | ¿Una spec o dos (prerender aparte)? | Una sola, con 13 criterios: el usuario pidió incluir el prerender | usuario |
 | 2026-11-12 | implícita | Rutas indexables y no indexables, canónica sin barra final | Las de `docs/seo.md` → Reglas del sitio | `docs/seo.md` |
 | 2026-11-12 | implícita | Título y descripción únicos y canónica absoluta por ruta indexable; `noindex` fuera de lo público | Principios P18 y P19 | `docs/constitution.md` P18, P19 |
+| 2026-11-12 | brecha | No hay logo vectorial para un ícono SVG | Íconos PNG de 32, 180, 192 y 512 px desde el favicon actual; el SVG queda pendiente hasta tener logo vectorial | usuario |
 | 2026-11-12 | supuesto | Imagen para compartir | Una sola imagen general de 1200×630 con el logo y una foto existente del sitio, sin diseño nuevo | /specify |
 
 ## Notas para /plan
@@ -145,3 +147,4 @@ Ninguna.
 |---|---|---|
 | 2026-11-12 | Spec creada en borrador | /specify, objetivo 4 del roadmap (re-auditoría `/seo audit`) |
 | 2026-11-12 | Aprobada | usuario |
+| 2026-11-12 | CA12: íconos en PNG (sin logo vectorial) | /specify --edit, decisión del usuario antes de /plan |
