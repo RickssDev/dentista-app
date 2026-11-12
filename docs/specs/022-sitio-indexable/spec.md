@@ -1,7 +1,7 @@
 ---
 id: 022
 slug: sitio-indexable
-status: approved
+status: implemented
 created: 2026-11-12
 extends: [017]
 ---
@@ -157,3 +157,4 @@ Ninguna.
 | 2026-11-12 | CA12: íconos en PNG (sin logo vectorial) | /specify --edit, decisión del usuario antes de /plan |
 | 2026-11-12 | CA7 (dirección separada, imagen, horario no interpretable), SE7 separada y relación con 017; vuelve a draft | /analyze A6, A7, A13 |
 | 2026-11-12 | Aprobada de nuevo | usuario |
+| 2026-11-12 | Implementada: CA1–CA13 con sus pruebas en verde | /implement |

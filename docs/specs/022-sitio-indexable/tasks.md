@@ -114,10 +114,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: añadida por /analyze A4
   - nota: T016 pasa completo (7/7), ejecutada dos veces; antes del cambio "otro año" fallaba por 2026 frente a 2027
   - nota: A17 — hecha después de T024
-- [ ] T032 Ejecutar la prueba de nginx en el CI — `.github/workflows/ai-dd.yml` — hecho cuando: el workflow ejecuta `node frontend/scripts/probar-nginx.mjs` en cada PR y el job queda en verde en el PR de esta spec — cubre: CA9 — depende: T029
+- [x] T032 Ejecutar la prueba de nginx en el CI — `.github/workflows/ai-dd.yml` — hecho cuando: el workflow ejecuta `node frontend/scripts/probar-nginx.mjs` en cada PR y el job queda en verde en el PR de esta spec — cubre: CA9 — depende: T029
   - nota: añadida por /analyze A2 (ruta protegida, tarea aprobada)
   - nota: A15 — el lint del CI también revisa los `*.mjs` cambiados del frontend; paso "Prueba de nginx del frontend (spec 022)" tras el build; YAML válido y las pruebas del backend sobre el workflow siguen en verde (256)
-  - nota: se marca al ver el job en verde en el PR de esta spec
+  - nota: job "Lint y build" en verde en el PR #73 (run 43298753950): "Prueba de nginx del frontend (spec 022)" 16/16
 
 ## Integración y documentación
 - [x] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual con el contenedor local: Lighthouse 13.6.0 SEO = 100 en las seis rutas, con el resultado anotado por ruta (CA1); Rendimiento de la portada igual o mayor que la línea base de T002, con el mismo contenedor (RNF); login, paneles y contacto funcionan como antes (CA13); teclado en la portada y el menú (RNF) — cubre: CA1, CA13 — depende: T022, T025, T026, T027, T028, T029, T032
@@ -129,7 +129,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `docs/architecture.md` (resumen, módulo "SEO y prerender", fila de patrones) y `.ai/project.yaml` (`seo.rendering: hybrid`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre (`docker compose … up -d --build`); no hay variables, logs ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
