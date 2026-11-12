@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-12
 base: 17efa2e
 head: 333a02c
-human_signoff: pending
+human_signoff: RickssDev 2026-11-12
 ---
 
 # Review · 022 Sitio indexable
