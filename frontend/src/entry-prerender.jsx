@@ -9,6 +9,9 @@ export async function render(url) {
     <StaticRouter location={url}>
       <AppRoutes />
     </StaticRouter>,
+    // Sin límite de tamaño, React escribe cada sección de Suspense en su sitio. Si no, las grandes
+    // (portada, contacto) salen ocultas al final y aparecen al correr un script (R3)
+    { progressiveChunkSize: Number.POSITIVE_INFINITY },
   );
   return new Response(prelude).text();
 }
