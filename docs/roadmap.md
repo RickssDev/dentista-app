@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # Roadmap
@@ -10,7 +10,7 @@ updated: 2026-11-11
 | # | Objetivo | Criterio de éxito | Spec | Estado |
 |---|---|---|---|---|
 | 1 | Tests y CI | Framework de tests adoptado con ADR; autenticación, citas, perfil del paciente y portada cubiertos en verde; CI ejecuta validación, lint, build y tests en cada PR. Riesgos: RD8.a, RD8.b, RD8.c | [018](specs/018-base-tests-autenticacion/spec.md), 019 y 020 (previstas) | en curso |
-| 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) | en curso |
+| 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) (v1.2.0) | cumplido |
 | 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | — | pendiente |
 
 ## Próxima etapa
@@ -69,6 +69,20 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 018/R20 Exigir el paso de gitleaks en el workflow.
 - 018/R21 `axios` corregido en v1.1.0; su prueba existe: resuelto.
 - 018/R22 Anclar el patrón del paso de lint del backend en la prueba de CA10.
+
+**Deuda de la spec 021** (aceptada en /review, ronda 1)
+- 021/R8 Carrera con tres peticiones simultáneas: releer la cuenta con `FOR UPDATE` dentro de la transacción.
+- 021/R9 Mover `validarContrasena` a `src/utils/` y quitar la dependencia `users` → `auth.service`.
+- 021/R10 Extraer la fábrica de mocks del repositorio de usuarios a `tests/support/`.
+- 021/R11 Probar "sobre su propia cuenta" por HTTP con el JWT de la cuenta.
+- 021/R12 La aserción de lista sin recargar al eliminar es de regresión.
+- 021/R14 Foco de los modales: restaurarlo al cerrar y atraparlo dentro (previo).
+- 021/R15 Escape cierra dos modales apilados (previo).
+- 021/R16 Anuncio repetido del error, error asociado al campo y confirmación de eliminar abierta hasta la respuesta (previo).
+- 021/R17 Documentar que `mensaje` de `ModalConfirmacion` debe ser texto.
+- 021/R18 Extensiones de las subidas: ya en RS5.a/RS5.b.
+- 021/R19 Test de integración del bloqueo contra una BD de pruebas.
+- 021/R20 `aria-describedby` solo con mensaje no vacío.
 
 **Calidad**
 - 15 problemas de lint previos en el frontend y 4 errores previos en el backend.

@@ -21,10 +21,10 @@ La clínica necesita administrar las cuentas del personal y de los pacientes. Co
 - [ ] CA2 · Dado un alta con contraseña, entonces se guarda en bcrypt y la cuenta queda activa.
 - [ ] CA3 · Dada una edición, entonces solo cambian los campos con valor; una contraseña nueva se guarda en bcrypt.
 - [ ] CA4 · Dada una imagen nueva, entonces la anterior se borra del disco.
-- [ ] CA5 · Dada una cuenta con información asociada, cuando se elimina, entonces se desactiva en lugar de borrarse.
+- [ ] CA5 · Dada una cuenta con información asociada, cuando se elimina, entonces se desactiva en lugar de borrarse. → modificado por 021 CA7 (al último Administrador activo no se le desactiva)
 - [ ] CA6 · Dado un usuario sin rol de personal, entonces la API rechaza el acceso.
 - [x] CA7 · (abuso) Un Asistente no puede crear, editar ni eliminar cuentas, ni asignar roles.
-- [ ] CA8 · (abuso) No se puede eliminar o degradar al último Administrador. **HOY NO SE CUMPLE:** no hay comprobación (RS1).
+- [x] CA8 · (abuso) No se puede eliminar o degradar al último Administrador. resuelto por 021 (v1.2.0) → reemplazado por 021 CA7
 
 ## Fuera de alcance
 - Alta de pacientes desde historial (009).
@@ -64,3 +64,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | CA7 cumplido: solo el Administrador accede a las rutas de usuarios | Ficha fix-permisos-asistente |
 | 2026-11-09 | Corregido por la ficha 2026-11-09-fix-permisos-asistente en v1.1.0 (CA7) | /release |
+| 2026-11-12 | Comportamiento modificado por 021 en v1.2.0 | /release |

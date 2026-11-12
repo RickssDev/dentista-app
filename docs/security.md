@@ -76,8 +76,8 @@ y restablecer la contraseña de cualquier cuenta. Debe ser exclusivo del Adminis
 
 Correcciones:
 - RS1.a Restringir las rutas de `/usuarios` al rol Administrador — estado: mitigada (v1.1.0)
-- RS1.b Limitar con lista de campos permitidos lo que aceptan alta y edición — estado: pendiente
-- RS1.c Impedir que se elimine o degrade al último Administrador — estado: pendiente
+- RS1.b Limitar con lista de campos permitidos lo que aceptan alta y edición — estado: mitigada (v1.2.0)
+- RS1.c Impedir que se elimine o degrade al último Administrador — estado: mitigada (v1.2.0)
 - RS1.d Cubrir con tests de autorización cada rol y ruta — estado: mitigada (v1.1.0)
 
 ### RS2 · Media — Sesión en `localStorage` sin revocación (A07 Authentication Failures)
