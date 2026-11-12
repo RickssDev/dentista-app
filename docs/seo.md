@@ -82,7 +82,8 @@ Correcciones:
 ### SE7 · baja — Íconos incompletos
 Evidencia: solo `favicon.jpeg`; sin ícono PNG/SVG ni `apple-touch-icon`.
 Correcciones:
-- SE7.a Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` — estado: pendiente
+- SE7.a Añadir íconos PNG (`favicon-32.png`, 192, 512) y `apple-touch-icon.png` — estado: pendiente
+- SE7.b Añadir `favicon.svg` desde un logo vectorial — estado: pendiente (no hay logo vectorial; decisión del usuario, 2026-11-12)
 
 ## Brechas por confirmar
 - Redirecciones de la variante con `www` y de HTTP a HTTPS — depende de: configuración de Cloudflare — cómo confirmarla: consultar esas variantes.
@@ -107,4 +108,5 @@ Correcciones:
 | Fecha | Cambio | Origen |
 |---|---|---|
 | 2026-11-08 | Documento creado | /init |
+| 2026-11-12 | SE7 separada: PNG en SE7.a y SVG en SE7.b (no hay logo vectorial) | /analyze 022 A7 |
 | 2026-11-12 | Re-auditoría: título y descripción generales presentes; Lighthouse SEO 92 por `robots.txt`; pendientes operativos de Search Console y Google Business | /seo audit |

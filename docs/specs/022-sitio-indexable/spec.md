@@ -1,7 +1,7 @@
 ---
 id: 022
 slug: sitio-indexable
-status: approved
+status: draft
 created: 2026-11-12
 extends: [017]
 ---
@@ -14,7 +14,8 @@ después con JavaScript: todas comparten el mismo título y la misma descripció
 para rastreadores ni mapa del sitio, el inicio de sesión, los paneles privados y las direcciones
 inexistentes aparecen como páginas válidas, y no hay datos de la clínica que los buscadores puedan
 leer. Lighthouse da 92 en SEO y a la clínica le cuesta aparecer al buscar "Dentissa". Atiende las
-brechas SE1 a SE7 de `docs/seo.md` y cierra el objetivo 4 del roadmap.
+brechas SE1 a SE7 de `docs/seo.md` **parcialmente**: el ícono vectorial (SE7.b) espera un logo
+en SVG. Cierra el objetivo 4 del roadmap.
 
 ## Historias de usuario
 - H1 · Como clínica, quiero que los buscadores lean y entiendan cada página pública, para aparecer
@@ -43,8 +44,11 @@ brechas SE1 a SE7 de `docs/seo.md` y cierra el objetivo 4 del roadmap.
 - [ ] CA6 · Dado un rastreador, cuando pide el mapa del sitio, entonces recibe uno válido con
   exactamente las seis páginas públicas, con su dirección absoluta.
 - [ ] CA7 · Dada la portada, entonces incluye, en el formato de negocio local que entienden los
-  buscadores, el nombre de la clínica, su dirección, teléfono, horario de atención y sitio web,
-  tomados de la misma fuente de datos que muestra el sitio.
+  buscadores, el nombre de la clínica, su dirección separada en calle, ciudad, estado, código
+  postal y país, su teléfono, su horario de atención, su sitio web y una imagen, tomados de la
+  misma fuente de datos que muestra el sitio; si el horario de esa fuente no se puede
+  interpretar, la publicación del sitio se detiene con un aviso en lugar de publicar un horario
+  equivocado.
 
 **Páginas que no deben aparecer (H2)**
 - [ ] CA8 · Dadas las páginas de inicio de sesión, restablecer contraseña, los paneles del personal
@@ -97,7 +101,8 @@ brechas SE1 a SE7 de `docs/seo.md` y cierra el objetivo 4 del roadmap.
 | SE5.a — Open Graph por ruta indexable | dentro | CA11 |
 | SE5.b — Imagen general de 1200×630 | dentro | CA11 |
 | SE6.a — Añadir datos de negocio local de la clínica en la portada | dentro | CA7 |
-| SE7.a — Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` | dentro | CA12 (en PNG; el SVG espera un logo vectorial, decisión del usuario 2026-11-12) |
+| SE7.a — Añadir íconos PNG (`favicon-32.png`, 192, 512) y `apple-touch-icon.png` | dentro | CA12 |
+| SE7.b — Añadir `favicon.svg` desde un logo vectorial | fuera | No hay logo vectorial (decisión del usuario, 2026-11-12) → pendiente en `docs/seo.md` hasta tenerlo |
 
 ## Auditoría
 No aplica: la spec no toca datos sensibles, autenticación ni permisos.
@@ -129,6 +134,8 @@ Ninguna.
 | 2026-11-12 | implícita | Rutas indexables y no indexables, canónica sin barra final | Las de `docs/seo.md` → Reglas del sitio | `docs/seo.md` |
 | 2026-11-12 | implícita | Título y descripción únicos y canónica absoluta por ruta indexable; `noindex` fuera de lo público | Principios P18 y P19 | `docs/constitution.md` P18, P19 |
 | 2026-11-12 | brecha | No hay logo vectorial para un ícono SVG | Íconos PNG de 32, 180, 192 y 512 px desde el favicon actual; el SVG queda pendiente hasta tener logo vectorial | usuario |
+| 2026-11-12 | brecha | ¿Dirección en un solo texto o separada? | Separada en la fuente de datos del sitio (calle, ciudad, estado, CP, país) con los valores provisionales | usuario (/analyze A6) |
+| 2026-11-12 | cierre | Relación con 017 | Resuelve 017 CA6 (título y descripción propios por ruta) y modifica 017 CA5: la página "no encontrada" se sirve con código 404 | /analyze A13 |
 | 2026-11-12 | supuesto | Imagen para compartir | Una sola imagen general de 1200×630 con el logo y una foto existente del sitio, sin diseño nuevo | /specify |
 
 ## Notas para /plan
@@ -148,3 +155,4 @@ Ninguna.
 | 2026-11-12 | Spec creada en borrador | /specify, objetivo 4 del roadmap (re-auditoría `/seo audit`) |
 | 2026-11-12 | Aprobada | usuario |
 | 2026-11-12 | CA12: íconos en PNG (sin logo vectorial) | /specify --edit, decisión del usuario antes de /plan |
+| 2026-11-12 | CA7 (dirección separada, imagen, horario no interpretable), SE7 separada y relación con 017; vuelve a draft | /analyze A6, A7, A13 |
