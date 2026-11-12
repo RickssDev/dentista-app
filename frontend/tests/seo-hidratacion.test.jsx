@@ -33,6 +33,8 @@ afterEach(() => {
 const hidratar = async (ruta, { otroAnio = false } = {}) => {
   document.body.innerHTML = `<div id="root">${paginas[ruta]}</div>`
   const errores = []
+  // R6: todo error recuperable cuenta (p. ej. "Switched to client rendering"); el filtro es solo para console.error
+  const recuperables = []
   vi.spyOn(console, 'error').mockImplementation((...args) => errores.push(args.join(' ')))
   if (otroAnio) {
     vi.useFakeTimers({ toFake: ['Date'] })
@@ -44,13 +46,13 @@ const hidratar = async (ruta, { otroAnio = false } = {}) => {
       <MemoryRouter initialEntries={[ruta]}>
         <AppRoutes />
       </MemoryRouter>,
-      { onRecoverableError: (error) => errores.push(String(error?.message || error)) },
+      { onRecoverableError: (error) => recuperables.push(String(error?.message || error)) },
     )
   })
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
-  return errores.filter((e) => /hydrat|did not match|Recoverable|mismatch|Router/i.test(e))
+  return [...recuperables, ...errores.filter((e) => /hydrat|did not match|Recoverable|mismatch|Router/i.test(e))]
 }
 
 describe('022 CA13 · hidratación de las páginas públicas', () => {
