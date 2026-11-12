@@ -47,8 +47,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T002 Medir la línea base de Lighthouse Rendimiento de la portada sobre la build actual — sin archivos — hecho cuando: el valor (Lighthouse 13.6.0 contra el contenedor de nginx del frontend actual, mismo equipo) queda anotado como nota de esta tarea
   - nota: añadida por /analyze A10 la medición con el mismo servidor que en T060
   - nota: línea base 2026-11-12: Lighthouse 13.6.0 contra la imagen de nginx del frontend actual (`docker run --add-host backend:127.0.0.1`, A14), portada, 3 corridas en este equipo: Rendimiento 62/75/75 (mediana 75), SEO 92, CLS 0, LCP 6.1–6.3 s
-- [ ] T003 Permitir suites en entorno node con el setup de pruebas — `frontend/tests/setup.js` — hecho cuando: las API simuladas del navegador solo se definen si hay `window`; la suite del frontend sigue en verde y un archivo con `// @vitest-environment node` arranca sin `ReferenceError`
+- [x] T003 Permitir suites en entorno node con el setup de pruebas — `frontend/tests/setup.js` — hecho cuando: las API simuladas del navegador solo se definen si hay `window`; la suite del frontend sigue en verde y un archivo con `// @vitest-environment node` arranca sin `ReferenceError`
   - nota: añadida por /analyze A1
+  - nota: suite jsdom 17/17; un archivo con `// @vitest-environment node` arranca y ve `window` indefinido
 - [ ] T004 Ignorar `dist-ssr` y revisar `scripts/**/*.mjs` con globals de Node — `frontend/eslint.config.js`, `frontend/.gitignore` — hecho cuando: `npm run lint --prefix frontend` no revisa `dist-ssr` y sí `scripts/*.mjs` sin errores de globals; `git check-ignore frontend/dist-ssr` lo ignora
   - nota: añadida por /analyze A12
 
