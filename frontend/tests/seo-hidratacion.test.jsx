@@ -3,6 +3,7 @@
 // mismo proceso, el contexto del render del servidor se cuela en el del cliente.
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
+import process from 'node:process'
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import { act } from 'react'
 import { hydrateRoot } from 'react-dom/client'
