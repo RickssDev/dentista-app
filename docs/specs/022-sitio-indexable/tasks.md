@@ -140,8 +140,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: job "Lint y build" en verde en el PR #73 (run 43298753950): "Prueba de nginx del frontend (spec 022)" 16/16
 
 ### Correcciones de /review (ronda 1)
-- [ ] T040 Dar título correcto a la 404 y restaurar el general al salir del Layout — `frontend/src/components/home/Metadatos.jsx`, `frontend/src/seo/rutas.js` — hecho cuando: T033 pasa (dos ejecuciones) y la suite del frontend sigue en verde · revisión de accesibilidad: título único y descriptivo en la 404, en `/login` y al volver a una página pública (WCAG 2.4.2) — cubre: CA3, CA13 — depende: T033
+- [x] T040 Dar título correcto a la 404 y restaurar el general al salir del Layout — `frontend/src/components/home/Metadatos.jsx`, `frontend/src/seo/rutas.js` — hecho cuando: T033 pasa (dos ejecuciones) y la suite del frontend sigue en verde · revisión de accesibilidad: título único y descriptivo en la 404, en `/login` y al volver a una página pública (WCAG 2.4.2) — cubre: CA3, CA13 — depende: T033
   - nota: añadida por /review: R1
+  - nota: T033 pasa (3/3, dos ejecuciones). En la suite solo fallan los casos que esperan T041 y T043. Revisión de accesibilidad: la 404 se titula "Página no encontrada | Dentissa"; al salir del Layout vuelve "Dentissa | Clínica Dental" con la descripción general y sin canónica; al volver a una página pública se ponen los de la tabla. Los textos generales y el de la 404 viven en `seo/rutas.js` (`TITULO_GENERAL`, `DESCRIPCION_GENERAL`, `TITULO_404`)
 - [ ] T041 Prerenderizar la portada y contacto con el contenido en su sitio — `frontend/src/entry-prerender.jsx` — hecho cuando: T034 pasa, T016 y T037 siguen en verde (dos ejecuciones) y `npm run build --prefix frontend` genera `dist/index.html` y `dist/contacto/index.html` sin `<div hidden id="S:` — cubre: CA2 — depende: T034, T037
   - nota: añadida por /review: R3
 - [ ] T042 Cerrar el open redirect y conservar la query string al quitar la barra final — `frontend/nginx.conf` — hecho cuando: `node frontend/scripts/probar-nginx.mjs` pasa completo (T035) — cubre: CA9, CA13 — depende: T035, T036

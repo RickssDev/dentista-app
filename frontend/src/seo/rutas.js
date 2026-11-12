@@ -51,5 +51,12 @@ export const RUTAS_PUBLICAS = [
 // Rutas privadas: reciben el armazón de la SPA con noindex y nunca van al sitemap
 export const RUTAS_NO_INDEXABLES = ["/login", "/restablecer-contrasena", "/admin", "/paciente"];
 
+// Metadatos fuera de la tabla: los generales son los de index.html; el de la 404 lo usan el
+// prerender y la navegación en el cliente
+export const TITULO_GENERAL = "Dentissa | Clínica Dental";
+export const DESCRIPCION_GENERAL =
+  "Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.";
+export const TITULO_404 = "Página no encontrada | Dentissa";
+
 // URL canónica absoluta, sin barra final salvo la portada
 export const canonica = (ruta) => (ruta === "/" ? `${SITIO}/` : `${SITIO}${ruta}`);
