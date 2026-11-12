@@ -1,7 +1,7 @@
 ---
 id: 022
 slug: sitio-indexable
-status: approved
+status: implemented
 created: 2026-11-12
 extends: [017]
 ---

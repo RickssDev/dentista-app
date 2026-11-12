@@ -166,7 +166,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `docs/architecture.md` (resumen, módulo "SEO y prerender", fila de patrones) y `.ai/project.yaml` (`seo.rendering: hybrid`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre (`docker compose … up -d --build`); no hay variables, logs ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
