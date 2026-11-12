@@ -115,6 +115,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: A17 — hecha después de T024
 - [ ] T032 Ejecutar la prueba de nginx en el CI — `.github/workflows/ai-dd.yml` — hecho cuando: el workflow ejecuta `node frontend/scripts/probar-nginx.mjs` en cada PR y el job queda en verde en el PR de esta spec — cubre: CA9 — depende: T029
   - nota: añadida por /analyze A2 (ruta protegida, tarea aprobada)
+  - nota: A15 — el lint del CI también revisa los `*.mjs` cambiados del frontend; paso "Prueba de nginx del frontend (spec 022)" tras el build; YAML válido y las pruebas del backend sobre el workflow siguen en verde (256)
+  - nota: se marca al ver el job en verde en el PR de esta spec
 
 ## Integración y documentación
 - [ ] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual con el contenedor local: Lighthouse 13.6.0 SEO = 100 en las seis rutas, con el resultado anotado por ruta (CA1); Rendimiento de la portada igual o mayor que la línea base de T002, con el mismo contenedor (RNF); login, paneles y contacto funcionan como antes (CA13); teclado en la portada y el menú (RNF) — cubre: CA1, CA13 — depende: T022, T025, T026, T027, T028, T029, T032
