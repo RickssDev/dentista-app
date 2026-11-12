@@ -1,7 +1,7 @@
 ---
 id: 022
 slug: sitio-indexable
-status: draft
+status: approved
 created: 2026-11-12
 extends: [017]
 ---
@@ -144,3 +144,4 @@ Ninguna.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-12 | Spec creada en borrador | /specify, objetivo 4 del roadmap (re-auditoría `/seo audit`) |
+| 2026-11-12 | Aprobada | usuario |
