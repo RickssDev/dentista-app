@@ -68,8 +68,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: falla por la razón esperada (los íconos y la imagen no existen)
 - [x] T015 [P] Escribir la prueba de los metadatos al navegar en el cliente — `frontend/tests/seo-metadatos.test.jsx` — hecho cuando: falla por la razón esperada y comprueba que al pasar de `/` a `/nosotros` en el router cambian `document.title`, la descripción y la canónica a las de la tabla — cubre: CA3, CA13
   - nota: falla por la razón esperada (`Metadatos.jsx` no existe)
-- [ ] T016 [P] Escribir la prueba de hidratación de las páginas prerenderizadas — `frontend/tests/seo-hidratacion.test.jsx` — hecho cuando: falla por la razón esperada (no existe `entry-prerender`) y comprueba que el HTML prerenderizado de cada ruta pública se hidrata con `hydrateRoot` sin errores recuperables ni de hidratación, también con el reloj simulado en otro año; ejecutada dos veces — cubre: CA13 — depende: T003
+- [x] T016 [P] Escribir la prueba de hidratación de las páginas prerenderizadas — `frontend/tests/seo-hidratacion.test.jsx` — hecho cuando: falla por la razón esperada (no existe `entry-prerender`) y comprueba que el HTML prerenderizado de cada ruta pública se hidrata con `hydrateRoot` sin errores recuperables ni de hidratación, también con el reloj simulado en otro año; ejecutada dos veces — cubre: CA13 — depende: T003
   - nota: añadida por /analyze A4
+  - nota: falla por la razón esperada (`entry-prerender.jsx` no existe)
 - [ ] T017 [P] Escribir la prueba automática de nginx con Docker — `frontend/scripts/probar-nginx.mjs` — hecho cuando: construye la imagen del frontend, la levanta en un puerto local, la detiene al terminar y comprueba: las seis rutas públicas → 200 sin redirección; `/nosotros/` → 301 con `Location: /nosotros` en un salto; `/no-existe` → 404 con "Página no encontrada"; `/robots.txt` → `text/plain`; `/sitemap.xml` → XML; `/login`, `/admin` y `/paciente` → 200 con `X-Robots-Tag: noindex`; `/favicon.jpeg`, un `/assets/*` y `/images/hero-dentissa.webp` → 200; contra la imagen actual falla por la razón esperada (`/no-existe` → 200) — cubre: CA5, CA8, CA9, CA13
   - nota: añadida por /analyze A2, A3
 
