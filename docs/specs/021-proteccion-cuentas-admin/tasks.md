@@ -101,6 +101,32 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: T050 pasa; suite del frontend 15/15, ejecutada dos veces
   - nota: verificación manual OK 2026-11-11 (usuario): en el navegador a 390 y 1440 px, alta con correo repetido y eliminación del único Administrador muestran su aviso, se leen y se cierran con teclado; contraste correcto
 
+## Correcciones de /review (ronda 1)
+
+### Tests (antes de corregir)
+- [ ] T070 [P] Añadir pruebas HTTP del id de la ruta y de la imagen huérfana — `backend/tests/usuarios/rutas-usuarios.test.js` — hecho cuando: falla por la razón esperada en: `PUT` y `DELETE /usuarios/5abc` (y `/usuarios/0`) → 400 "ID de usuario inválido" sin llamar a `getUsuarioById` ni a ninguna escritura; con archivo subido y un alta rechazada (400), `borrarArchivo` recibe `/uploads/subida.jpg`; con archivo subido y un alta válida, no se borra — cubre: CA1, CA7
+  - nota: añadida por /review: R1, R4
+- [ ] T071 [P] Añadir pruebas de edición y de texto vacío a los datos de la cuenta — `backend/tests/usuarios/datos-cuenta.test.js` — hecho cuando: falla por la razón esperada en "alta con nombre de solo espacios → 400 que lo nombra"; y pasan (comprobados rompiendo el código que protegen): edición con el correo de otra cuenta → 400 "El correo ya está registrado" sin escribir, con `findOtroUsuarioPorCorreo` llamado con `(correo, 5)`; `updateUsuario` del repositorio rechaza con `1062` → 400; rol inexistente en edición → 400 sin escribir; contraseña de más de 72 bytes en edición → 400; la cuenta con correo antiguo inválido escribe exactamente `(5, { telefono: '5599999999' })`; la contraseña llega al repositorio hasheada (distinta del texto) — cubre: CA2, CA3, CA4, CA5
+  - nota: añadida por /review: R2, R5, R7
+- [ ] T072 [P] Añadir casos del único Administrador — `backend/tests/usuarios/ultimo-admin.test.js` — hecho cuando: pasan, comprobados rompiendo la regla: editar la imagen del único Administrador escribe `{ imagen }` sin transacción; desactivar y cambiar el rol en el mismo PUT al único → 409 sin escribir — cubre: CA7, CA9
+  - nota: añadida por /review: R7
+- [ ] T073 [P] Añadir la prueba de rollback que falla — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en "si el rollback lanza, se propaga el error original (409) y se libera la conexión" — cubre: CA10
+  - nota: añadida por /review: R6
+- [ ] T074 [P] Añadir pruebas del aviso ante un error de red y de la lista al guardar — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con un error de red (`TypeError('Failed to fetch')`) muestra 'Ocurrió un error al eliminar el usuario. Intenta de nuevo.'"; y "guardar con 400 no vuelve a pedir la lista" pasa (comprobado rompiendo); ejecutadas dos veces — cubre: CA11
+  - nota: añadida por /review: R3, R7
+
+### Correcciones
+- [ ] T080 Validar el id de la ruta como entero positivo y usar el id de la cuenta encontrada en la regla y las escrituras; `eliminarODesactivar()` sin argumento — `backend/src/modules/users/user.service.js` — hecho cuando: los casos de id de T070 pasan, T030 y T031 siguen en verde — cubre: CA7 — depende: T070
+  - nota: añadida por /review: R1, R13
+- [ ] T081 Borrar la imagen subida cuando el alta o la edición se rechazan — `backend/src/modules/users/user.controller.js` — hecho cuando: los casos de imagen de T070 pasan — cubre: CA1 — depende: T070
+  - nota: añadida por /review: R4
+- [ ] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
+  - nota: añadida por /review: R5
+- [ ] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
+  - nota: añadida por /review: R6
+- [ ] T084 Mostrar el motivo de la API solo cuando viene de una respuesta; ante un error de red (`TypeError`), el texto genérico — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T074 pasa, ejecutada dos veces — cubre: CA11 — depende: T074
+  - nota: añadida por /review: R3
+
 ## Integración y documentación
 - [x] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051, T052
   - nota: backend 241 pasan (5 `todo`), frontend 15/15; lint: los 4 errores previos del backend y los 15 problemas previos del frontend, ninguno en archivos tocados; `npm audit --audit-level=high` sin altas ni críticas en ambos (una primera ejecución falló por red y repetida dio 0); build del frontend correcto; gitleaks no está instalado en local (corre en CI). Verificación manual OK 2026-11-11 (usuario): alta y edición desde el panel funcionan como antes
@@ -108,7 +134,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: fila de `users`: responsabilidad y dependencia de `auth.service`
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: no hay variables, entornos, pasos de deploy, logs, eventos de auditoría ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -121,21 +147,21 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T010, T011 | T020, T022, T023 |
-| CA2 | T010 | T020, T022 |
-| CA3 | T010 | T020, T022 |
-| CA4 | T010, T012 | T020, T021, T022 |
-| CA5 | T010, T012 | T020, T021, T022 |
+| CA1 | T010, T011, T070 | T020, T022, T023, T081 |
+| CA2 | T010, T071 | T020, T022, T082 |
+| CA3 | T010, T071 | T020, T022 |
+| CA4 | T010, T012, T071 | T020, T021, T022 |
+| CA5 | T010, T012, T071 | T020, T021, T022 |
 | CA6 | T010, T011 | T020, T022 |
-| CA7 | T030 | T041 |
+| CA7 | T030, T070, T072 | T041, T080 |
 | CA8 | T030 | T041 |
-| CA9 | T030 | T041 |
-| CA10 | T031, T012 | T040, T041 |
-| CA11 | T050, T053 | T051, T052 |
+| CA9 | T030, T072 | T041 |
+| CA10 | T031, T012, T073 | T040, T041, T083 |
+| CA11 | T050, T053, T074 | T051, T052, T084 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
-| TM1 | T041 | T030 |
+| TM1 | T041, T080 | T030, T070 |
 | TM2 | T020, T023 | T010, T011 |
 | TM3 | T020, T021, T040 | T010, T012 |
 | TM4 | T040, T041 | T031 |
@@ -143,15 +169,15 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
-| `backend/src/modules/users/user.validacion.js` | T020 |
+| `backend/src/modules/users/user.validacion.js` | T020, T082 |
 | `backend/src/modules/auth/auth.service.js` | T001 |
-| `backend/src/modules/users/user.service.js` | T022, T041 |
-| `backend/src/modules/users/user.repository.js` | T021, T040 |
-| `backend/src/modules/users/user.controller.js` | T023 |
-| `frontend/src/pages/admin/AdminUsuarios.jsx` | T051 |
+| `backend/src/modules/users/user.service.js` | T022, T041, T080 |
+| `backend/src/modules/users/user.repository.js` | T021, T040, T083 |
+| `backend/src/modules/users/user.controller.js` | T023, T081 |
+| `frontend/src/pages/admin/AdminUsuarios.jsx` | T051, T084 |
 | `frontend/src/components/ModalConfirmacion.jsx` | T052 |
-| `backend/tests/usuarios/` | T010, T011, T012, T030, T031 |
-| `frontend/tests/` | T050, T053 |
+| `backend/tests/usuarios/` | T010, T011, T012, T030, T031, T070, T071, T072, T073 |
+| `frontend/tests/` | T050, T053, T074 |
 | `docs/architecture.md` | T090 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |

@@ -1,7 +1,7 @@
 ---
 id: 021
 slug: proteccion-cuentas-admin
-status: implemented
+status: approved
 created: 2026-11-11
 extends: [004]
 ---
@@ -149,3 +149,4 @@ Ninguna.
 | 2026-11-11 | CA4 (solo se valida el correo que cambia), CA7 (modifica 004 CA5) y CA11 (aviso anunciado); vuelve a draft | /analyze A6, A8, A9 |
 | 2026-11-11 | Aprobada de nuevo | usuario |
 | 2026-11-11 | Implementada: CA1–CA11 con sus pruebas en verde | /implement |
+| 2026-11-12 | Vuelve a approved: /review ronda 1 pide correcciones (R1–R7) | /review |
