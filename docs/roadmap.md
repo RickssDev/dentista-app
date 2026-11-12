@@ -12,6 +12,7 @@ updated: 2026-11-12
 | 1 | Tests y CI | Framework de tests adoptado con ADR; autenticación, citas, perfil del paciente y portada cubiertos en verde; CI ejecuta validación, lint, build y tests en cada PR. Riesgos: RD8.a, RD8.b, RD8.c | [018](specs/018-base-tests-autenticacion/spec.md), 019 y 020 (previstas) | en curso |
 | 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) (v1.2.0) | cumplido |
 | 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | — | pendiente |
+| 4 | Sitio indexable | Lighthouse SEO 100 en las 6 rutas públicas; cada ruta pública con HTML propio (prerender), título, descripción, canónica y Open Graph únicos; `robots.txt` y `sitemap.xml` válidos; `noindex` en las rutas privadas; 404 real; datos de la clínica para buscadores. Brechas: SE1.a, SE1.b, SE2.a, SE2.b, SE3.a, SE3.b, SE4.a, SE5.a, SE5.b, SE6.a, SE7.a | 022 (prevista) | pendiente |
 
 ## Próxima etapa
 El proyecto ya está en producción. Pasar a una operación estable requiere cerrar los tres objetivos
@@ -35,9 +36,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - OB4 Logger: OB4.a, OB4.b · OB5 Alertas: OB5.a, OB5.b · OB6 Avisos apagados: OB6.a mitigada en v1.1.0
 
 **SEO**
-- SE1 Renderizado (alta): SE1.a, SE1.b
-- SE2 a SE4 Sitio indexable: SE2.a, SE2.b, SE3.a, SE3.b, SE4.a
-- SE5 Open Graph: SE5.a, SE5.b · SE6 Datos estructurados: SE6.a · SE7 Íconos: SE7.a
+- SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12.
 
 **Diseño**
 - Deuda DS1 a DS12 en `docs/design/system.md`; prioritarias: DS1 (dos rosas de marca) y DS4 (contraste del botón principal).

@@ -1,6 +1,6 @@
 ---
 status: inferred
-updated: 2026-11-08
+updated: 2026-11-12
 ---
 
 # SEO técnico de Dentissa
@@ -20,7 +20,7 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 - Compartir: Open Graph no existe.
 - Íconos: `favicon.jpeg` propio; `theme-color` `#0f766e`.
 - Datos estructurados: ninguno.
-- Presupuesto: TODO(init): la constitución no fija presupuesto de JavaScript ni de Lighthouse.
+- Presupuesto: Lighthouse SEO 100 en las rutas indexables (decisión del usuario, 2026-11-12); la constitución no fija presupuesto de JavaScript.
 
 ## Inventario de rutas
 | Ruta | Indexable | Título | Descripción | Canónica | `h1` | Open Graph | Datos estructurados | Evidencia |
@@ -38,6 +38,7 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 | URL inexistente | no (404) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /ruta-inexistente-aidd` → 200 |
 
 Auditado sobre la build local (`npm run build`) y producción el 2026-11-08, con 5 peticiones `GET` sin sesión.
+Re-auditado el 2026-11-12 sobre la build local servida con `vite preview` (mismo fallback que nginx): `index.html` ya tiene un título ("Dentissa | Clínica Dental") y una descripción generales, iguales en todas las rutas. Lighthouse 13.6.0, categoría SEO: **92**; única comprobación fallida: `robots-txt` ("robots.txt is not valid": `/robots.txt` devuelve el HTML de la SPA).
 
 ## Brechas
 
@@ -50,7 +51,7 @@ Correcciones:
 - SE1.b Título y descripción únicos por ruta indexable — estado: pendiente
 
 ### SE2 · media — Sin `robots.txt` ni sitemap
-Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA).
+Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA). Lighthouse lo marca como `robots.txt is not valid` y es lo único que baja la categoría SEO a 92 (2026-11-12).
 Correcciones:
 - SE2.a Generar `robots.txt` con la URL absoluta del sitemap — estado: pendiente
 - SE2.b Generar `sitemap.xml` con las 6 rutas indexables — estado: pendiente
@@ -97,10 +98,13 @@ Correcciones:
 ## Exclusiones deliberadas
 
 ## Pendientes operativos
-- Alta del sitio y envío del sitemap en las consolas de los buscadores, cuando exista el sitemap.
-- Decidir si el sitio público debe vivir en un dominio distinto del subdominio `sistema`.
+- Alta del sitio en Google Search Console (propiedad `https://sistema.dentissa.app`) y envío del sitemap, cuando exista — lo hace el usuario.
+- Perfil de Google Business de la clínica con el mismo nombre, dirección, teléfono y horario que el sitio — lo hace el usuario; es lo que más pesa al buscar "dentissa".
+- Confirmar la dirección y el teléfono reales de la clínica (hoy `frontend/src/data/site.js` tiene valores provisionales).
+- Dominio: el sitio público sigue en `sistema.dentissa.app` (decisión del usuario, 2026-11-12).
 
 ## Historial
 | Fecha | Cambio | Origen |
 |---|---|---|
 | 2026-11-08 | Documento creado | /init |
+| 2026-11-12 | Re-auditoría: título y descripción generales presentes; Lighthouse SEO 92 por `robots.txt`; pendientes operativos de Search Console y Google Business | /seo audit |
