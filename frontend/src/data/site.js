@@ -1,10 +1,20 @@
 // Información fija de la clínica. Edita aquí y se actualiza en todo el sitio.
 
+// Dirección por partes, para los buscadores (spec 022). Valores provisionales: confirmar los reales.
+const DIRECCION = {
+  calle: "Av. Universidad 1200, Colonia Centro",
+  ciudad: "Ciudad de México",
+  estado: "CDMX",
+  codigoPostal: "03100",
+  pais: "MX",
+};
+
 export const CLINIC = {
   name: "Dentissa",
   tagline:
     "Cuidando de tu sonrisa con tecnología avanzada, especialistas dedicados y un ambiente cómodo para toda la familia.",
-  address: "Av. Universidad 1200, Colonia Centro, Ciudad de México, CP 03100",
+  direccion: DIRECCION,
+  address: `${DIRECCION.calle}, ${DIRECCION.ciudad}, CP ${DIRECCION.codigoPostal}`,
   phone: "+52 55 1234 5678",
   phoneHref: "tel:+525512345678",
   whatsapp: "525512345678", // solo dígitos, con lada de país
