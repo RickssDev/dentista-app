@@ -133,8 +133,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
   - nota: añadida por /review: R6
   - nota: T073 pasa; tests/usuarios completo en verde
-- [ ] T084 Mostrar el motivo de la API solo cuando viene de una respuesta; ante un error de red (`TypeError`), el texto genérico — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T074 pasa, ejecutada dos veces — cubre: CA11 — depende: T074
+- [x] T084 Mostrar el motivo de la API solo cuando viene de una respuesta; ante un error de red (`TypeError`), el texto genérico — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T074 pasa, ejecutada dos veces — cubre: CA11 — depende: T074
   - nota: añadida por /review: R3
+  - nota: T074 pasa; suite del frontend 17/17, ejecutada dos veces
 
 ## Integración y documentación
 - [x] T060 Correr la suite completa, el lint de lo tocado y la auditoría de dependencias — hecho cuando: `npm test` en verde; `npx eslint` sin errores nuevos en los archivos tocados de backend y frontend; `npm --prefix backend audit --audit-level=high` y `npm --prefix frontend audit --audit-level=high` sin altas ni críticas · verificación manual: alta y edición de una cuenta desde el panel funcionan como antes — depende: T023, T041, T051, T052
