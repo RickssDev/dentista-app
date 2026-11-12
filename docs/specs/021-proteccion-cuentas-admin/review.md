@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-12
 base: fc91933
 head: 159e2dc
-human_signoff: pending
+human_signoff: RickssDev 2026-11-12 (revisó y fusionó el PR #71)
 ---
 
 # Review · 021 Protección de las cuentas del personal
