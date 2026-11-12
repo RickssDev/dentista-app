@@ -94,8 +94,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T037 Hacer fallar la prueba de hidratación con cualquier error recuperable — `frontend/tests/seo-hidratacion.test.jsx` — hecho cuando: todo lo que llega a `onRecoverableError` hace fallar el caso (el filtro por regex queda solo para `console.error`); ejecutada dos veces · comprobado rompiendo: un texto distinto entre servidor y cliente hace fallar el caso — cubre: CA13
   - nota: añadida por /review: R6
   - nota: sin el filtro, `/`, `/contacto` y "otro año" fallan en dos ejecuciones con "The server could not finish this Suspense boundary… Switched to client rendering": el error que ocultaba la regex anterior (R3). No hace falta romper nada para comprobarlo; T041 lo deja en verde
-- [ ] T038 Probar la robustez de `construirPagina` — `frontend/tests/seo-prerender.test.jsx` — hecho cuando: falla hoy por la razón esperada y comprueba: una plantilla sin `<title>` o sin `meta name="description"` lanza un error; un cuerpo y un título con `$&` y `$'` salen literales; las páginas públicas llevan `og:image:alt` — cubre: CA3, CA11 — depende: T034
+- [x] T038 Probar la robustez de `construirPagina` — `frontend/tests/seo-prerender.test.jsx` — hecho cuando: falla hoy por la razón esperada y comprueba: una plantilla sin `<title>` o sin `meta name="description"` lanza un error; un cuerpo y un título con `$&` y `$'` salen literales; las páginas públicas llevan `og:image:alt` — cubre: CA3, CA11 — depende: T034
   - nota: añadida por /review: R7, R10, R11, R16
+  - nota: los 9 casos nuevos fallan por la razón esperada: no lanza sin `<title>` ni sin descripción, `$&` se sustituye por lo encontrado, sin `og:image:alt`
 
 ## Implementación
 - [x] T020 Crear la tabla de rutas públicas y la canónica — `frontend/src/seo/rutas.js` — hecho cuando: T010 pasa — cubre: CA3, CA4 — depende: T010

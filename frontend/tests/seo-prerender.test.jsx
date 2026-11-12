@@ -100,6 +100,32 @@ describe('022 CA8, A11 · app.html y 404.html no se indexan', () => {
   })
 })
 
+describe('022 R7, R10, R11, R16 · construirPagina es estricta y literal', () => {
+  test('una plantilla sin <title> lanza un error', () => {
+    const sinTitulo = PLANTILLA.replace(/<title>[\s\S]*?<\/title>/, '')
+    expect(() => construirPagina(sinTitulo, { cuerpo: '<h1>x</h1>', ruta: '/nosotros' })).toThrow()
+  })
+
+  test('una plantilla sin meta description lanza un error', () => {
+    const sinDescripcion = PLANTILLA.replace(/<meta name="description"[^>]*>/, '')
+    expect(() => construirPagina(sinDescripcion, { cuerpo: '<h1>x</h1>', ruta: '/nosotros' })).toThrow()
+  })
+
+  test('los patrones $& y $\' del cuerpo y del título salen literales', () => {
+    const html = construirPagina(PLANTILLA, {
+      cuerpo: "<h1>a $& b $' c</h1>",
+      noindex: true,
+      titulo: 'T $& x',
+    })
+    expect(html).toContain("<div id=\"root\"><h1>a $& b $' c</h1></div>")
+    expect(html).toContain('<title>T $&amp; x</title>')
+  })
+
+  test.each(RUTAS)('%s lleva og:image:alt', (ruta) => {
+    expect(metaContenido(pagina(ruta).html, 'property', 'og:image:alt')).toBeTruthy()
+  })
+})
+
 describe('022 CA10, TM1 · nada privado en lo que se genera', () => {
   test.each(RUTAS)('%s no contiene textos de login, panel ni portal', (ruta) => {
     expect(pagina(ruta).html).not.toMatch(TEXTOS_PRIVADOS)
