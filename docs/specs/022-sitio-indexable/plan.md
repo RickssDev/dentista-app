@@ -1,6 +1,6 @@
 ---
 spec: 022-sitio-indexable
-status: draft   # draft | approved | blocked
+status: approved   # draft | approved | blocked
 constitution_version: 1.0.0
 created: 2026-11-12
 ---
