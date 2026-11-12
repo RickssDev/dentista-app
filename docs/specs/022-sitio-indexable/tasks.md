@@ -102,8 +102,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T030 Separar la dirección de la clínica para los buscadores — `frontend/src/data/site.js` — hecho cuando: `CLINIC.direccion` tiene `calle`, `ciudad`, `estado`, `codigoPostal` y `pais` con los valores provisionales actuales; `CLINIC.address` se arma desde ellos y el sitio la muestra igual; la suite del frontend sigue en verde — cubre: CA7 — depende: T012
   - nota: añadida por /analyze A6
   - nota: `CLINIC.address` se arma desde `CLINIC.direccion` y queda idéntica; las 17 pruebas previas siguen en verde (los fallos restantes son solo las suites de SEO pendientes)
-- [ ] T031 Evitar que el año del pie rompa la hidratación — `frontend/src/components/home/Footer.jsx` — hecho cuando: el caso "otro año" de T016 pasa con el resto del HTML prerenderizado — cubre: CA13 — depende: T016
+- [x] T031 Evitar que el año del pie rompa la hidratación — `frontend/src/components/home/Footer.jsx` — hecho cuando: el caso "otro año" de T016 pasa con el resto del HTML prerenderizado — cubre: CA13 — depende: T016
   - nota: añadida por /analyze A4
+  - nota: T016 pasa completo (7/7), ejecutada dos veces; antes del cambio "otro año" fallaba por 2026 frente a 2027
+  - nota: A17 — hecha después de T024
 - [ ] T032 Ejecutar la prueba de nginx en el CI — `.github/workflows/ai-dd.yml` — hecho cuando: el workflow ejecuta `node frontend/scripts/probar-nginx.mjs` en cada PR y el job queda en verde en el PR de esta spec — cubre: CA9 — depende: T029
   - nota: añadida por /analyze A2 (ruta protegida, tarea aprobada)
 
