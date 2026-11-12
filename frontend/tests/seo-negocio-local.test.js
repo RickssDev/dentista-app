@@ -48,7 +48,7 @@ describe('022 TM3 · el JSON-LD no puede cerrar la etiqueta script', () => {
   test('un valor con </script> sale escapado', () => {
     const texto = serializarJsonLd({ name: 'Dentissa</script><script>alert(1)</script>' })
     expect(texto).not.toMatch(/<\/script/i)
-    expect(texto).toContain('\u003c/script')
+    expect(texto).toContain(String.fromCharCode(92) + "u003c/script")
     expect(JSON.parse(texto).name).toBe('Dentissa</script><script>alert(1)</script>')
   })
 })
