@@ -78,6 +78,20 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: contra la imagen actual fallan las 13 comprobaciones nuevas por la razón esperada (sin HTML propio, `/no-existe` → 200, sin robots/sitemap ni noindex); las 3 de regresión (favicon, imágenes, assets) pasan
   - nota: A14 — la imagen se levanta con `--add-host backend:127.0.0.1` para que nginx resuelva el upstream sin backend real
 
+### Correcciones de /review (ronda 1)
+- [ ] T033 Probar los metadatos al salir de la tabla — `frontend/tests/seo-metadatos.test.jsx` — hecho cuando: falla hoy por la razón esperada y comprueba: al pasar de `/nosotros` a una ruta inexistente dentro del Layout, `document.title` es "Página no encontrada | Dentissa" y no queda `link[rel=canonical]`; al pasar de `/nosotros` a `/login` (fuera del Layout), `document.title` es "Dentissa | Clínica Dental", la descripción vuelve a la de `index.html` y no queda canónica; ejecutada dos veces — cubre: CA3, CA13
+  - nota: añadida por /review: R1, R15
+- [ ] T034 Exigir el contenido en su sitio y una sola canónica en el HTML generado — `frontend/tests/seo-prerender.test.jsx` — hecho cuando: falla hoy en `/` y `/contacto` por la razón esperada y comprueba en cada ruta pública: el `<h1>` está dentro de `<main>`; el HTML no contiene `<template id="B:`, `<div hidden id="S:` ni `$RC(`; hay exactamente un `rel="canonical"`; el bloque "comprobaciones de Lighthouse SEO" pasa a llamarse "subconjunto de comprobaciones de Lighthouse SEO" — cubre: CA2, CA4 — depende: T033
+  - nota: añadida por /review: R3, R7, R20
+- [ ] T035 Probar en nginx el open redirect, la query string y todas las rutas privadas desde la tabla — `frontend/scripts/probar-nginx.mjs` — hecho cuando: las rutas públicas salen de `RUTAS_PUBLICAS` y las privadas de `RUTAS_NO_INDEXABLES` (sin listas fijas), más `/restablecer-contrasena?token=x`, `/admin/usuarios` y `/paciente/perfil` con 200 y `X-Robots-Tag: noindex`; `/%5Cevil.com/` no responde con una `Location` que empiece por `/\` ni por `//`; `/contacto/?utm=1` → 301 con `Location: /contacto?utm=1`; contra la imagen actual fallan solo los dos casos nuevos de redirección — cubre: CA8, CA9, CA13
+  - nota: añadida por /review: R2, R4, R5, R8
+- [ ] T036 Comparar las páginas de `nginx.conf` con la tabla de rutas — `frontend/tests/seo-rutas.test.js` — hecho cuando: un caso lee `frontend/nginx.conf` y exige que sus `location = …` (salvo `/404.html`) sean exactamente las rutas de `RUTAS_PUBLICAS`; el caso que compara `RUTAS_NO_INDEXABLES` consigo misma se sustituye por uno que exige que la regex de privadas de `nginx.conf` incluya cada ruta de `RUTAS_NO_INDEXABLES` · comprobado rompiendo: quitar una `location =` hace fallar el caso — cubre: CA8, CA13
+  - nota: añadida por /review: R5, R8
+- [ ] T037 Hacer fallar la prueba de hidratación con cualquier error recuperable — `frontend/tests/seo-hidratacion.test.jsx` — hecho cuando: todo lo que llega a `onRecoverableError` hace fallar el caso (el filtro por regex queda solo para `console.error`); ejecutada dos veces · comprobado rompiendo: un texto distinto entre servidor y cliente hace fallar el caso — cubre: CA13
+  - nota: añadida por /review: R6
+- [ ] T038 Probar la robustez de `construirPagina` — `frontend/tests/seo-prerender.test.jsx` — hecho cuando: falla hoy por la razón esperada y comprueba: una plantilla sin `<title>` o sin `meta name="description"` lanza un error; un cuerpo y un título con `$&` y `$'` salen literales; las páginas públicas llevan `og:image:alt` — cubre: CA3, CA11 — depende: T034
+  - nota: añadida por /review: R7, R10, R11, R16
+
 ## Implementación
 - [x] T020 Crear la tabla de rutas públicas y la canónica — `frontend/src/seo/rutas.js` — hecho cuando: T010 pasa — cubre: CA3, CA4 — depende: T010
   - nota: T010 pasa (5/5)
@@ -119,6 +133,18 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: A15 — el lint del CI también revisa los `*.mjs` cambiados del frontend; paso "Prueba de nginx del frontend (spec 022)" tras el build; YAML válido y las pruebas del backend sobre el workflow siguen en verde (256)
   - nota: job "Lint y build" en verde en el PR #73 (run 43298753950): "Prueba de nginx del frontend (spec 022)" 16/16
 
+### Correcciones de /review (ronda 1)
+- [ ] T040 Dar título correcto a la 404 y restaurar el general al salir del Layout — `frontend/src/components/home/Metadatos.jsx`, `frontend/src/seo/rutas.js` — hecho cuando: T033 pasa (dos ejecuciones) y la suite del frontend sigue en verde · revisión de accesibilidad: título único y descriptivo en la 404, en `/login` y al volver a una página pública (WCAG 2.4.2) — cubre: CA3, CA13 — depende: T033
+  - nota: añadida por /review: R1
+- [ ] T041 Prerenderizar la portada y contacto con el contenido en su sitio — `frontend/src/entry-prerender.jsx` — hecho cuando: T034 pasa, T016 y T037 siguen en verde (dos ejecuciones) y `npm run build --prefix frontend` genera `dist/index.html` y `dist/contacto/index.html` sin `<div hidden id="S:` — cubre: CA2 — depende: T034, T037
+  - nota: añadida por /review: R3
+- [ ] T042 Cerrar el open redirect y conservar la query string al quitar la barra final — `frontend/nginx.conf` — hecho cuando: `node frontend/scripts/probar-nginx.mjs` pasa completo (T035) — cubre: CA9, CA13 — depende: T035, T036
+  - nota: añadida por /review: R2, R4 (ruta protegida, tarea aprobada por el usuario en /review)
+- [ ] T043 Hacer estricta la construcción de la página y validar el HTML final — `frontend/src/seo/cabecera.js`, `frontend/scripts/prerender.mjs` — hecho cuando: T038 pasa; los reemplazos usan funciones; `construirPagina` añade `og:image:alt`; la guarda del build lee el HTML final de cada ruta y exige la descripción de la tabla y exactamente una canónica · comprobado rompiendo: una plantilla sin la meta description detiene el build — cubre: CA3, CA4, CA11 — depende: T038, T041
+  - nota: añadida por /review: R7, R10, R11, R16
+- [ ] T044 Registrar en `docs/seo.md` la exclusión de las privadas y las etiquetas sociales, y revisar con lint los `*.mjs` de pruebas — `docs/seo.md`, `frontend/eslint.config.js` — hecho cuando: `seo.md` tiene en "Exclusiones deliberadas" las rutas privadas (200 con `noindex`, motivo: la SPA las necesita al recargar) y menciona `twitter:card` y `og:image:alt`; el bloque de Node de ESLint cubre `{scripts,tests}/**/*.mjs` y `npx eslint tests/support/prerenderizar.mjs` corre con reglas y sin errores — depende: T043
+  - nota: añadida por /review: R9, R16, R19
+
 ## Integración y documentación
 - [x] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual con el contenedor local: Lighthouse 13.6.0 SEO = 100 en las seis rutas, con el resultado anotado por ruta (CA1); Rendimiento de la portada igual o mayor que la línea base de T002, con el mismo contenedor (RNF); login, paneles y contacto funcionan como antes (CA13); teclado en la portada y el menú (RNF) — cubre: CA1, CA13 — depende: T022, T025, T026, T027, T028, T029, T032
   - nota: frontend 78/78 (dos ejecuciones), backend 256 + 5 `todo`; lint del frontend con los 15 problemas previos (se corrigió `process` en la prueba de hidratación); build con prerender correcto; `npm audit --audit-level=high` sin altas ni críticas
@@ -129,7 +155,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `docs/architecture.md` (resumen, módulo "SEO y prerender", fila de patrones) y `.ai/project.yaml` (`seo.rendering: hybrid`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre (`docker compose … up -d --build`); no hay variables, logs ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -143,18 +169,18 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T013, T060 | T020, T021, T023, T025, T029 |
-| CA2 | T013 | T024, T025 |
-| CA3 | T010, T013, T015 | T020, T023, T026 |
-| CA4 | T010, T013 | T020, T023 |
+| CA2 | T013, T034 | T024, T025, T041 |
+| CA3 | T010, T013, T015, T033, T038 | T020, T023, T026, T040, T043 |
+| CA4 | T010, T013, T034 | T020, T023, T043 |
 | CA5 | T011, T017 | T021, T025, T029 |
 | CA6 | T011 | T021, T025 |
 | CA7 | T012, T013 | T022, T023, T030 |
-| CA8 | T011, T013, T017 | T021, T023, T025, T029 |
-| CA9 | T017 | T029, T032 |
+| CA8 | T011, T013, T017, T035, T036 | T021, T023, T025, T029 |
+| CA9 | T017, T035 | T029, T032, T042 |
 | CA10 | T013 | T024, T025 |
-| CA11 | T013, T014 | T023, T028 |
+| CA11 | T013, T014, T038 | T023, T028, T043 |
 | CA12 | T014 | T027 |
-| CA13 | T015, T016, T017, T060 | T026, T031 |
+| CA13 | T015, T016, T017, T033, T035, T036, T037, T060 | T026, T031, T040, T042 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -183,6 +209,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | `frontend/nginx.conf` | T029 |
 | `frontend/tests/seo-*.test.js(x)` | T010, T011, T012, T013, T014, T015, T016 |
 | `docs/architecture.md`, `.ai/project.yaml` | T090 |
+| Correcciones de /review r1 (`Metadatos.jsx`, `entry-prerender.jsx`, `nginx.conf`, `cabecera.js`, `prerender.mjs`, `seo.md`, `eslint.config.js`) | T033–T038, T040–T044 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
