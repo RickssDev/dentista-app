@@ -80,7 +80,8 @@ exports.conTransaccion = async (fn, origen = pool) => {
     await conn.commit();
     return resultado;
   } catch (error) {
-    await conn.rollback();
+    // Si el rollback también falla, se conserva el error original (spec 021, /review R6)
+    await conn.rollback().catch(() => {});
     throw error;
   } finally {
     conn.release();

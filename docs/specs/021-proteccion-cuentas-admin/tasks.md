@@ -130,8 +130,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
   - nota: añadida por /review: R5
   - nota: T071 pasa completo (37/37)
-- [ ] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
+- [x] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
   - nota: añadida por /review: R6
+  - nota: T073 pasa; tests/usuarios completo en verde
 - [ ] T084 Mostrar el motivo de la API solo cuando viene de una respuesta; ante un error de red (`TypeError`), el texto genérico — `frontend/src/pages/admin/AdminUsuarios.jsx` — hecho cuando: T074 pasa, ejecutada dos veces — cubre: CA11 — depende: T074
   - nota: añadida por /review: R3
 
