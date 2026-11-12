@@ -1,6 +1,7 @@
 ---
 spec: 022-sitio-indexable
 plan: plan.md
+impl_base: 720ed03
 status: approved
 ---
 
@@ -41,7 +42,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | P20 Sistema de diseño | ✅ | Sin estilos nuevos en pantallas; la plantilla de la imagen usa colores de los tokens | manual: `/review` |
 
 ## Preparación
-- [ ] T001 Separar `AppRoutes` de `App`, quitar el uso de `window` al cargar `api.js` (fuera del navegador, un origen fijo propio del módulo, sin depender de `seo/rutas.js`) y corregir `fetchPriority` — `frontend/src/App.jsx`, `frontend/src/services/api.js`, `frontend/src/components/home/SmartImage.jsx` — hecho cuando: `npm test --prefix frontend` y `npm run build --prefix frontend` pasan sin cambios de comportamiento (mismo árbol de rutas; `BASE_ORIGIN` igual en el navegador)
+- [x] T001 Separar `AppRoutes` de `App`, quitar el uso de `window` al cargar `api.js` (fuera del navegador, un origen fijo propio del módulo, sin depender de `seo/rutas.js`) y corregir `fetchPriority` — `frontend/src/App.jsx`, `frontend/src/services/api.js`, `frontend/src/components/home/SmartImage.jsx` — hecho cuando: `npm test --prefix frontend` y `npm run build --prefix frontend` pasan sin cambios de comportamiento (mismo árbol de rutas; `BASE_ORIGIN` igual en el navegador)
+  - nota: suite del frontend 17/17 y build correctos; los 2 errores de lint de SmartImage.jsx son previos (mismo conteo antes del cambio)
 - [ ] T002 Medir la línea base de Lighthouse Rendimiento de la portada sobre la build actual — sin archivos — hecho cuando: el valor (Lighthouse 13.6.0 contra el contenedor de nginx del frontend actual, mismo equipo) queda anotado como nota de esta tarea
   - nota: añadida por /analyze A10 la medición con el mismo servidor que en T060
 - [ ] T003 Permitir suites en entorno node con el setup de pruebas — `frontend/tests/setup.js` — hecho cuando: las API simuladas del navegador solo se definen si hay `window`; la suite del frontend sigue en verde y un archivo con `// @vitest-environment node` arranca sin `ReferenceError`

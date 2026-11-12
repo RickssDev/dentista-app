@@ -38,9 +38,9 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/login" replace />;
 }
 
-function App() {
+// Rutas de la aplicación; el prerender las usa con StaticRouter (spec 022)
+export function AppRoutes() {
   return (
-    <BrowserRouter>
       <Routes>
         {/* Páginas públicas con el diseño del nuevo proyecto */}
         <Route element={<Layout />}>
@@ -154,6 +154,13 @@ function App() {
           }
         />
       </Routes>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

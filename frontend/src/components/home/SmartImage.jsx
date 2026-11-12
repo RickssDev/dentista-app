@@ -37,7 +37,7 @@ export default function SmartImage({ src, alt = "", ratio, priority = false, cla
           sizes={sizes}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
-          fetchpriority={priority ? "high" : "auto"}
+          fetchPriority={priority ? "high" : "auto"}
           onLoad={() => setStatus("loaded")}
           onError={() => setStatus("error")}
         />
