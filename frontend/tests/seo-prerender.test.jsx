@@ -105,8 +105,10 @@ describe('022 CA1 · comprobaciones de Lighthouse SEO sobre el HTML', () => {
       const href = (a.match(/href="([^"]*)"/) || [])[1]
       expect(href, a).toBeTruthy()
       expect(href).not.toMatch(/^javascript:/)
+      // Nombre accesible como lo calcula Lighthouse: texto, aria-label o alt de una imagen interna
       const texto = a.replace(/<[^>]+>/g, '').trim()
-      expect(Boolean(texto) || /aria-label="[^"]+"/.test(a), a).toBe(true)
+      const nombre = Boolean(texto) || /aria-label="[^"]+"/.test(a) || /<img\b[^>]*\salt="[^"]+"/.test(a)
+      expect(nombre, a).toBe(true)
     }
   })
 })
