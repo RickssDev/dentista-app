@@ -144,7 +144,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: fila de `users`: responsabilidad y dependencia de `auth.service`
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: no hay variables, entornos, pasos de deploy, logs, eventos de auditoría ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
