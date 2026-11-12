@@ -152,7 +152,7 @@ describe('CA4 · el correo debe ser válido y libre', () => {
   test('cuenta con correo guardado inválido: cambiar solo el teléfono se guarda', async () => {
     repo.getUsuarioById.mockResolvedValue(guardada({ correo: 'correo-viejo' }));
     await usuarios.updateUsuario(5, edicionDelPanel({ correo: 'correo-viejo', telefono: '5599999999' }));
-    expect(repo.updateUsuario).toHaveBeenCalled();
+    expect(repo.updateUsuario).toHaveBeenCalledWith(5, { telefono: '5599999999' });
   });
 
   test('cuenta con correo guardado inválido: cambiarlo a otro inválido → 400', async () => {
@@ -209,5 +209,48 @@ describe('CA6 (abuso) · tipos y largos se rechazan con 400, nunca 500', () => {
     expect(repo.createUsuario).toHaveBeenCalledTimes(1);
     await rechaza400(usuarios.createUsuario(alta({ [campo]: excedido })));
     expect(repo.createUsuario).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('R2, R5, R7 · edición y texto vacío', () => {
+  test('alta con un nombre de solo espacios → 400 que lo nombra', async () => {
+    await expect(usuarios.createUsuario(alta({ nombre: '   ' })))
+      .rejects.toMatchObject({ statusCode: 400, message: expect.stringMatching(/nombre/) });
+    expect(repo.createUsuario).not.toHaveBeenCalled();
+  });
+
+  test('edición con el correo de otra cuenta → 400 sin escribir ni datos de esa cuenta', async () => {
+    repo.findOtroUsuarioPorCorreo.mockResolvedValue({ id_usuario: 9, nombre_usuario: 'Beto' });
+    const error = await usuarios.updateUsuario(5, edicionDelPanel({ correo: 'beto@example.test' })).catch((e) => e);
+    expect(error).toMatchObject({ statusCode: 400, message: 'El correo ya está registrado' });
+    expect(error.message).not.toMatch(/Beto|9/);
+    expect(repo.findOtroUsuarioPorCorreo).toHaveBeenCalledWith('beto@example.test', 5);
+    expect(repo.updateUsuario).not.toHaveBeenCalled();
+  });
+
+  test('edición: si el repositorio choca con el índice único (1062) → 400 sin el correo', async () => {
+    repo.updateUsuario.mockRejectedValue(Object.assign(
+      new Error("Duplicate entry 'beto@example.test' for key 'correo'"), { errno: 1062, code: 'ER_DUP_ENTRY' },
+    ));
+    const error = await usuarios.updateUsuario(5, edicionDelPanel({ correo: 'beto@example.test' })).catch((e) => e);
+    expect(error).toMatchObject({ statusCode: 400, message: 'El correo ya está registrado' });
+  });
+
+  test('edición con un rol inexistente → 400 sin escribir', async () => {
+    await expect(usuarios.updateUsuario(5, edicionDelPanel({ id_rol: '9' })))
+      .rejects.toMatchObject({ statusCode: 400, message: 'El rol no es válido' });
+    expect(repo.updateUsuario).not.toHaveBeenCalled();
+  });
+
+  test('edición con una contraseña de más de 72 bytes → 400', async () => {
+    await rechaza400(usuarios.updateUsuario(5, { password: 'ñ'.repeat(37) }));
+    expect(repo.updateUsuario).not.toHaveBeenCalled();
+  });
+
+  test('la contraseña llega al repositorio hasheada, nunca en texto plano', async () => {
+    await usuarios.createUsuario(alta());
+    const { password } = repo.createUsuario.mock.calls[0][0];
+    expect(password).not.toBe(CLAVE);
+    expect(password).toMatch(/^\$2[aby]\$/);
   });
 });
