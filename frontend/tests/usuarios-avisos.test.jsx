@@ -17,12 +17,17 @@ const cuenta = {
   rol: { id: 1, nombre: 'Administrador' },
 }
 
+// Error que lanza la API al eliminar; una prueba lo cambia por un fallo de red
+const simulacion = vi.hoisted(() => ({ errorAlEliminar: null }))
+
 vi.mock('../src/services/api', () => ({
   api: vi.fn(async (ruta, metodo = 'GET') => {
     if (ruta === '/usuarios' && metodo === 'GET') return { payload: [cuenta] }
     if (ruta === '/usuarios/5' && metodo === 'GET') return { payload: cuenta }
     if (ruta === '/usuarios/5' && metodo === 'PUT') throw new Error(CORREO_REGISTRADO)
-    if (ruta === '/usuarios/5' && metodo === 'DELETE') throw new Error(ULTIMO)
+    if (ruta === '/usuarios/5' && metodo === 'DELETE') {
+      throw simulacion.errorAlEliminar ?? new Error(ULTIMO)
+    }
     return { payload: [] }
   }),
   getImageUrl: (ruta) => ruta,
@@ -37,6 +42,7 @@ const pedidasDeLista = () =>
 afterEach(() => {
   cleanup()
   vi.clearAllMocks()
+  simulacion.errorAlEliminar = null
 })
 
 describe('021 CA11 · avisos de la pantalla de usuarios', () => {
@@ -50,6 +56,29 @@ describe('021 CA11 · avisos de la pantalla de usuarios', () => {
 
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', CORREO_REGISTRADO)
     expect(screen.getByDisplayValue('Ana María')).toBeTruthy()
+  })
+
+  test('guardar con 400 no vuelve a pedir la lista', async () => {
+    render(<AdminUsuarios />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar' }))
+    await screen.findByDisplayValue('Ana')
+    const antes = pedidasDeLista()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await screen.findByRole('alert')
+    expect(pedidasDeLista()).toBe(antes)
+  })
+
+  test('eliminar con un error de red muestra el aviso genérico en español', async () => {
+    simulacion.errorAlEliminar = new TypeError('Failed to fetch')
+    render(<AdminUsuarios />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Eliminar usuario' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Eliminar' }))
+
+    expect(await screen.findByRole('dialog', {
+      description: 'Ocurrió un error al eliminar el usuario. Intenta de nuevo.',
+    })).toBeTruthy()
+    expect(screen.queryByText(/Failed to fetch/)).toBeNull()
   })
 
   test('eliminar con 409 muestra el motivo como descripción accesible del diálogo y no vuelve a pedir la lista', async () => {

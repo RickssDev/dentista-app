@@ -116,8 +116,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T073 [P] Añadir la prueba de rollback que falla — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en "si el rollback lanza, se propaga el error original (409) y se libera la conexión" — cubre: CA10
   - nota: añadida por /review: R6
   - nota: falla por la razón esperada: se propaga el error del rollback ("conexión perdida") en lugar del 409
-- [ ] T074 [P] Añadir pruebas del aviso ante un error de red y de la lista al guardar — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con un error de red (`TypeError('Failed to fetch')`) muestra 'Ocurrió un error al eliminar el usuario. Intenta de nuevo.'"; y "guardar con 400 no vuelve a pedir la lista" pasa (comprobado rompiendo); ejecutadas dos veces — cubre: CA11
+- [x] T074 [P] Añadir pruebas del aviso ante un error de red y de la lista al guardar — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con un error de red (`TypeError('Failed to fetch')`) muestra 'Ocurrió un error al eliminar el usuario. Intenta de nuevo.'"; y "guardar con 400 no vuelve a pedir la lista" pasa (comprobado rompiendo); ejecutadas dos veces — cubre: CA11
   - nota: añadida por /review: R3, R7
+  - nota: falla "error de red" por la razón esperada (hoy muestra "Failed to fetch"); "guardar con 400 no vuelve a pedir la lista" pasa desde el principio y se comprobó rompiendo (recargar la lista en el catch de guardar la hace fallar); ejecutadas dos veces
 
 ### Correcciones
 - [ ] T080 Validar el id de la ruta como entero positivo y usar el id de la cuenta encontrada en la regla y las escrituras; `eliminarODesactivar()` sin argumento — `backend/src/modules/users/user.service.js` — hecho cuando: los casos de id de T070 pasan, T030 y T031 siguen en verde — cubre: CA7 — depende: T070
