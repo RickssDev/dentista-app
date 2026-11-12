@@ -135,3 +135,38 @@ describe('P15 · los rechazos no dejan el correo ni la contraseña en los logs',
     expect(textoDeLogs()).not.toContain(CLAVE);
   });
 });
+
+describe('R1 · el id de la ruta debe ser un entero positivo', () => {
+  test.each([
+    ['put', '/api/v1/usuarios/5abc'],
+    ['delete', '/api/v1/usuarios/5abc'],
+    ['put', '/api/v1/usuarios/0'],
+    ['delete', '/api/v1/usuarios/0'],
+  ])('%s %s → 400 sin leer ni escribir la cuenta', async (metodo, ruta) => {
+    const r = await request(app)[metodo](ruta).set('Authorization', sesionAdmin()).send({ estado: 'inactivo' });
+    expect(r.status).toBe(400);
+    expect(r.body.message).toBe('ID de usuario inválido');
+    expect(repo.getUsuarioById).not.toHaveBeenCalled();
+    expect(repo.updateUsuario).not.toHaveBeenCalled();
+    expect(repo.deleteUsuario).not.toHaveBeenCalled();
+    expect(repo.desactivarUsuario).not.toHaveBeenCalled();
+  });
+});
+
+describe('R4 · la imagen subida no queda huérfana si se rechaza la petición', () => {
+  const borrarArchivo = require('../../src/utils/borrarArchivo');
+
+  test('alta rechazada (400) con archivo subido → se borra la imagen', async () => {
+    const r = await request(app).post('/api/v1/usuarios').set('Authorization', sesionAdmin())
+      .set('x-prueba-archivo', '1').send(alta({ nombre: { a: 1 } }));
+    expect(r.status).toBe(400);
+    expect(borrarArchivo).toHaveBeenCalledWith('/uploads/subida.jpg');
+  });
+
+  test('alta válida con archivo subido → la imagen no se borra', async () => {
+    const r = await request(app).post('/api/v1/usuarios').set('Authorization', sesionAdmin())
+      .set('x-prueba-archivo', '1').send(alta());
+    expect(r.status).toBe(201);
+    expect(borrarArchivo).not.toHaveBeenCalled();
+  });
+});
