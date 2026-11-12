@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { construirPagina, estilosDeRuta } from "../src/seo/cabecera.js";
 import { generarRobots, generarSitemap } from "../src/seo/archivos.js";
-import { RUTAS_PUBLICAS, canonica } from "../src/seo/rutas.js";
+import { RUTAS_PUBLICAS, TITULO_404, canonica } from "../src/seo/rutas.js";
 
 const CARPETA = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(CARPETA, "dist");
@@ -46,6 +46,12 @@ for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   exigir(/<h1[\s>]/.test(html), `${ruta}: sin h1`);
   exigir(contenidoDe(html, /<title>([^<]*)<\/title>/) === titulo, `${ruta}: título distinto del de la tabla`);
   exigir(descripcion.length >= 70 && descripcion.length <= 160, `${ruta}: descripción fuera de 70–160 caracteres`);
+  // Sobre el HTML final, no sobre la tabla: si la plantilla cambia, aquí se nota (review R7)
+  exigir(
+    contenidoDe(html, /<meta name="description" content="([^"]*)"/) === descripcion,
+    `${ruta}: la descripción del HTML no es la de la tabla`,
+  );
+  exigir((html.match(/rel="canonical"/g) || []).length === 1, `${ruta}: no tiene exactamente una canónica`);
   exigir(contenidoDe(html, /<link rel="canonical" href="([^"]+)">/) === canonica(ruta), `${ruta}: sin canónica correcta`);
   exigir(!modulo || todos.length > 0, `${ruta}: sin el CSS de ${modulo} en el manifiesto`);
   for (const hoja of todos) exigir(html.includes(`href="${hoja}"`), `${ruta}: no enlaza ${hoja}`);
@@ -59,7 +65,7 @@ escribir(
   construirPagina(plantilla, {
     cuerpo: await render("/ruta-que-no-existe"),
     noindex: true,
-    titulo: "Página no encontrada | Dentissa",
+    titulo: TITULO_404,
     css: estilosNuevos("src/pages/Legal.jsx"),
   }),
 );

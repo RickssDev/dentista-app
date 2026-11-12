@@ -37,6 +37,7 @@ const etiquetasIndexables = (datos) => {
     `<meta property="og:image" content="${IMAGEN_COMPARTIR}">`,
     `<meta property="og:image:width" content="1200">`,
     `<meta property="og:image:height" content="630">`,
+    `<meta property="og:image:alt" content="Logo de Dentissa Clínica Dental sobre la foto de su consultorio">`,
     `<meta name="twitter:card" content="summary_large_image">`,
   ];
 };
@@ -54,13 +55,21 @@ export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false,
   const datos = ruta ? RUTAS_PUBLICAS.find((r) => r.ruta === ruta) : null;
   if (ruta && !datos) throw new Error(`La ruta ${ruta} no está en la tabla de rutas públicas`);
 
+  // Reemplazos con función: una cadena interpretaría $&, $` y $' del contenido (review R10)
+  const reemplazar = (html, patron, texto, falta) => {
+    if (!patron.test(html)) throw new Error(`La plantilla no tiene ${falta}`);
+    return html.replace(patron, () => texto);
+  };
+
   let html = plantilla;
   const tituloFinal = datos?.titulo || titulo;
-  if (tituloFinal) html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapar(tituloFinal)}</title>`);
+  if (tituloFinal) html = reemplazar(html, /<title>[\s\S]*?<\/title>/, `<title>${escapar(tituloFinal)}</title>`, "<title>");
   if (datos) {
-    html = html.replace(
+    html = reemplazar(
+      html,
       /<meta name="description" content="[^"]*"\s*\/?>/,
       `<meta name="description" content="${escapar(datos.descripcion)}" />`,
+      'meta name="description"',
     );
   }
 
@@ -73,6 +82,6 @@ export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false,
     ...css.map((archivo) => `<link rel="stylesheet" href="${escapar(archivo)}">`),
   ];
 
-  if (cabecera.length) html = html.replace("</head>", `    ${cabecera.join("\n    ")}\n  </head>`);
-  return html.replace(/<div id="root"><\/div>/, `<div id="root">${cuerpo}</div>`);
+  if (cabecera.length) html = reemplazar(html, /<\/head>/, `    ${cabecera.join("\n    ")}\n  </head>`, "</head>");
+  return reemplazar(html, /<div id="root"><\/div>/, `<div id="root">${cuerpo}</div>`, '<div id="root"></div>');
 };
