@@ -137,4 +137,13 @@ describe('repositorio real con una conexión falsa propia (sin tests/support/fak
     expect(eventos.slice(-2)).toEqual(['rollback', 'release']);
     expect(eventos).not.toContain('commit');
   });
+
+  test('R6 · si el rollback lanza, se propaga el error original (409) y se libera la conexión', async () => {
+    const { eventos, conn, origen } = origenFalso();
+    conn.rollback = async () => { eventos.push('rollback fallido'); throw new Error('conexión perdida'); };
+    const conflicto = new AppError('Debe quedar al menos un Administrador activo', 409);
+
+    await expect(real.conTransaccion(async () => { throw conflicto; }, origen)).rejects.toBe(conflicto);
+    expect(eventos.slice(-2)).toEqual(['rollback fallido', 'release']);
+  });
 });

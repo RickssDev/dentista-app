@@ -113,8 +113,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T072 [P] Añadir casos del único Administrador — `backend/tests/usuarios/ultimo-admin.test.js` — hecho cuando: pasan, comprobados rompiendo la regla: editar la imagen del único Administrador escribe `{ imagen }` sin transacción; desactivar y cambiar el rol en el mismo PUT al único → 409 sin escribir — cubre: CA7, CA9
   - nota: añadida por /review: R7
   - nota: pasan desde el principio; comprobado rompiendo: sin la regla, "mismo PUT" falla; tratando toda edición del Administrador como cambio de puesto, "imagen" falla; restaurado pasan
-- [ ] T073 [P] Añadir la prueba de rollback que falla — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en "si el rollback lanza, se propaga el error original (409) y se libera la conexión" — cubre: CA10
+- [x] T073 [P] Añadir la prueba de rollback que falla — `backend/tests/usuarios/ultimo-admin-concurrencia.test.js` — hecho cuando: falla por la razón esperada en "si el rollback lanza, se propaga el error original (409) y se libera la conexión" — cubre: CA10
   - nota: añadida por /review: R6
+  - nota: falla por la razón esperada: se propaga el error del rollback ("conexión perdida") en lugar del 409
 - [ ] T074 [P] Añadir pruebas del aviso ante un error de red y de la lista al guardar — `frontend/tests/usuarios-avisos.test.jsx` — hecho cuando: falla por la razón esperada en "eliminar con un error de red (`TypeError('Failed to fetch')`) muestra 'Ocurrió un error al eliminar el usuario. Intenta de nuevo.'"; y "guardar con 400 no vuelve a pedir la lista" pasa (comprobado rompiendo); ejecutadas dos veces — cubre: CA11
   - nota: añadida por /review: R3, R7
 
