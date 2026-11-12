@@ -209,9 +209,14 @@ function AdminUsuarios({
       }
     } catch (error) {
       console.error(error);
+      // El motivo viene de la API (p. ej., "Debe quedar al menos un Administrador activo");
+      // un fallo de red (TypeError de fetch) muestra el texto genérico en español
+      const esDeLaApi = !(error instanceof TypeError) && error.message;
       setAviso({
         titulo: "No se pudo eliminar",
-        mensaje: "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
+        mensaje: esDeLaApi
+          ? error.message
+          : "Ocurrió un error al eliminar el usuario. Intenta de nuevo.",
       });
     }
   };

@@ -287,6 +287,9 @@ const validarContrasena = (contrasena) => {
   }
 };
 
+// Las mismas reglas valen para las cuentas que crea el Administrador (spec 021)
+exports.validarContrasena = validarContrasena;
+
 exports.register = async ({
   nombre_usuario,
   apellido,

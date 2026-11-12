@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
 import "../styles/adminpanel.css";
 
@@ -21,6 +21,7 @@ import "../styles/adminpanel.css";
  *  superior       boolean       se dibuja encima de otro modal abierto
  *  peligro        boolean       botón principal en rojo (eliminar, etc.)
  *  ancho          number        ancho máximo en px (640 por defecto)
+ *  idDescripcion  string        id del texto que describe el diálogo (opcional)
  */
 function ModalFormulario({
   abierto,
@@ -36,8 +37,11 @@ function ModalFormulario({
   peligro = false,
   ancho = 640,
   superior = false,
+  idDescripcion,
   children,
 }) {
+  // Id propio por modal: con dos abiertos, cada uno se nombra con su título
+  const idTitulo = useId();
   const cuerpoRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -94,11 +98,12 @@ function ModalFormulario({
         style={{ maxWidth: ancho }}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="mf-titulo"
+        aria-labelledby={idTitulo}
+        aria-describedby={idDescripcion}
       >
         <div className="mf-header">
           <div>
-            <h2 id="mf-titulo" className="mf-titulo">
+            <h2 id={idTitulo} className="mf-titulo">
               {titulo}
             </h2>
             {subtitulo && <p className="mf-subtitulo">{subtitulo}</p>}
