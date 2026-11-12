@@ -4,6 +4,7 @@
 import { execFileSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { RUTAS_NO_INDEXABLES, RUTAS_PUBLICAS } from '../src/seo/rutas.js'
 
 const CARPETA = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const IMAGEN = 'dentissa-frontend:prueba-nginx'
@@ -27,16 +28,28 @@ const esperarNginx = async () => {
   throw new Error('nginx no respondió')
 }
 
-const RUTAS_PUBLICAS = ['/', '/nosotros', '/galeria', '/contacto', '/aviso-de-privacidad', '/terminos-de-servicio']
+// Las rutas salen de la tabla única (R8): una página nueva sin su location en nginx falla aquí
+const PUBLICAS = RUTAS_PUBLICAS.map((r) => r.ruta)
+const PRIVADAS = [...RUTAS_NO_INDEXABLES, '/restablecer-contrasena?token=x', '/admin/usuarios', '/paciente/perfil']
 
 const comprobaciones = [
-  ...RUTAS_PUBLICAS.map((ruta) => [`${ruta} → 200 sin redirección`, async () => {
+  ...PUBLICAS.map((ruta) => [`${ruta} → 200 sin redirección`, async () => {
     const r = await pedir(ruta)
     return r.status === 200 && /<h1/.test(await r.text())
   }]),
   ['/nosotros/ → 301 a /nosotros en un salto', async () => {
     const r = await pedir('/nosotros/')
     return r.status === 301 && r.headers.get('location') === '/nosotros'
+  }],
+  ['/contacto/?utm=1 → 301 conservando la query string', async () => {
+    const r = await pedir('/contacto/?utm=1')
+    return r.status === 301 && r.headers.get('location') === '/contacto?utm=1'
+  }],
+  // R2: una barra invertida en la ruta no puede acabar en una redirección a otro dominio
+  ['/%5Cevil.com/ → sin redirección a otro dominio', async () => {
+    const r = await pedir('/%5Cevil.com/')
+    const destino = r.headers.get('location') || ''
+    return !destino.startsWith('/\\') && !destino.startsWith('//') && !/^https?:/i.test(destino)
   }],
   ['/no-existe → 404 con "Página no encontrada"', async () => {
     const r = await pedir('/no-existe')
@@ -50,7 +63,7 @@ const comprobaciones = [
     const r = await pedir('/sitemap.xml')
     return r.status === 200 && /xml/.test(r.headers.get('content-type')) && /<urlset/.test(await r.text())
   }],
-  ...['/login', '/admin', '/paciente'].map((ruta) => [`${ruta} → la app con X-Robots-Tag: noindex`, async () => {
+  ...PRIVADAS.map((ruta) => [`${ruta} → la app con X-Robots-Tag: noindex`, async () => {
     const r = await pedir(ruta)
     return r.status === 200 && /noindex/.test(r.headers.get('x-robots-tag') || '') && /<div id="root">/.test(await r.text())
   }]),
