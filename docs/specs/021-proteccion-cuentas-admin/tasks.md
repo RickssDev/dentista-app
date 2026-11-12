@@ -124,8 +124,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T080 Validar el id de la ruta como entero positivo y usar el id de la cuenta encontrada en la regla y las escrituras; `eliminarODesactivar()` sin argumento — `backend/src/modules/users/user.service.js` — hecho cuando: los casos de id de T070 pasan, T030 y T031 siguen en verde — cubre: CA7 — depende: T070
   - nota: añadida por /review: R1, R13
   - nota: los casos de id de T070 pasan; T030 y T031 en verde. Comprobado rompiendo: sin normalizar el id, los 4 casos fallan; restaurado pasan
-- [ ] T081 Borrar la imagen subida cuando el alta o la edición se rechazan — `backend/src/modules/users/user.controller.js` — hecho cuando: los casos de imagen de T070 pasan — cubre: CA1 — depende: T070
+- [x] T081 Borrar la imagen subida cuando el alta o la edición se rechazan — `backend/src/modules/users/user.controller.js` — hecho cuando: los casos de imagen de T070 pasan — cubre: CA1 — depende: T070
   - nota: añadida por /review: R4
+  - nota: T070 pasa completo (13/13). Comprobado rompiendo: borrar la imagen también en un alta válida hace fallar "alta válida no borra la imagen"; restaurado pasa
 - [ ] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
   - nota: añadida por /review: R5
 - [ ] T083 Conservar el error original si el rollback falla — `backend/src/modules/users/user.repository.js` — hecho cuando: T073 pasa — cubre: CA10 — depende: T073
