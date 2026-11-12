@@ -17,7 +17,7 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 - No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `noindex`; hoy no existe.
 - Páginas de error: 404 propia en `frontend/src/pages/Legal.jsx`, servida con código 200; rutas privadas sin sesión → redirección en cliente a `/login`.
 - Archivos generados: `robots.txt` y `sitemap.xml` no existen.
-- Compartir: Open Graph no existe.
+- Compartir: Open Graph no existe. Con la spec 022, cada ruta indexable lleva `og:title`, `og:description`, `og:url`, `og:image` (1200×630) con `og:image:alt`, y `twitter:card` `summary_large_image`.
 - Íconos: `favicon.jpeg` propio; `theme-color` `#0f766e`.
 - Datos estructurados: ninguno.
 - Presupuesto: Lighthouse SEO 100 en las rutas indexables (decisión del usuario, 2026-11-12); la constitución no fija presupuesto de JavaScript.
@@ -97,6 +97,7 @@ Correcciones:
 | 2026-11-08 | URL inexistente responde 404 | ❌ | `/ruta-inexistente-aidd` → 200 |
 
 ## Exclusiones deliberadas
+- Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex` y el armazón `app.html` (con `<meta name="robots" content="noindex">`), no 401/404. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
 
 ## Pendientes operativos
 - Alta del sitio en Google Search Console (propiedad `https://sistema.dentissa.app`) y envío del sitemap, cuando exista — lo hace el usuario.
@@ -110,3 +111,4 @@ Correcciones:
 | 2026-11-08 | Documento creado | /init |
 | 2026-11-12 | SE7 separada: PNG en SE7.a y SVG en SE7.b (no hay logo vectorial) | /analyze 022 A7 |
 | 2026-11-12 | Re-auditoría: título y descripción generales presentes; Lighthouse SEO 92 por `robots.txt`; pendientes operativos de Search Console y Google Business | /seo audit |
+| 2026-11-12 | Exclusión deliberada de las rutas privadas (200 con `noindex`) y etiquetas para compartir de la spec 022 | /review 022 R9, R16 |

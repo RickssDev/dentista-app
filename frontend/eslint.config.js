@@ -26,9 +26,9 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
-  // Scripts del build (prerender, pruebas de nginx): corren en Node (spec 022)
+  // Scripts del build y ayudantes de pruebas (prerender, nginx, hidratación): corren en Node (spec 022)
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['{scripts,tests}/**/*.mjs'],
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 'latest',
