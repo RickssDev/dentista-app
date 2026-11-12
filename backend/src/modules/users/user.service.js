@@ -33,6 +33,15 @@ const exigirOtroAdministradorActivo = async (conn, id) => {
   }
 };
 
+// El id de la ruta debe ser un entero positivo: "5abc" llegaría a MySQL como 5 pero a la regla
+// del último Administrador como NaN (spec 021, /review R1)
+const normalizarIdUsuario = (id) => {
+  if (!/^\d+$/.test(String(id)) || Number(id) < 1) {
+    throw new AppError('ID de usuario inválido', 400);
+  }
+  return Number(id);
+};
+
 // El aviso no revela nada de la otra cuenta (spec 021 TM5)
 const exigirCorreoLibre = async (correo, idExcluido = null) => {
   const otra = await repo.findOtroUsuarioPorCorreo(correo, idExcluido);
@@ -102,7 +111,8 @@ exports.createUsuario = async (body, imagen = null) => {
   }
 };
 
-exports.updateUsuario = async (id, body, imagen = null) => {
+exports.updateUsuario = async (idRecibido, body, imagen = null) => {
+  const id = normalizarIdUsuario(idRecibido);
   const exists = await repo.getUsuarioById(id);
 
   if (!exists) {
@@ -165,7 +175,8 @@ exports.updateUsuario = async (id, body, imagen = null) => {
   return await repo.getUsuarioById(id);
 };
 
-exports.deleteUsuario = async (id) => {
+exports.deleteUsuario = async (idRecibido) => {
+  const id = normalizarIdUsuario(idRecibido);
   const exists = await repo.getUsuarioById(id);
 
   if (!exists) {
@@ -192,7 +203,7 @@ exports.deleteUsuario = async (id) => {
       await exigirOtroAdministradorActivo(conn, id);
       return eliminarODesactivar(conn);
     })
-    : await eliminarODesactivar(undefined);
+    : await eliminarODesactivar();
 
   if (desactivado) {
     return {

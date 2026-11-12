@@ -121,8 +121,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: falla "error de red" por la razón esperada (hoy muestra "Failed to fetch"); "guardar con 400 no vuelve a pedir la lista" pasa desde el principio y se comprobó rompiendo (recargar la lista en el catch de guardar la hace fallar); ejecutadas dos veces
 
 ### Correcciones
-- [ ] T080 Validar el id de la ruta como entero positivo y usar el id de la cuenta encontrada en la regla y las escrituras; `eliminarODesactivar()` sin argumento — `backend/src/modules/users/user.service.js` — hecho cuando: los casos de id de T070 pasan, T030 y T031 siguen en verde — cubre: CA7 — depende: T070
+- [x] T080 Validar el id de la ruta como entero positivo y usar el id de la cuenta encontrada en la regla y las escrituras; `eliminarODesactivar()` sin argumento — `backend/src/modules/users/user.service.js` — hecho cuando: los casos de id de T070 pasan, T030 y T031 siguen en verde — cubre: CA7 — depende: T070
   - nota: añadida por /review: R1, R13
+  - nota: los casos de id de T070 pasan; T030 y T031 en verde. Comprobado rompiendo: sin normalizar el id, los 4 casos fallan; restaurado pasan
 - [ ] T081 Borrar la imagen subida cuando el alta o la edición se rechazan — `backend/src/modules/users/user.controller.js` — hecho cuando: los casos de imagen de T070 pasan — cubre: CA1 — depende: T070
   - nota: añadida por /review: R4
 - [ ] T082 Tratar como vacío el texto de solo espacios — `backend/src/modules/users/user.validacion.js` — hecho cuando: T071 pasa completo — cubre: CA2 — depende: T071
