@@ -79,7 +79,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ## Implementación
 - [x] T020 Crear la tabla de rutas públicas y la canónica — `frontend/src/seo/rutas.js` — hecho cuando: T010 pasa — cubre: CA3, CA4 — depende: T010
   - nota: T010 pasa (5/5)
-- [ ] T021 Generar `robots.txt` y `sitemap.xml` desde la tabla — `frontend/src/seo/archivos.js` — hecho cuando: T011 pasa — cubre: CA5, CA6, CA8 — depende: T011, T020
+- [x] T021 Generar `robots.txt` y `sitemap.xml` desde la tabla — `frontend/src/seo/archivos.js` — hecho cuando: T011 pasa — cubre: CA5, CA6, CA8 — depende: T011, T020
+  - nota: T011 pasa
 - [ ] T022 Generar el JSON-LD de la clínica desde `site.js`, con el escape de `</script>` — `frontend/src/seo/negocioLocal.js` — hecho cuando: T012 pasa · comprobado rompiendo el escape — cubre: CA7 — depende: T012, T030
 - [ ] T023 Construir la página: cuerpo en `#root` y metadatos, Open Graph, `robots` y JSON-LD en el `<head>`, con atributos escapados — `frontend/src/seo/cabecera.js` — hecho cuando: los casos de `construirPagina` de T013 pasan — cubre: CA3, CA4, CA7, CA8, CA11 — depende: T013, T020, T022
 - [ ] T024 Crear la entrada de prerender con `StaticRouter` y `prerenderToNodeStream` — `frontend/src/entry-prerender.jsx` — hecho cuando: los casos de render de T013 pasan (incluido CA10) · comprobado rompiendo: prerenderizar `/login` hace fallar el caso de textos privados — cubre: CA2, CA10 — depende: T001, T013
