@@ -31,6 +31,16 @@ describe('022 CA2 · cada página pública trae su contenido sin JavaScript', ()
     expect(h1(html)).not.toBe('')
   })
 
+  // R3: el contenido no puede llegar fuera de su sitio, oculto hasta que corra JavaScript
+  test.each(RUTAS)('%s tiene su h1 dentro de <main> y nada pendiente de Suspense', (ruta) => {
+    const { html } = pagina(ruta)
+    const main = (html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/) || [])[1] || ''
+    expect(h1(main)).not.toBe('')
+    expect(html).not.toContain('<template id="B:')
+    expect(html).not.toContain('<div hidden id="S:')
+    expect(html).not.toContain('$RC(')
+  })
+
   test('los h1 son distintos entre las seis páginas', () => {
     const titulos = paginas.map((p) => h1(p.html))
     expect(new Set(titulos).size).toBe(titulos.length)
@@ -44,6 +54,7 @@ describe('022 CA3, CA4, CA11 · metadatos en el <head> de cada página', () => {
     expect(html.match(/<title>/g)).toHaveLength(1)
     expect(metaContenido(html, 'name', 'description')).toBe(descripcion)
     expect(enlace(html, 'canonical')).toBe(canonica(ruta))
+    expect(html.match(/rel="canonical"/g)).toHaveLength(1)
     expect(metaContenido(html, 'property', 'og:title')).toBe(titulo)
     expect(metaContenido(html, 'property', 'og:description')).toBe(descripcion)
     expect(metaContenido(html, 'property', 'og:url')).toBe(canonica(ruta))
@@ -95,7 +106,7 @@ describe('022 CA10, TM1 · nada privado en lo que se genera', () => {
   })
 })
 
-describe('022 CA1 · comprobaciones de Lighthouse SEO sobre el HTML', () => {
+describe('022 CA1 · subconjunto de comprobaciones de Lighthouse SEO sobre el HTML', () => {
   test.each(RUTAS)('%s: idioma, viewport, alt e hipervínculos rastreables', (ruta) => {
     const { html } = pagina(ruta)
     expect(html).toMatch(/<html lang="es">/)
