@@ -150,3 +150,18 @@ describe('CA9 · editar otros datos de la única y reactivar se permite', () => 
     expect(repo.updateUsuario).toHaveBeenCalledWith(7, { estado: 'activo' });
   });
 });
+
+describe('R7 · casos del único Administrador', () => {
+  beforeEach(() => conActivos(5));
+
+  test('editar su imagen se guarda sin transacción', async () => {
+    await usuarios.updateUsuario(5, edicionDelPanel(), '/uploads/nueva.jpg');
+    expect(repo.updateUsuario).toHaveBeenCalledWith(5, { imagen: '/uploads/nueva.jpg' });
+    expect(repo.conTransaccion).not.toHaveBeenCalled();
+  });
+
+  test('desactivarla y cambiarle el rol en el mismo PUT → 409 sin escribir', async () => {
+    await rechaza409(usuarios.updateUsuario(5, edicionDelPanel({ estado: 'inactivo', id_rol: '2' })));
+    expect(repo.updateUsuario).not.toHaveBeenCalled();
+  });
+});
