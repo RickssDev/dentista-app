@@ -50,8 +50,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T003 Permitir suites en entorno node con el setup de pruebas — `frontend/tests/setup.js` — hecho cuando: las API simuladas del navegador solo se definen si hay `window`; la suite del frontend sigue en verde y un archivo con `// @vitest-environment node` arranca sin `ReferenceError`
   - nota: añadida por /analyze A1
   - nota: suite jsdom 17/17; un archivo con `// @vitest-environment node` arranca y ve `window` indefinido
-- [ ] T004 Ignorar `dist-ssr` y revisar `scripts/**/*.mjs` con globals de Node — `frontend/eslint.config.js`, `frontend/.gitignore` — hecho cuando: `npm run lint --prefix frontend` no revisa `dist-ssr` y sí `scripts/*.mjs` sin errores de globals; `git check-ignore frontend/dist-ssr` lo ignora
+- [x] T004 Ignorar `dist-ssr` y revisar `scripts/**/*.mjs` con globals de Node — `frontend/eslint.config.js`, `frontend/.gitignore` — hecho cuando: `npm run lint --prefix frontend` no revisa `dist-ssr` y sí `scripts/*.mjs` sin errores de globals; `git check-ignore frontend/dist-ssr` lo ignora
   - nota: añadida por /analyze A12
+  - nota: `dist-ssr` ignorado por ESLint y git; un `scripts/*.mjs` de prueba acepta `process` y marca una variable indefinida
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Escribir las pruebas de la tabla de rutas públicas — `frontend/tests/seo-rutas.test.js` — hecho cuando: falla por la razón esperada (el módulo no existe) y comprueba: exactamente las seis rutas públicas; títulos únicos que contienen "Dentissa"; descripciones únicas de 70–160 caracteres; canónica `https://sistema.dentissa.app<ruta>` sin barra final (la portada `https://sistema.dentissa.app/`); las rutas privadas no están en la tabla — cubre: CA3, CA4
