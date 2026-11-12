@@ -159,3 +159,4 @@ Ninguna.
 | 2026-11-12 | Aprobada de nuevo | usuario |
 | 2026-11-12 | Implementada: CA1–CA13 con sus pruebas en verde | /implement |
 | 2026-11-12 | Review r1: changes_requested (R1–R11, R15, R16, R19, R20 a corregir) | /review |
+| 2026-11-12 | Implementadas las correcciones de la review r1 (T033–T044) | /implement |
