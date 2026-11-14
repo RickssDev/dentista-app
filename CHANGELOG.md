@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-13
+### Added
+- Las páginas públicas (inicio, nosotros, galería, contacto, aviso de privacidad y términos) llegan a los buscadores con su contenido, título y descripción propios, aunque el buscador no ejecute JavaScript (spec 022).
+- La portada indica a los buscadores el nombre, la dirección, el teléfono y el horario de la clínica, y el sitio publica su mapa y las instrucciones para buscadores (spec 022).
+- Al compartir un enlace del sitio se ve una vista previa con la imagen y el texto de la página, y el sitio tiene íconos para navegadores y teléfonos (spec 022).
+
+### Changed
+- Una dirección que no existe muestra "Página no encontrada" y el título de la pestaña lo indica; las direcciones con barra final llevan a la misma página sin la barra (spec 022).
+- El inicio de sesión, el restablecimiento de contraseña y los paneles quedan fuera de los buscadores (spec 022).
+
 ## [1.2.0] - 2026-11-12
 ### Added
 - La clínica nunca se queda sin quien gestione el sistema: no se puede eliminar, desactivar ni quitar el rol al último Administrador activo, aunque lo intente él mismo o dos Administradores lo hagan al mismo tiempo (spec 021).
