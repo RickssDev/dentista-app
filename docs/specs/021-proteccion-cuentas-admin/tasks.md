@@ -147,12 +147,14 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
-  - nota: no hay staging (`docs/deployment.md`); las verificaciones manuales se hacen en local (T041, T051, T060)
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
+  - nota: no hay staging (`docs/deployment.md`); las verificaciones manuales se hicieron en local (T041, T051, T060)
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-12 para v1.2.0: desplegó él mismo en el servidor y lo confirmó por escrito ("ya subí a producción y probé y todo bien")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: desplegado por el usuario el 2026-11-12 con `git pull` y `docker compose` (`docs/deployment.md`); verificación del usuario sin incidencias: servicios arriba, alta con correo inválido rechazada, edición normal y sin errores 500
   - el único Administrador activo intenta desactivar su cuenta y recibe el aviso; sin errores 500 nuevos en `/api/v1/usuarios`
-- [ ] T098 Marcar spec como `released`
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

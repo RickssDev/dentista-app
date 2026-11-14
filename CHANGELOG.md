@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-12
+### Added
+- La clínica nunca se queda sin quien gestione el sistema: no se puede eliminar, desactivar ni quitar el rol al último Administrador activo, aunque lo intente él mismo o dos Administradores lo hagan al mismo tiempo (spec 021).
+
+### Changed
+- Al crear o editar una cuenta desde el panel, los datos inválidos (rol o estado que no existen, correo mal escrito o ya usado por otra cuenta, contraseña fuera de las reglas del registro) reciben un aviso claro en lugar de un error; las cuentas antiguas se siguen pudiendo editar (spec 021).
+- El aviso de "No se pudo eliminar" muestra el motivo real, y los mensajes de los diálogos de confirmación del panel se anuncian a los lectores de pantalla (spec 021).
+
+### Security
+- Las cuentas solo aceptan sus propios campos: el resto de lo enviado se ignora y la foto solo puede llegar como archivo subido (spec 021).
+
 ## [1.1.1] - 2026-11-11
 ### Fixed
 - Nadie puede agendar ni reprogramar citas fuera del horario de atención (lunes a viernes de 8:00 a 16:00, sábado de 8:00 a 14:00, domingo cerrado), ni pacientes ni personal, aunque se llame directamente al sistema (fix 2026-11-10-horario-cita-paciente, fix 2026-11-11-horario-cita-personal).

@@ -1,7 +1,8 @@
 ---
 id: 021
 slug: proteccion-cuentas-admin
-status: implemented
+status: released
+released: v1.2.0 (2026-11-12)
 created: 2026-11-11
 extends: [004]
 ---
@@ -151,3 +152,4 @@ Ninguna.
 | 2026-11-11 | Implementada: CA1–CA11 con sus pruebas en verde | /implement |
 | 2026-11-12 | Vuelve a approved: /review ronda 1 pide correcciones (R1–R7) | /review |
 | 2026-11-12 | Implementada de nuevo con las correcciones T070–T084 | /implement |
+| 2026-11-12 | Liberada en v1.2.0 | /release |
