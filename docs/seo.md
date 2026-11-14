@@ -1,6 +1,6 @@
 ---
 status: inferred
-updated: 2026-11-08
+updated: 2026-11-12
 ---
 
 # SEO técnico de Dentissa
@@ -17,10 +17,10 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 - No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `noindex`; hoy no existe.
 - Páginas de error: 404 propia en `frontend/src/pages/Legal.jsx`, servida con código 200; rutas privadas sin sesión → redirección en cliente a `/login`.
 - Archivos generados: `robots.txt` y `sitemap.xml` no existen.
-- Compartir: Open Graph no existe.
+- Compartir: Open Graph no existe. Con la spec 022, cada ruta indexable lleva `og:title`, `og:description`, `og:url`, `og:image` (1200×630) con `og:image:alt`, y `twitter:card` `summary_large_image`.
 - Íconos: `favicon.jpeg` propio; `theme-color` `#0f766e`.
 - Datos estructurados: ninguno.
-- Presupuesto: TODO(init): la constitución no fija presupuesto de JavaScript ni de Lighthouse.
+- Presupuesto: Lighthouse SEO 100 en las rutas indexables (decisión del usuario, 2026-11-12); la constitución no fija presupuesto de JavaScript.
 
 ## Inventario de rutas
 | Ruta | Indexable | Título | Descripción | Canónica | `h1` | Open Graph | Datos estructurados | Evidencia |
@@ -38,6 +38,7 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 | URL inexistente | no (404) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /ruta-inexistente-aidd` → 200 |
 
 Auditado sobre la build local (`npm run build`) y producción el 2026-11-08, con 5 peticiones `GET` sin sesión.
+Re-auditado el 2026-11-12 sobre la build local servida con `vite preview` (mismo fallback que nginx): `index.html` ya tiene un título ("Dentissa | Clínica Dental") y una descripción generales, iguales en todas las rutas. Lighthouse 13.6.0, categoría SEO: **92**; única comprobación fallida: `robots-txt` ("robots.txt is not valid": `/robots.txt` devuelve el HTML de la SPA).
 
 ## Brechas
 
@@ -50,7 +51,7 @@ Correcciones:
 - SE1.b Título y descripción únicos por ruta indexable — estado: pendiente
 
 ### SE2 · media — Sin `robots.txt` ni sitemap
-Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA).
+Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA). Lighthouse lo marca como `robots.txt is not valid` y es lo único que baja la categoría SEO a 92 (2026-11-12).
 Correcciones:
 - SE2.a Generar `robots.txt` con la URL absoluta del sitemap — estado: pendiente
 - SE2.b Generar `sitemap.xml` con las 6 rutas indexables — estado: pendiente
@@ -81,7 +82,8 @@ Correcciones:
 ### SE7 · baja — Íconos incompletos
 Evidencia: solo `favicon.jpeg`; sin ícono PNG/SVG ni `apple-touch-icon`.
 Correcciones:
-- SE7.a Añadir `favicon.svg`, `favicon-32.png` y `apple-touch-icon.png` — estado: pendiente
+- SE7.a Añadir íconos PNG (`favicon-32.png`, 192, 512) y `apple-touch-icon.png` — estado: pendiente
+- SE7.b Añadir `favicon.svg` desde un logo vectorial — estado: pendiente (no hay logo vectorial; decisión del usuario, 2026-11-12)
 
 ## Brechas por confirmar
 - Redirecciones de la variante con `www` y de HTTP a HTTPS — depende de: configuración de Cloudflare — cómo confirmarla: consultar esas variantes.
@@ -95,12 +97,18 @@ Correcciones:
 | 2026-11-08 | URL inexistente responde 404 | ❌ | `/ruta-inexistente-aidd` → 200 |
 
 ## Exclusiones deliberadas
+- Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex` y el armazón `app.html` (con `<meta name="robots" content="noindex">`), no 401/404. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
 
 ## Pendientes operativos
-- Alta del sitio y envío del sitemap en las consolas de los buscadores, cuando exista el sitemap.
-- Decidir si el sitio público debe vivir en un dominio distinto del subdominio `sistema`.
+- Alta del sitio en Google Search Console (propiedad `https://sistema.dentissa.app`) y envío del sitemap, cuando exista — lo hace el usuario.
+- Perfil de Google Business de la clínica con el mismo nombre, dirección, teléfono y horario que el sitio — lo hace el usuario; es lo que más pesa al buscar "dentissa".
+- Confirmar la dirección y el teléfono reales de la clínica (hoy `frontend/src/data/site.js` tiene valores provisionales).
+- Dominio: el sitio público sigue en `sistema.dentissa.app` (decisión del usuario, 2026-11-12).
 
 ## Historial
 | Fecha | Cambio | Origen |
 |---|---|---|
 | 2026-11-08 | Documento creado | /init |
+| 2026-11-12 | SE7 separada: PNG en SE7.a y SVG en SE7.b (no hay logo vectorial) | /analyze 022 A7 |
+| 2026-11-12 | Re-auditoría: título y descripción generales presentes; Lighthouse SEO 92 por `robots.txt`; pendientes operativos de Search Console y Google Business | /seo audit |
+| 2026-11-12 | Exclusión deliberada de las rutas privadas (200 con `noindex`) y etiquetas para compartir de la spec 022 | /review 022 R9, R16 |

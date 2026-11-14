@@ -69,7 +69,7 @@ seo:                           # solo sitios web públicos
   status: inferred
   indexable: true
   site_url: https://sistema.dentissa.app
-  rendering: spa
+  rendering: hybrid
 skills:
   enabled: []                  # el plugin design de Anthropic no está en esta sesión
 paths:

@@ -5,9 +5,13 @@ export const BASE_URL = (
 ).replace(/\/+$/, "");
 
 // Compatible con URL relativa y absoluta
+// Fuera del navegador (prerender en el build) no hay window: se usa un origen fijo
+const ORIGEN_ACTUAL =
+  typeof window !== "undefined" ? window.location.origin : "http://localhost";
+
 export const BASE_ORIGIN = new URL(
   BASE_URL,
-  window.location.origin
+  ORIGEN_ACTUAL
 ).origin;
 
 // URL para archivos e imágenes

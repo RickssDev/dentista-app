@@ -1,0 +1,49 @@
+<!doctype html>
+<!--
+  Plantilla de la imagen para compartir (spec 022, CA11): 1200×630 con la foto de portada y el logo,
+  sin textos nuevos. Colores de los tokens de marca (--primary-700, frontend/src/styles/home/global.css).
+  Regenerar (desde frontend/):
+    chrome --headless=new --hide-scrollbars --window-size=1200,630 --screenshot=og.png scripts/og/plantilla.html
+  y convertir og.png a public/og-dentissa.jpg (1200×630, JPEG).
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      .lienzo {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        background: url("../../public/images/hero-dentissa.webp") center / cover no-repeat;
+      }
+      .velo {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(182, 61, 98, 0.86) 0%, rgba(182, 61, 98, 0.55) 45%, rgba(182, 61, 98, 0) 75%);
+      }
+      .logo {
+        position: absolute;
+        left: 110px;
+        top: 50%;
+        width: 300px;
+        height: 300px;
+        transform: translateY(-50%);
+        border-radius: 50%;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lienzo">
+      <div class="velo"></div>
+      <img class="logo" src="../../public/icon-512.png" alt="" />
+    </div>
+  </body>
+</html>

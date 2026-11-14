@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import Icon from "./Icon";
 
 /**
@@ -11,17 +11,23 @@ import Icon from "./Icon";
  */
 export default function SmartImage({ src, alt = "", ratio, priority = false, className = "", sizes, onClick }) {
   const [status, setStatus] = useState(src ? "loading" : "error");
-  const imgRef = useRef(null);
+  const [srcAnterior, setSrcAnterior] = useState(src);
 
-  useEffect(() => {
+  // Al cambiar la imagen se reinicia el estado durante el render (sin efecto en cascada)
+  if (src !== srcAnterior) {
+    setSrcAnterior(src);
     setStatus(src ? "loading" : "error");
-  }, [src]);
+  }
 
-  // Si la imagen ya estaba en caché, onLoad puede no dispararse a tiempo
-  useEffect(() => {
-    const img = imgRef.current;
-    if (img && img.complete && img.naturalWidth > 0) setStatus("loaded");
-  }, [src]);
+  // Si la imagen ya estaba en caché, onLoad puede no dispararse a tiempo: se revisa al montarla y
+  // cada vez que cambia src (la función nueva hace que React vuelva a llamar al ref)
+  const revisarCache = useCallback(
+    (img) => {
+      if (img && img.complete && img.naturalWidth > 0) setStatus("loaded");
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- src debe renovar el ref callback
+    [src],
+  );
 
   return (
     <div
@@ -31,13 +37,13 @@ export default function SmartImage({ src, alt = "", ratio, priority = false, cla
     >
       {status !== "error" ? (
         <img
-          ref={imgRef}
+          ref={revisarCache}
           src={src}
           alt={alt}
           sizes={sizes}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
-          fetchpriority={priority ? "high" : "auto"}
+          fetchPriority={priority ? "high" : "auto"}
           onLoad={() => setStatus("loaded")}
           onError={() => setStatus("error")}
         />

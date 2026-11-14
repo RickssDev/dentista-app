@@ -48,7 +48,7 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          git diff --name-only --diff-filter=ACMR "origin/$BASE_REF"...HEAD -- '*.js' '*.jsx' \
+          git diff --name-only --diff-filter=ACMR "origin/$BASE_REF"...HEAD -- '*.js' '*.jsx' '*.mjs' \
             | grep '^frontend/' | sed 's#^frontend/##' \
             | xargs -r npx eslint
       - name: Lint de backend en los archivos cambiados del PR
@@ -67,6 +67,10 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_URL: /api/v1
+      - name: Prueba de nginx del frontend (spec 022)
+        timeout-minutes: 10
+        run: node scripts/probar-nginx.mjs
+        working-directory: frontend
 
   seguridad-pr:
     name: Seguridad (solo cambios del PR)

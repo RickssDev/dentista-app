@@ -4,7 +4,10 @@ globalThis.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 }
-window.scrollTo = () => {}
+// Las suites de SEO corren en entorno node, sin window (spec 022)
+if (typeof window !== 'undefined') {
+  window.scrollTo = () => {}
+}
 
 // Ninguna prueba del frontend sale a la red.
 globalThis.fetch = () => Promise.reject(new Error('Red bloqueada en las pruebas'))

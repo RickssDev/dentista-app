@@ -68,7 +68,8 @@ export default function Footer() {
       </div>
 
       <div className="dt-container footer__bottom">
-        <p>© {new Date().getFullYear()} Dentissa. Todos los derechos reservados.</p>
+        {/* El año se pinta en el build y otra vez en el navegador; puede cambiar entre uno y otro (spec 022) */}
+        <p suppressHydrationWarning>© {new Date().getFullYear()} Dentissa. Todos los derechos reservados.</p>
         <div className="footer__legal">
           <Link to="/aviso-de-privacidad">Aviso de Privacidad</Link>
           <Link to="/terminos-de-servicio">Términos de Servicio</Link>
