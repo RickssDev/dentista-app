@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Icon from "../components/home/Icon";
 import SmartImage from "../components/home/SmartImage";
 import { EmptyState, PageHero } from "../components/home/ui";
@@ -113,7 +113,10 @@ function AvisoConReserva({ children }) {
           <div key={i} className="skeleton--tile" />
         ))}
       </div>
-      <div className="gallery-estado__aviso">{children}</div>
+      {/* role="status": el lector de pantalla anuncia el aviso al aparecer (spec 023, review R6) */}
+      <div className="gallery-estado__aviso" role="status">
+        {children}
+      </div>
     </div>
   );
 }
@@ -123,6 +126,12 @@ export default function Gallery() {
     "imagenes",
     normalizeImagen,
   );
+  // Al reintentar, el botón desaparece: el foco pasa a la sección para no caer al body
+  const seccion = useRef(null);
+  const reintentar = () => {
+    seccion.current?.focus();
+    retry();
+  };
   const [category, setCategory] = useState("Todas");
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [active, setActive] = useState(null);
@@ -163,7 +172,12 @@ export default function Gallery() {
         text="Un vistazo a nuestras instalaciones, equipo y a los resultados que logramos junto a nuestros pacientes."
       />
 
-      <section className="section section--flush-top">
+      <section
+        ref={seccion}
+        className="section section--flush-top"
+        tabIndex={-1}
+        aria-label="Fotos de la galería"
+      >
         <div className="dt-container">
           {categories.length > 0 && (
             <div
@@ -198,7 +212,7 @@ export default function Gallery() {
                 icon="image"
                 title="No pudimos cargar la galería"
                 text="Revisa tu conexión e inténtalo de nuevo."
-                onRetry={retry}
+                onRetry={reintentar}
               />
             </AvisoConReserva>
           ) : filtered.length === 0 ? (
