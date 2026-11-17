@@ -7,16 +7,18 @@ import Icon from "./Icon";
  *  - reserva espacio con aspect-ratio (sin saltos de layout / CLS)
  *  - skeleton animado mientras carga y fade-in al terminar
  *  - fallback elegante si la URL falla
- *  - priority=true para la imagen principal (LCP)
+ *  - priority=true para la imagen principal (LCP): se pinta desde el primer render, sin ocultarla
+ *    a la espera de la app ni esqueleto (spec 023, CA3)
  */
-export default function SmartImage({ src, alt = "", ratio, priority = false, className = "", sizes, onClick }) {
-  const [status, setStatus] = useState(src ? "loading" : "error");
+export default function SmartImage({ src, alt = "", ratio, priority = false, className = "", sizes, srcSet, onClick }) {
+  const inicial = !src ? "error" : priority ? "loaded" : "loading";
+  const [status, setStatus] = useState(inicial);
   const [srcAnterior, setSrcAnterior] = useState(src);
 
   // Al cambiar la imagen se reinicia el estado durante el render (sin efecto en cascada)
   if (src !== srcAnterior) {
     setSrcAnterior(src);
-    setStatus(src ? "loading" : "error");
+    setStatus(inicial);
   }
 
   // Si la imagen ya estaba en caché, onLoad puede no dispararse a tiempo: se revisa al montarla y
@@ -31,7 +33,7 @@ export default function SmartImage({ src, alt = "", ratio, priority = false, cla
 
   return (
     <div
-      className={`smart-img is-${status} ${className}`}
+      className={`smart-img is-${status}${priority ? " is-priority" : ""} ${className}`}
       style={ratio ? { aspectRatio: ratio } : undefined}
       onClick={onClick}
     >
@@ -40,6 +42,7 @@ export default function SmartImage({ src, alt = "", ratio, priority = false, cla
           ref={revisarCache}
           src={src}
           alt={alt}
+          srcSet={srcSet}
           sizes={sizes}
           loading={priority ? "eager" : "lazy"}
           decoding="async"

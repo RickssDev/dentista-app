@@ -4,7 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 // Evita cargar Google: el botón real exige su proveedor y red externa.
-vi.mock('@react-oauth/google', () => ({ GoogleLogin: () => null }))
+// Desde la spec 023 el login monta su propio proveedor: el simulado solo pinta a sus hijos
+vi.mock('@react-oauth/google', () => ({
+  GoogleOAuthProvider: ({ children }) => children,
+  GoogleLogin: () => null,
+}))
 vi.mock('../src/services/api', () => ({ api: vi.fn() }))
 
 import { api } from '../src/services/api'

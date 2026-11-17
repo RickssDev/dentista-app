@@ -1,7 +1,6 @@
 import Icon from "../components/home/Icon";
 import SmartImage from "../components/home/SmartImage";
 import { CtaBand, EmptyState, PageHero, SectionHeader } from "../components/home/ui";
-import { usePublicData } from "../hooks/usePublicData";
 
 import { IMAGES, STATS, TEAM, VALUES } from "../data/site";
 import "../styles/home/About.css";
@@ -30,7 +29,14 @@ export default function About() {
       <section id="quienes-somos" className="section">
         <div className="dt-container about">
           <div className="about__media">
-            <SmartImage src={IMAGES.about} alt="Instalaciones de la clínica Dentissa" ratio="4 / 3" />
+            <SmartImage
+              src={IMAGES.about}
+              srcSet={IMAGES.aboutSrcSet}
+              sizes="(min-width: 960px) 560px, calc(100vw - 32px)"
+              alt="Instalaciones de la clínica Dentissa"
+              ratio="4 / 3"
+              priority
+            />
           </div>
           <div className="about__text">
             <span className="eyebrow">Quiénes somos</span>

@@ -1,6 +1,6 @@
 ---
 status: inferred
-updated: 2026-11-12
+updated: 2026-11-17
 ---
 
 # SEO técnico de Dentissa
@@ -13,32 +13,35 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 ## Reglas del sitio
 - URL canónica: https://sistema.dentissa.app (confirmado por el usuario, 2026-11-08) · variante única: sin `www`, sin barra final (las demás redirigen con `301`/`308`).
 - Idiomas: es.
-- Renderizado: spa — todas las rutas reciben el mismo `index.html`; el contenido lo pinta JavaScript.
-- No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `noindex`; hoy no existe.
-- Páginas de error: 404 propia en `frontend/src/pages/Legal.jsx`, servida con código 200; rutas privadas sin sesión → redirección en cliente a `/login`.
-- Archivos generados: `robots.txt` y `sitemap.xml` no existen.
-- Compartir: Open Graph no existe. Con la spec 022, cada ruta indexable lleva `og:title`, `og:description`, `og:url`, `og:image` (1200×630) con `og:image:alt`, y `twitter:card` `summary_large_image`.
-- Íconos: `favicon.jpeg` propio; `theme-color` `#0f766e`.
-- Datos estructurados: ninguno.
+- Renderizado: SPA con prerenderizado en el build. Las 6 páginas públicas llegan con su HTML propio
+  (spec 022, v1.3.0); `/login` llega pintado en `login.html`, con `noindex`, sin canónica, sin Open Graph
+  y fuera del sitemap (spec 023). Las demás rutas privadas reciben el armazón `app.html`.
+- No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `<meta name="robots" content="noindex">` y `X-Robots-Tag: noindex` desde nginx (spec 022).
+- Páginas de error: 404 propia (`NotFound` en `frontend/src/pages/Legal.jsx`, prerenderizada en `404.html`) servida con código **404**; rutas privadas sin sesión → redirección en cliente a `/login`.
+- Archivos generados en el build: `robots.txt` (con la URL absoluta del sitemap) y `sitemap.xml` con las 6 rutas indexables (spec 022).
+- Compartir: cada ruta indexable lleva `og:title`, `og:description`, `og:url`, `og:image` (1200×630) con `og:image:alt`, y `twitter:card` `summary_large_image` (spec 022). El login no lleva Open Graph.
+- Íconos: `favicon.jpeg`, PNG de 32, 192 y 512 y `apple-touch-icon.png` (spec 022); sin `favicon.svg` (SE7.b).
+- Datos estructurados: negocio local de la clínica en la portada (spec 022).
 - Presupuesto: Lighthouse SEO 100 en las rutas indexables (decisión del usuario, 2026-11-12); la constitución no fija presupuesto de JavaScript.
 
 ## Inventario de rutas
 | Ruta | Indexable | Título | Descripción | Canónica | `h1` | Open Graph | Datos estructurados | Evidencia |
 |---|---|---|---|---|---|---|---|---|
-| `/` | sí | ❌ genérico | ❌ genérica | ❌ | ❌ | ❌ | ❌ | `frontend/dist/index.html`, producción |
-| `/nosotros` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/galeria` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/contacto` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/aviso-de-privacidad` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/terminos-de-servicio` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/login` | no (inicio de sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
-| `/restablecer-contrasena` | no (flujo privado) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
-| `/admin/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /admin` → 200 |
-| `/paciente/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
-| URL inexistente | no (404) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /ruta-inexistente-aidd` → 200 |
+| `/` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ✅ negocio local | `dist/index.html` (spec 022) |
+| `/nosotros` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ➖ | `dist/nosotros/index.html` |
+| `/galeria` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ➖ | `dist/galeria/index.html` |
+| `/contacto` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ➖ | `dist/contacto/index.html` |
+| `/aviso-de-privacidad` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ➖ | `dist/aviso-de-privacidad/index.html` |
+| `/terminos-de-servicio` | sí | ✅ propio | ✅ propia | ✅ | ✅ | ✅ | ➖ | `dist/terminos-de-servicio/index.html` |
+| `/login` | no (inicio de sesión) | ✅ "Iniciar sesión \| Dentissa" | ➖ | ➖ | ✅ | ➖ (sin Open Graph) | ➖ | `dist/login.html` con `noindex` y `X-Robots-Tag` (spec 023) |
+| `/restablecer-contrasena` | no (flujo privado) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `app.html` con `noindex` y `X-Robots-Tag` (spec 022) |
+| `/admin/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `app.html` con `noindex` y `X-Robots-Tag` |
+| `/paciente/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `app.html` con `noindex` y `X-Robots-Tag` |
+| URL inexistente | no (404) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `404.html` con código 404 y `noindex` (spec 022; producción, 2026-11-17) |
 
 Auditado sobre la build local (`npm run build`) y producción el 2026-11-08, con 5 peticiones `GET` sin sesión.
 Re-auditado el 2026-11-12 sobre la build local servida con `vite preview` (mismo fallback que nginx): `index.html` ya tiene un título ("Dentissa | Clínica Dental") y una descripción generales, iguales en todas las rutas. Lighthouse 13.6.0, categoría SEO: **92**; única comprobación fallida: `robots-txt` ("robots.txt is not valid": `/robots.txt` devuelve el HTML de la SPA).
+Estado actual (2026-11-17, tras las specs 022 y 023): inventario de arriba, comprobado por las guardas del build (`frontend/scripts/prerender.mjs`) y en producción (Lighthouse SEO 100).
 
 ## Brechas
 
@@ -101,7 +104,7 @@ Correcciones:
 | 2026-11-17 | Páginas públicas con HTML propio; privadas funcionan al recargar | ✅ | Usuario: "Ver código fuente" y navegación; contenedor con las carpetas por ruta |
 
 ## Exclusiones deliberadas
-- Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex` y el armazón `app.html` (con `<meta name="robots" content="noindex">`), no 401/404. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
+- Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex`, no 401/404. `/login` recibe `login.html` (prerenderizado, spec 023); las demás, el armazón `app.html`; los dos llevan `<meta name="robots" content="noindex">`. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
 
 ## Pendientes operativos
 - ~~Alta del sitio en Google Search Console y envío del sitemap~~ — hecho por el usuario el 2026-11-17 (verificación por archivo HTML, indexación solicitada).

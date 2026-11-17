@@ -1,7 +1,7 @@
 // Arma el HTML final de cada página prerenderizada (spec 022): el contenido dentro de #root y, en el
 // <head>, título, descripción, canónica, Open Graph, robots, JSON-LD y el CSS de la ruta.
 import { generarNegocioLocal, serializarJsonLd } from "./negocioLocal.js";
-import { RUTAS_PUBLICAS, SITIO, canonica } from "./rutas.js";
+import { RUTAS_PUBLICAS, SITIO, TITULO_LOGIN, canonica } from "./rutas.js";
 
 const IMAGEN_COMPARTIR = `${SITIO}/og-dentissa.jpg`;
 
@@ -43,6 +43,23 @@ const etiquetasIndexables = (datos) => {
 };
 
 /**
+ * Página del login prerenderizado (spec 023): noindex, su título y el CSS de su chunk; sin
+ * canónica, Open Graph ni JSON-LD. La usan scripts/prerender.mjs y las pruebas.
+ */
+export const paginaLogin = (plantilla, { cuerpo = "", css = [], precargas = [] } = {}) =>
+  construirPagina(plantilla, { cuerpo, noindex: true, titulo: TITULO_LOGIN, css, precargas });
+
+// <link rel="preload"> de una fuente (con crossorigin, obligatorio para fuentes) o de la foto
+// principal (prioridad alta y, si la hay, su lista de tamaños) (spec 023)
+const precarga = ({ href, as, type, srcset, sizes }) => {
+  const extra =
+    as === "font"
+      ? ` type="${escapar(type || "font/woff2")}" crossorigin`
+      : ` fetchpriority="high"${srcset ? ` imagesrcset="${escapar(srcset)}"` : ""}${sizes ? ` imagesizes="${escapar(sizes)}"` : ""}`;
+  return `<link rel="preload" href="${escapar(href)}" as="${escapar(as)}"${extra}>`;
+};
+
+/**
  * @param {string} plantilla  index.html de la build (con <title>, descripción y <div id="root">)
  * @param {object} opciones
  *   cuerpo   HTML prerenderizado para #root
@@ -50,8 +67,9 @@ const etiquetasIndexables = (datos) => {
  *   noindex  página que no debe indexarse (armazón de la SPA, 404)
  *   titulo   título para una página sin ruta pública (p. ej. la 404)
  *   css      hojas de estilo de la ruta, en rutas absolutas
+ *   precargas recursos que el navegador debe pedir cuanto antes: { href, as: "font"|"image", type, srcset, sizes }
  */
-export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false, titulo, css = [] } = {}) => {
+export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false, titulo, css = [], precargas = [] } = {}) => {
   const datos = ruta ? RUTAS_PUBLICAS.find((r) => r.ruta === ruta) : null;
   if (ruta && !datos) throw new Error(`La ruta ${ruta} no está en la tabla de rutas públicas`);
 
@@ -81,6 +99,14 @@ export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false,
       : []),
     ...css.map((archivo) => `<link rel="stylesheet" href="${escapar(archivo)}">`),
   ];
+
+  // Las precargas van tras el viewport (si no, el navegador elige la imagen del srcset con el ancho de
+  // escritorio por defecto y descarga dos) y antes de cualquier hoja de estilo o script
+  if (precargas.length) {
+    const viewport = /<meta name="viewport"[^>]*>/i;
+    const inicio = (html.match(viewport) || [""])[0];
+    html = reemplazar(html, viewport, `${inicio}\n    ${precargas.map(precarga).join("\n    ")}`, "meta viewport");
+  }
 
   if (cabecera.length) html = reemplazar(html, /<\/head>/, `    ${cabecera.join("\n    ")}\n  </head>`, "</head>");
   return reemplazar(html, /<div id="root"><\/div>/, `<div id="root">${cuerpo}</div>`, '<div id="root"></div>');

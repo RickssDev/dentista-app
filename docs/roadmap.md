@@ -38,7 +38,8 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 **SEO**
 - SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12; mitigadas en v1.3.0 salvo SE7.b (sin logo vectorial).
 - Cloudflare guarda `robots.txt` y `sitemap.xml` 4 h (`max-age=14400`): tras un despliegue sirve la versión anterior. Propuesta: `/fix` con `Cache-Control` corto en nginx para esos archivos (hallado al liberar v1.3.0).
-- Rendimiento de la portada: Lighthouse 75, LCP ~6,5 s por la foto de Unsplash; spec propia (decisión del usuario, 2026-11-12).
+- `frontend/Dockerfile` no declara `ARG VITE_GOOGLE_CLIENT_ID`: una imagen construida desde el repo sale sin client ID (el botón de Google no funciona en local). Producción funciona por un cambio local sin commitear del `Dockerfile` en el servidor. Propuesta: `/fix` que lo declare y un test que compare las `VITE_*` del código con el Dockerfile (hallado 2026-11-17).
+- Rendimiento de la portada: Lighthouse 75, LCP ~6,5 s por la foto de Unsplash; spec propia (decisión del usuario, 2026-11-12) → [023](specs/023-rendimiento-sitio/spec.md) (borrador).
 
 **Deuda de la spec 022** (aceptada en /review, ronda 1)
 - 022/R12 `/index.html`, `/<ruta>/index.html` y `/app.html` responden 200 (la canónica evita el duplicado).

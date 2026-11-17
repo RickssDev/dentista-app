@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Icon from "../components/home/Icon";
 import SmartImage from "../components/home/SmartImage";
 import { EmptyState, PageHero } from "../components/home/ui";
@@ -100,11 +100,35 @@ function Lightbox({ items, index, onClose, onNavigate }) {
   );
 }
 
+// Huecos del esqueleto mientras carga la galería
+const HUECOS = 8;
+
+// Los avisos de error y de galería vacía ocupan el mismo alto que el esqueleto: así la página no
+// salta cuando la galería no llega a cargar (spec 023, CLS)
+function AvisoConReserva({ children }) {
+  return (
+    <div className="gallery-estado">
+      <div className="gallery-grid gallery-estado__reserva" aria-hidden="true">
+        {Array.from({ length: HUECOS }, (_, i) => (
+          <div key={i} className="skeleton--tile" />
+        ))}
+      </div>
+      <div className="gallery-estado__aviso">{children}</div>
+    </div>
+  );
+}
+
 export default function Gallery() {
   const { data, loading, error, retry } = usePublicData(
     "imagenes",
     normalizeImagen,
   );
+  // Al reintentar, el botón desaparece: el foco pasa a la sección para no caer al body
+  const seccion = useRef(null);
+  const reintentar = () => {
+    seccion.current?.focus();
+    retry();
+  };
   const [category, setCategory] = useState("Todas");
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [active, setActive] = useState(null);
@@ -122,6 +146,14 @@ export default function Gallery() {
     [data, category],
   );
   const shown = filtered.slice(0, visible);
+  // Lo que anuncia el lector de pantalla cuando la galería no llega a mostrar fotos
+  const anuncio = loading
+    ? ""
+    : error
+      ? "No pudimos cargar la galería. Revisa tu conexión e inténtalo de nuevo."
+      : filtered.length === 0
+        ? "Galería en preparación. Muy pronto compartiremos nuevas fotos."
+        : "";
 
   const changeCategory = (c) => {
     setCategory(c);
@@ -145,7 +177,17 @@ export default function Gallery() {
         text="Un vistazo a nuestras instalaciones, equipo y a los resultados que logramos junto a nuestros pacientes."
       />
 
-      <section className="section section--flush-top">
+      <section
+        ref={seccion}
+        className="section section--flush-top"
+        tabIndex={-1}
+        aria-label="Fotos de la galería"
+      >
+        {/* Una sola región de estado, montada desde la carga: solo cambia su texto, y así los
+            lectores de pantalla la anuncian (spec 023, review R6 y R37) */}
+        <p className="sr-only" role="status">
+          {anuncio}
+        </p>
         <div className="dt-container">
           {categories.length > 0 && (
             <div
@@ -170,23 +212,27 @@ export default function Gallery() {
 
           {loading ? (
             <div className="gallery-grid">
-              {Array.from({ length: 8 }, (_, i) => (
+              {Array.from({ length: HUECOS }, (_, i) => (
                 <div key={i} className="skeleton skeleton--tile" />
               ))}
             </div>
           ) : error ? (
-            <EmptyState
-              icon="image"
-              title="No pudimos cargar la galería"
-              text="Revisa tu conexión e inténtalo de nuevo."
-              onRetry={retry}
-            />
+            <AvisoConReserva>
+              <EmptyState
+                icon="image"
+                title="No pudimos cargar la galería"
+                text="Revisa tu conexión e inténtalo de nuevo."
+                onRetry={reintentar}
+              />
+            </AvisoConReserva>
           ) : filtered.length === 0 ? (
-            <EmptyState
-              icon="image"
-              title="Galería en preparación"
-              text="Muy pronto compartiremos nuevas fotos."
-            />
+            <AvisoConReserva>
+              <EmptyState
+                icon="image"
+                title="Galería en preparación"
+                text="Muy pronto compartiremos nuevas fotos."
+              />
+            </AvisoConReserva>
           ) : (
             <>
               <ul className="gallery-grid">

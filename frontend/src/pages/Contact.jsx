@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icon from "../components/home/Icon";
 import { PageHero, SectionHeader } from "../components/home/ui";
 import {
@@ -72,9 +72,69 @@ function WhatsappForm() {
   );
 }
 
-export default function Contact() {
-  const [mapLoaded, setMapLoaded] = useState(false);
+/**
+ * Mapa bajo demanda (spec 023, CA6): al entrar solo se ve la dirección; el mapa de Google se carga
+ * en el mismo espacio al pulsar "Ver mapa", que sin JavaScript es un enlace a Google Maps.
+ */
+function MapaContacto() {
+  const [activo, setActivo] = useState(false);
+  const mapa = useRef(null);
 
+  // Al cargar el mapa, el foco pasa a él para no perderse con el teclado
+  useEffect(() => {
+    if (activo) mapa.current?.focus();
+  }, [activo]);
+
+  const verMapa = (e) => {
+    e.preventDefault();
+    setActivo(true);
+  };
+
+  const comoLlegar = (extra = "") => (
+    <a
+      className={`map__llegar dt-btn dt-btn--ghost ${extra}`}
+      href={mapLink}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Icon name="pin" size={16} /> Cómo llegar
+    </a>
+  );
+
+  return (
+    <div className={`map ${activo ? "is-activo" : ""}`}>
+      {activo ? (
+        <>
+          <iframe
+            ref={mapa}
+            title="Ubicación de Dentissa en Google Maps"
+            src={mapEmbedSrc}
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+          {comoLlegar("map__open")}
+        </>
+      ) : (
+        <div className="map__vista">
+          <span className="map__pin" aria-hidden="true">
+            <Icon name="pin" size={22} />
+          </span>
+          <p className="map__etiqueta">Ubicación</p>
+          <p className="map__direccion">{CLINIC.address}</p>
+          <div className="map__acciones">
+            <a className="map__ver dt-btn" href={mapLink} onClick={verMapa}>
+              Ver mapa
+            </a>
+            {comoLlegar()}
+          </div>
+          <p className="map__nota">El mapa se carga desde Google Maps al pulsar «Ver mapa».</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Contact() {
   return (
     <>
       <PageHero
@@ -192,24 +252,7 @@ export default function Contact() {
 
       <section className="section">
         <div className="dt-container">
-          <div className={`map ${mapLoaded ? "is-loaded" : ""}`}>
-            <iframe
-              title="Ubicación de Dentissa en Google Maps"
-              src={mapEmbedSrc}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-              onLoad={() => setMapLoaded(true)}
-            />
-            <a
-              className="map__open dt-btn dt-btn--primary dt-btn--sm"
-              href={mapLink}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon name="pin" size={16} /> Cómo llegar
-            </a>
-          </div>
+          <MapaContacto />
         </div>
       </section>
     </>

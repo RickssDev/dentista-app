@@ -19,7 +19,8 @@ beforeAll(() => {
   // Vitest corre desde frontend/; en jsdom import.meta.url no es una URL file://
   const carpeta = process.cwd()
   const ayudante = join(carpeta, 'tests', 'support', 'prerenderizar.mjs')
-  paginas = JSON.parse(execFileSync(process.execPath, [ayudante, ...RUTAS], { cwd: carpeta, encoding: 'utf8' }))
+  // Spec 023: el login también llega prerenderizado
+  paginas = JSON.parse(execFileSync(process.execPath, [ayudante, ...RUTAS, '/login'], { cwd: carpeta, encoding: 'utf8' }))
 }, 60_000)
 
 afterEach(() => {
@@ -30,7 +31,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const hidratar = async (ruta, { otroAnio = false } = {}) => {
+const hidratar = async (ruta, { otroAnio = false, esperar } = {}) => {
   document.body.innerHTML = `<div id="root">${paginas[ruta]}</div>`
   const errores = []
   // R6: todo error recuperable cuenta (p. ej. "Switched to client rendering"); el filtro es solo para console.error
@@ -51,6 +52,8 @@ const hidratar = async (ruta, { otroAnio = false } = {}) => {
   })
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
+    // Páginas cargadas bajo demanda (spec 023): se hidratan cuando llega su módulo
+    if (esperar) await esperar()
   })
   return [...recuperables, ...errores.filter((e) => /hydrat|did not match|Recoverable|mismatch|Router/i.test(e))]
 }
@@ -63,5 +66,27 @@ describe('022 CA13 · hidratación de las páginas públicas', () => {
 
   test('la portada se hidrata sin errores aunque el año del navegador sea otro', async () => {
     expect(await hidratar('/', { otroAnio: true })).toEqual([])
+  })
+})
+
+describe('023 CA5, CA9 · hidratación del login prerenderizado', () => {
+  test('/login llega con el formulario y se hidrata sin errores', async () => {
+    expect(paginas['/login']).toMatch(/id="login-correo"/)
+    let errores
+    let fallo
+    try {
+      // El login se carga bajo demanda: se espera a su módulo para que la hidratación ocurra de verdad
+      errores = await hidratar('/login', {
+        esperar: async () => {
+          await import('../src/pages/admin/login.jsx')
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        },
+      })
+    } catch (e) {
+      fallo = e
+    }
+    expect(fallo, String(fallo?.message)).toBeUndefined()
+    expect(errores).toEqual([])
+    expect(document.getElementById('login-correo')).not.toBeNull()
   })
 })

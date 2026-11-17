@@ -11,10 +11,15 @@ Express 5 (CommonJS), organizado por dominio y con capas routes → controller �
 repository sobre MySQL con SQL manual. `frontend/` es una SPA en React 19 con Vite, organizada por
 tipo de archivo. Las seis páginas públicas se prerenderizan en el build (ADR 0009, spec 022):
 `npm run build` hace el build del cliente, un segundo build con `--ssr` y `scripts/prerender.mjs`,
-que escribe un HTML por página, `404.html`, `app.html` (armazón con `noindex` para las rutas
-privadas), `robots.txt` y `sitemap.xml`; en el navegador se hidratan. En producción, nginx sirve
-cada página por su ruta, `app.html` a las privadas, un 404 real al resto y hace de proxy hacia la
-API, lo que deja a ambos en el mismo origen.
+que escribe un HTML por página, `404.html`, `login.html` (el login ya pintado, con `noindex`;
+ADR 0010, spec 023), `app.html` (armazón con `noindex` para el resto de rutas privadas),
+`robots.txt` y `sitemap.xml`; en el navegador se hidratan. El login, el panel, el portal y
+restablecer contraseña se cargan bajo demanda (`lazy()`), y unas guardas del build
+(`src/seo/guardas.js`) impiden que su código, servicios externos o datos de sesión acaben en las
+páginas públicas. En producción, nginx sirve cada página por su ruta, `login.html` a `/login`,
+`app.html` al resto de privadas, un 404 real a lo demás, comprime el texto, guarda en caché un año
+los archivos con huella de `/assets/` y hace de proxy hacia la API, lo que deja a ambos en el mismo
+origen.
 
 ## Diagrama de componentes
 ```mermaid
@@ -55,7 +60,7 @@ flowchart LR
 | faqs | `backend/src/modules/faqs` | Preguntas frecuentes | — |
 | Transversal | `backend/src/{config,middlewares,utils,services}` | Pool, auth, errores, correo, WhatsApp, cron | — |
 | SPA | `frontend/src` | Sitio público (prerenderizado), panel y portal del paciente | API `/api/v1` |
-| SEO y prerender | `frontend/src/seo`, `frontend/src/entry-prerender.jsx`, `frontend/scripts/prerender.mjs` | Metadatos por ruta, robots, sitemap, JSON-LD y HTML de las páginas públicas | `src/data/site.js`, `App.jsx` (`AppRoutes`) |
+| SEO y prerender | `frontend/src/seo`, `frontend/src/entry-prerender.jsx`, `frontend/scripts/prerender.mjs` | Metadatos por ruta, robots, sitemap, JSON-LD, HTML de las páginas públicas y del login, precargas de la fuente y la foto principal, y guardas del build | `src/data/site.js`, `App.jsx` (`AppRoutes`) |
 
 ## Flujo principal
 Un paciente agenda una cita: `InicioPaciente` llama a `services/api.js`, que envía el JWT de
@@ -73,12 +78,14 @@ MySQL 8 con `mysql2/promise` y pool único (`config/db.js`), sin ORM; transaccio
 Los campos completos son inferidos de las consultas.
 
 ## Integraciones externas
-- **Google Sign-In:** `@react-oauth/google` en el cliente; `verifyIdToken` en el servidor.
+- **Google Sign-In:** `@react-oauth/google` solo en el login, montado cuando la página ya está
+  pintada (spec 023); `verifyIdToken` en el servidor.
 - **WhatsApp Cloud API** (Graph v25.0): apagada en producción con `WHATSAPP_ENABLED=false` porque
   no se paga plan de mensajería (confirmado por el usuario, 2026-11-08).
 - **Resend:** correo transaccional.
 - **Cloudflare:** delante del sitio (cabecera `Server: cloudflare`, 2026-11-08).
-- Google Fonts e imágenes de Unsplash cargadas desde el navegador.
+- Google Maps en `/contacto`, solo cuando el visitante pulsa "Ver mapa" (spec 023). Las fuentes
+  (`@fontsource-variable`) y las fotos se sirven desde el propio sitio.
 
 ## Frontend
 - Componentes y organización: `src/{pages,components,services,api,hooks,utils,data,styles}`;

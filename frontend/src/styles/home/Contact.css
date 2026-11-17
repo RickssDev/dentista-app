@@ -180,6 +180,7 @@
   }
 }
 
+/* Mapa bajo demanda (spec 023, design.md): la vista previa ocupa el mismo espacio que el mapa */
 .map {
   position: relative;
   aspect-ratio: 21 / 9;
@@ -187,13 +188,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--line);
-  background: linear-gradient(100deg, #eef2f4 30%, #f8fafb 50%, #eef2f4 70%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
-}
-.map.is-loaded {
-  animation: none;
-  background: #eef2f4;
+  background: var(--tint);
 }
 .map iframe {
   position: absolute;
@@ -202,10 +197,75 @@
   height: 100%;
   border: 0;
 }
+/* Con el foco en el mapa, el anillo va en el bloque y hacia dentro: el iframe delega el foco en su
+   documento (no recibe :focus) y overflow: hidden recortaría un contorno exterior. No se pinta
+   cuando el foco está en "Cómo llegar", que ya tiene el suyo */
+.map.is-activo:focus-within:not(:has(.map__open:focus)) {
+  outline: 3px solid var(--primary-600);
+  outline-offset: -3px;
+}
+.map__vista {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--gutter);
+  text-align: center;
+}
+.map__pin {
+  display: grid;
+  place-items: center;
+  width: var(--icono-lg);
+  height: var(--icono-lg);
+  border-radius: 50%;
+  background: var(--primary-50);
+  color: var(--primary);
+}
+.map__etiqueta {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.map__direccion {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--ink);
+  font-weight: 600;
+}
+.map__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.map__ver {
+  background: var(--primary-700);
+  color: var(--bg);
+}
+.map__ver:hover {
+  background: var(--primary-700);
+  color: var(--bg);
+}
+.map__llegar {
+  border-color: var(--muted);
+}
+/* Al pasar el ratón, --primary-700 (5,48:1) en lugar del --primary de .dt-btn--ghost (3,96:1) */
+.map__llegar:hover {
+  border-color: var(--primary-700);
+  color: var(--primary-700);
+}
+.map__nota {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
 .map__open {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: var(--space-4);
+  bottom: var(--space-4);
 }
 @media (max-width: 640px) {
   .map {

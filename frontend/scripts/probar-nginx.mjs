@@ -16,6 +16,15 @@ const docker = (...args) => execFileSync('docker', args, { stdio: ['ignore', 'pi
 
 const pedir = (ruta) => fetch(`${BASE}${ruta}`, { redirect: 'manual' })
 
+// Petición sin descomprimir: deja ver la cabecera Content-Encoding tal como la manda nginx
+const pedirComprimido = (ruta) => fetch(`${BASE}${ruta}`, { redirect: 'manual', headers: { 'accept-encoding': 'gzip' } })
+
+// Primer archivo .js o .css de /assets/ que enlaza la portada
+const assetDe = async (tipo) => {
+  const html = await (await pedir('/')).text()
+  return (html.match(new RegExp(`/assets/[^"]+\\.${tipo}`)) || [])[0]
+}
+
 const esperarNginx = async () => {
   for (let intento = 0; intento < 40; intento += 1) {
     try {
@@ -73,6 +82,21 @@ const comprobaciones = [
     const html = await (await pedir('/')).text()
     const asset = (html.match(/\/assets\/[^"]+\.js/) || [])[0]
     return Boolean(asset) && (await pedir(asset)).status === 200
+  }],
+  // Spec 023 · CA5: el login llega prerenderizado y fuera de los buscadores
+  ['/login → el formulario ya en el HTML, con X-Robots-Tag: noindex', async () => {
+    const r = await pedir('/login')
+    return r.status === 200 && /noindex/.test(r.headers.get('x-robots-tag') || '') && /id="login-correo"/.test(await r.text())
+  }],
+  // Spec 023 · CA10: el texto llega comprimido y los archivos con huella se guardan en caché
+  ...['/', 'un /assets/*.js', 'un /assets/*.css', '/sitemap.xml', '/robots.txt'].map((cual) => [`${cual} → Content-Encoding: gzip`, async () => {
+    const ruta = cual.startsWith('/') ? cual : await assetDe(cual.endsWith('.js') ? 'js' : 'css')
+    const r = await pedirComprimido(ruta)
+    return r.status === 200 && r.headers.get('content-encoding') === 'gzip'
+  }]),
+  ['/assets/* → Cache-Control de un año e immutable', async () => {
+    const cc = (await pedir(await assetDe('js'))).headers.get('cache-control') || ''
+    return /max-age=31536000/.test(cc) && /immutable/.test(cc)
   }],
 ]
 

@@ -51,12 +51,25 @@ export const RUTAS_PUBLICAS = [
 // Rutas privadas: reciben el armazón de la SPA con noindex y nunca van al sitemap
 export const RUTAS_NO_INDEXABLES = ["/login", "/restablecer-contrasena", "/admin", "/paciente"];
 
+// Módulos que no pueden pesar en las páginas públicas: se cargan bajo demanda (spec 023, CA4)
+export const MODULOS_PRIVADOS = [
+  "src/pages/admin/login.jsx",
+  "src/pages/admin/AdminPanel.jsx",
+  "src/pages/admin/RestablecerContrasena.jsx",
+  "src/pages/paciente/InicioPaciente.jsx",
+  "src/pages/paciente/CitasPaciente.jsx",
+  "src/pages/paciente/PerfilPaciente.jsx",
+  "src/pages/paciente/CompletarPerfil.jsx",
+];
+
 // Metadatos fuera de la tabla: los generales son los de index.html; el de la 404 lo usan el
 // prerender y la navegación en el cliente
 export const TITULO_GENERAL = "Dentissa | Clínica Dental";
 export const DESCRIPCION_GENERAL =
   "Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.";
 export const TITULO_404 = "Página no encontrada | Dentissa";
+// Título del login, al cargar (login.html) y al llegar navegando (spec 023)
+export const TITULO_LOGIN = "Iniciar sesión | Dentissa";
 
 // URL canónica absoluta, sin barra final salvo la portada
 export const canonica = (ruta) => (ruta === "/" ? `${SITIO}/` : `${SITIO}${ruta}`);
