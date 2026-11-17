@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-17
+### Changed
+- Las páginas públicas y el inicio de sesión se muestran antes en el celular: la foto y el texto principales aparecen sin esperar a que cargue toda la aplicación, y la página no salta mientras termina de cargar (spec 023).
+- En contacto, el mapa se carga al pulsar "Ver mapa"; mientras tanto se ven la dirección y el botón "Cómo llegar" (spec 023).
+- El botón de Google del inicio de sesión aparece cuando la página ya está lista, y el resto del sitio no carga nada de Google (spec 023).
+- La galería avisa a los lectores de pantalla cuando no puede cargar o aún no tiene fotos, y al reintentar no se pierde el foco (spec 023).
+
+### Fixed
+- El botón "Continuar con Google" funciona en cualquier instalación nueva del sitio, no solo en la actual (fix 2026-11-17-fix-dockerfile-google-client-id).
+
 ## [1.3.0] - 2026-11-13
 ### Added
 - Las páginas públicas (inicio, nosotros, galería, contacto, aviso de privacidad y términos) llegan a los buscadores con su contenido, título y descripción propios, aunque el buscador no ejecute JavaScript (spec 022).
