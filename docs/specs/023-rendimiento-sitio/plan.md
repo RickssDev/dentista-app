@@ -146,7 +146,7 @@ Vitest, del proyecto:
 ## Modelo de amenazas
 | ID | Amenaza (STRIDE) | Categoría OWASP | Componente | Control | Test |
 |---|---|---|---|---|---|
-| TM1 | Divulgación de información: que `login.html`, generado en el build y servido a cualquiera, contenga un token, datos de un usuario o valores del entorno de build que no son públicos | A05:2021 Configuración de seguridad incorrecta | `scripts/prerender.mjs`, `login.jsx` | El login solo lee `localStorage` en efectos y manejadores; la guarda `datosDeSesion` hace fallar el build si `login.html` contiene un JWT (`eyJ…`), un `"token"` o una dirección de correo en el texto o en un `value` (los `placeholder` no cuentan) | `rendimiento-guardas.test.js` (TM1, comprobado rompiendo); `seo-prerender.test.jsx` (login sin datos de sesión) |
+| TM1 | Divulgación de información: que `login.html`, generado en el build y servido a cualquiera, contenga un token o datos de un usuario (correo). Los valores del entorno de build no los revisa esta guarda: el login solo usa `VITE_GOOGLE_CLIENT_ID`, que es público, y los secretos los cubre gitleaks (P10) | A02:2025 Configuración de seguridad incorrecta | `scripts/prerender.mjs`, `login.jsx` | El login solo lee `localStorage` en efectos y manejadores; la guarda `datosDeSesion` hace fallar el build si `login.html` contiene un JWT (`eyJ…`), un `"token"` o una dirección de correo en el texto o en un `value` (los `placeholder` no cuentan) | `rendimiento-guardas.test.js` (TM1, comprobado rompiendo); `seo-prerender.test.jsx` (login sin datos de sesión) |
 
 No hay más entradas ni datos nuevos. El mapa de Google se carga solo a petición, con el mismo
 `iframe` y `referrerPolicy` de hoy.
@@ -203,7 +203,7 @@ Tras el deploy se verifica con Lighthouse en producción.
 - **Guarda del build en funciones puras** (`src/seo/guardas.js`), probadas con Vitest. Cada regla
   se activa en el build en la tarea que la hace pasar, para que cada commit deje el build en verde
   y se pueda medir entre bloques (`/analyze` A3).
-- **Foto principal:** `SmartImage` con `priority` no oculta la imagen; sin `preload` adicional.
+- **Foto principal:** `SmartImage` con `priority` no oculta la imagen; además, el prerender añade un `<link rel="preload" as="image">` con su `srcset` en `/` y `/nosotros` (T034, T035), y el build falla si falta (T045).
 - **Fotos:** solo la de nosotros se aloja (WebP a 600, 900 y 1200 px); `IMAGES.contact` no se usa y
   se elimina (`/analyze` A7).
 - **Mapa:** enlace `mapLink` que, con JavaScript, monta el `iframe` en el mismo `.map`; fondo
