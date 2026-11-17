@@ -113,10 +113,7 @@ function AvisoConReserva({ children }) {
           <div key={i} className="skeleton--tile" />
         ))}
       </div>
-      {/* role="status": el lector de pantalla anuncia el aviso al aparecer (spec 023, review R6) */}
-      <div className="gallery-estado__aviso" role="status">
-        {children}
-      </div>
+      <div className="gallery-estado__aviso">{children}</div>
     </div>
   );
 }
@@ -149,6 +146,14 @@ export default function Gallery() {
     [data, category],
   );
   const shown = filtered.slice(0, visible);
+  // Lo que anuncia el lector de pantalla cuando la galería no llega a mostrar fotos
+  const anuncio = loading
+    ? ""
+    : error
+      ? "No pudimos cargar la galería. Revisa tu conexión e inténtalo de nuevo."
+      : filtered.length === 0
+        ? "Galería en preparación. Muy pronto compartiremos nuevas fotos."
+        : "";
 
   const changeCategory = (c) => {
     setCategory(c);
@@ -178,6 +183,11 @@ export default function Gallery() {
         tabIndex={-1}
         aria-label="Fotos de la galería"
       >
+        {/* Una sola región de estado, montada desde la carga: solo cambia su texto, y así los
+            lectores de pantalla la anuncian (spec 023, review R6 y R37) */}
+        <p className="sr-only" role="status">
+          {anuncio}
+        </p>
         <div className="dt-container">
           {categories.length > 0 && (
             <div
