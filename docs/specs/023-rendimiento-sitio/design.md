@@ -1,6 +1,6 @@
 ---
 spec: 023-rendimiento-sitio
-status: draft            # draft | approved (solo el usuario aprueba)
+status: approved         # draft | approved (solo el usuario aprueba)
 exploration: none
 threshold: 80
 floor: 3
@@ -106,3 +106,4 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
 | 2026-11-17 | diseño | ¿Ciclo de candidatos para el bloque del mapa? | Sin ciclo (`exploration: none`): el bloque usa piezas del sistema; K1–K3 se comprueban en `/implement` con capturas y Lighthouse | usuario |
 | 2026-11-17 | implícita | Contraste de "Ver mapa" | Hereda `.dt-btn--primary` (DS4, 3,96:1); se corrige con DS4 para todo el sitio, no aquí | `docs/design/system.md` (Color, DS4) |
 | 2026-11-17 | supuesto | "Ver mapa" sin JavaScript | Enlace a Google Maps que, con JavaScript, carga el mapa en el sitio | sesión |
+| 2026-11-17 | cierre | Aprobación del acta | Aprobada | usuario |
