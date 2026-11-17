@@ -112,8 +112,22 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `frontend/nginx.conf` es ruta protegida; se modifica con esta tarea aprobada
   - nota: `probar-nginx` pasa completo (29 comprobaciones) y `seo-rutas` (022) sigue 6/6: el login va en una `location ~ ^/login$` antes de la regla de privadas, en lugar de una `location =`, para no alterar la lista de páginas exactas. `gzip` con nivel 6 para texto, JS, CSS, JSON, XML y SVG; `/assets/` con `Cache-Control: public, max-age=31536000, immutable`. Comprobado rompiendo: con `gzip off` fallan las 5 comprobaciones de compresión; restaurado, pasan
 
+### Añadidas durante /implement (decisión del usuario, 2026-11-17, tras la medición de T060)
+- [ ] T030 [P] Escribir la prueba del espacio reservado de la galería — `frontend/tests/galeria-estados.test.jsx` — hecho cuando: falla por la razón esperada y comprueba, con `usePublicData` simulado: cargando, error y vacía pintan la misma cuadrícula de 8 huecos (`.gallery-grid` con 8 hijos), invisible y `aria-hidden` en error y vacía, con el aviso correspondiente ("No pudimos cargar la galería" con "Reintentar", "Galería en preparación") dentro del mismo contenedor; y `Gallery.css` oculta la reserva con `visibility: hidden`; ejecutada dos veces — cubre: CA2, CA9
+  - nota: añadida durante /implement: CLS 0,43 en `/galeria` en la medición (con la API caída el aviso de error es más bajo que el esqueleto)
+- [ ] T031 Reservar en la galería el alto del esqueleto en los avisos de error y de galería vacía — `frontend/src/pages/Gallery.jsx`, `frontend/src/styles/home/Gallery.css` — hecho cuando: T030 pasa (dos ejecuciones) · verificación manual: con la red y la CPU limitadas, `/galeria` sin backend no registra desplazamientos de más de 0,1 (script de `layout-shift`) — cubre: CA2, CA9 — depende: T030
+  - nota: añadida durante /implement (decisión del usuario, 2026-11-17)
+- [ ] T032 [P] Escribir la prueba del botón de Google tras el pintado — `frontend/tests/rendimiento-carga.test.jsx` — hecho cuando: falla por la razón esperada y comprueba, con `@react-oauth/google` simulado y `requestIdleCallback` controlado: al montar el login no se monta `GoogleOAuthProvider` ni `GoogleLogin`; tras el evento `load` de la ventana y el callback de inactividad se montan; el contenedor `.google-btn` está desde el principio — cubre: CA1, CA5
+  - nota: añadida durante /implement: `/login` 95 de 100; el script, el marco y la fuente del botón de Google (≈ 210 KB) compiten con el pintado
+- [ ] T033 Cargar el botón de Google cuando la página ya está pintada — `frontend/src/pages/admin/login.jsx` — hecho cuando: T032 pasa (dos ejecuciones); T016, T012 y los tests del login siguen en verde; el proveedor envuelve solo al botón y se monta tras `load` + inactividad (con un límite de 2 s) · verificación manual: con la build local y Chrome sin cabeza, `/login` sigue pidiendo `gsi/client` y mostrando el botón — cubre: CA1, CA5 — depende: T032, T022
+  - nota: añadida durante /implement (decisión del usuario, 2026-11-17)
+- [ ] T034 Escribir la prueba de las precargas de la fuente y la foto principal — `frontend/tests/seo-prerender.test.jsx` — hecho cuando: falla por la razón esperada y comprueba que `construirPagina` y `paginaLogin` escriben en el `<head>`, antes de las hojas de estilo, cada precarga que reciben (`<link rel="preload" as="font" type="font/woff2" crossorigin>` y `<link rel="preload" as="image" fetchpriority="high">` con `imagesrcset` cuando lo hay), con los atributos escapados — cubre: CA1, CA2
+  - nota: añadida durante /implement: portada 93 de 95 y nosotros 98 de 100 (retraso de pintado del LCP)
+- [ ] T035 Precargar la fuente del texto y la foto principal en las páginas generadas — `frontend/src/seo/cabecera.js`, `frontend/scripts/prerender.mjs` — hecho cuando: T034 pasa; el build escribe la precarga del `woff2` latino de Plus Jakarta Sans (del manifiesto) en las seis páginas, la del `woff2` latino de Jost en `login.html`, la de `/images/hero-dentissa.webp` en la portada y la de la foto de nosotros (con su `srcset`) en `/nosotros`; la guarda falla si falta la precarga de la fuente (comprobado rompiendo) — cubre: CA1, CA2 — depende: T034, T028
+  - nota: añadida durante /implement (decisión del usuario, 2026-11-17)
+
 ## Integración y documentación
-- [ ] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual: `medir-rendimiento.mjs` con mediana de 3 por ruta cumple CA1 (100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto) y CA2 (LCP ≤ 2,5 s, CLS ≤ 0,1), SEO 100 y Accesibilidad no menor que la línea base (T002); capturas `despues` (T003) iguales a las de `antes` salvo el mapa, revisadas por el usuario (CA9); login, panel y portal funcionan al recargar y al entrar desde el login — cubre: CA1, CA2, CA9 — depende: T021, T022, T023, T024, T025, T026, T027, T028, T029
+- [ ] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual: `medir-rendimiento.mjs` con mediana de 3 por ruta cumple CA1 (100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto) y CA2 (LCP ≤ 2,5 s, CLS ≤ 0,1), SEO 100 y Accesibilidad no menor que la línea base (T002); capturas `despues` (T003) iguales a las de `antes` salvo el mapa, revisadas por el usuario (CA9); login, panel y portal funcionan al recargar y al entrar desde el login — cubre: CA1, CA2, CA9 — depende: T021, T022, T023, T024, T025, T026, T027, T028, T029, T031, T033, T035
 - [ ] T090 Actualizar `docs/architecture.md` (login prerenderizado, guardas, división de código de las rutas privadas, compresión y caché en nginx; sustituir la línea de Google Fonts y Unsplash) y `docs/seo.md` (regla de Renderizado y fila `/login` del inventario)
 - [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: el plan no cambia ninguno; registrar "sin cambios" al cerrar
@@ -130,15 +144,15 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T002, T060 | T021, T022, T023, T024, T025, T026, T027, T028, T029 |
-| CA2 | T002, T015, T060 | T023, T025, T027 |
+| CA1 | T002, T032, T034, T060 | T021, T022, T023, T024, T025, T026, T027, T028, T029, T033, T035 |
+| CA2 | T002, T015, T030, T034, T060 | T023, T025, T027, T031, T035 |
 | CA3 | T015, T018 | T023 |
 | CA4 | T012, T013 | T020, T021 |
-| CA5 | T012, T016 | T022, T027 |
+| CA5 | T012, T016, T032 | T022, T027, T033 |
 | CA6 | T011, T014, T015 | T026 |
 | CA7 | T010, T013, T015 | T020, T025, T028 |
 | CA8 | T010, T013, T015 | T020, T024, T028 |
-| CA9 | T003, T016, T060 | T027 |
+| CA9 | T003, T016, T030, T060 | T027, T031 |
 | CA10 | T017 | T029 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
@@ -161,8 +175,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | `frontend/src/seo/cabecera.js` | T015, T027 |
 | `frontend/scripts/prerender.mjs` | T021, T027, T028 |
 | `frontend/nginx.conf` | T029 |
+| `frontend/src/pages/Gallery.jsx`, `styles/home/Gallery.css` | T031 |
 | `frontend/scripts/probar-nginx.mjs` | T017 |
-| `frontend/tests/` | T010, T011, T012, T013, T014, T015, T016, T018 |
+| `frontend/tests/` | T010, T011, T012, T013, T014, T015, T016, T018, T030, T032, T034 |
 | `docs/architecture.md`, `docs/seo.md` | T090 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |

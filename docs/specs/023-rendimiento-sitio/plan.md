@@ -220,6 +220,13 @@ Tras el deploy se verifica con Lighthouse en producción.
 - **"Cómo llegar":** `ghost` con borde `--muted` en los dos estados del bloque (decisión del
   usuario, 2026-11-17, `/analyze` A28).
 - **Fuera:** la caché de Cloudflare de `robots.txt` y `sitemap.xml` (su `/fix`).
+- **Tras la medición de T060** (decisión del usuario, 2026-11-17; tareas T030–T035):
+  - la galería reserva el alto del esqueleto en sus avisos de error y de galería vacía
+    (`Gallery.jsx`, `Gallery.css`), porque con la API caída saltaba (CLS 0,43);
+  - el botón de Google se monta tras `load` + inactividad, con el proveedor solo alrededor del botón
+    (`login.jsx`);
+  - las páginas generadas precargan el `woff2` latino de su fuente y la foto principal
+    (`cabecera.js`, `prerender.mjs`).
 
 ## Impacto en arquitectura
 - `docs/architecture.md`, módulo "SEO y prerender": `login.html`, las guardas y la división de
