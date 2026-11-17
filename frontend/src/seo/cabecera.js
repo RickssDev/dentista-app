@@ -100,11 +100,12 @@ export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false,
     ...css.map((archivo) => `<link rel="stylesheet" href="${escapar(archivo)}">`),
   ];
 
-  // Las precargas van justo tras el charset: antes que cualquier hoja de estilo o script
+  // Las precargas van tras el viewport (si no, el navegador elige la imagen del srcset con el ancho de
+  // escritorio por defecto y descarga dos) y antes de cualquier hoja de estilo o script
   if (precargas.length) {
-    const charset = /<meta charset="[^"]*"\s*\/?>/i;
-    const inicio = (html.match(charset) || [""])[0];
-    html = reemplazar(html, charset, `${inicio}\n    ${precargas.map(precarga).join("\n    ")}`, "meta charset");
+    const viewport = /<meta name="viewport"[^>]*>/i;
+    const inicio = (html.match(viewport) || [""])[0];
+    html = reemplazar(html, viewport, `${inicio}\n    ${precargas.map(precarga).join("\n    ")}`, "meta viewport");
   }
 
   if (cabecera.length) html = reemplazar(html, /<\/head>/, `    ${cabecera.join("\n    ")}\n  </head>`, "</head>");

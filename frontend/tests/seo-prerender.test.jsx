@@ -264,3 +264,15 @@ describe('023 CA1, CA2 · precargas de la fuente y la foto principal', () => {
     expect(html).toContain('href="/a&quot;b.webp"')
   })
 })
+
+describe('023 · las precargas van tras el viewport', () => {
+  test('la precarga de imagen con srcset se escribe después de <meta name="viewport">', () => {
+    const html = construirPagina(PLANTILLA, {
+      cuerpo: '<h1>x</h1>',
+      ruta: '/nosotros',
+      precargas: [{ href: '/images/nosotros-900.webp', as: 'image', srcset: '/images/nosotros-600.webp 600w', sizes: '100vw' }],
+    })
+    expect(html.search(/<meta name="viewport"/)).toBeGreaterThan(-1)
+    expect(html.search(/<link rel="preload" href="\/images\/nosotros-900\.webp"/)).toBeGreaterThan(html.search(/<meta name="viewport"/))
+  })
+})
