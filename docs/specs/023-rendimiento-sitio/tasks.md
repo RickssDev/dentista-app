@@ -1,6 +1,7 @@
 ---
 spec: 023-rendimiento-sitio
 plan: plan.md
+impl_base: 5f33c0c
 status: approved
 ---
 
@@ -46,7 +47,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | P20 Sistema de diseño | ✅ | Sin colores literales en las reglas nuevas del bloque | test: T014 |
 
 ## Preparación
-- [ ] T001 Instalar `@fontsource-variable/plus-jakarta-sans@5.3.0` — `frontend/package.json`, `frontend/package-lock.json` — hecho cuando: `npm ci --prefix frontend` instala sin scripts de instalación y `npm audit --audit-level=high --prefix frontend` sigue sin altas ni críticas
+- [x] T001 Instalar `@fontsource-variable/plus-jakarta-sans@5.3.0` — `frontend/package.json`, `frontend/package-lock.json` — hecho cuando: `npm ci --prefix frontend` instala sin scripts de instalación y `npm audit --audit-level=high --prefix frontend` sigue sin altas ni críticas
+  - nota: 5.3.0 instalada con `--ignore-scripts`; el paquete no declara scripts (`{}`), licencia OFL-1.1; `npm ci` correcto; `npm audit`: 0 vulnerabilidades. El aviso de `install-scripts` de `npm ci` es de otra dependencia, previo
 - [ ] T002 Crear el script de medición y medir la línea base — `frontend/scripts/medir-rendimiento.mjs` — hecho cuando: el script construye la imagen del frontend con `--build-arg VITE_GOOGLE_CLIENT_ID` leído de `frontend/.env` (o del entorno) sin escribirlo en la salida, la levanta con `--add-host backend:127.0.0.1`, pasa Lighthouse 13.6.0 móvil 3 veces por cada una de las siete rutas y escribe la mediana de Rendimiento, LCP, CLS, SEO y Accesibilidad; la tabla de partida queda anotada como nota de esta tarea
   - nota: requisito previo: la ficha `2026-11-17-fix-dockerfile-google-client-id` (PR #78) fusionada en `main` e integrada en esta rama
 - [ ] T003 Crear el script de capturas y capturar el estado actual — `frontend/scripts/capturas.mjs` — hecho cuando: con Chrome sin cabeza y el protocolo de DevTools (WebSocket de Node 22, `Page.captureScreenshot` con `captureBeyondViewport`), guarda capturas de página completa a 390 y 1440 px de las siete rutas en `.ai/inspect/023-<etiqueta>/`, y quedan las de `antes` (14 archivos) — depende: T002
