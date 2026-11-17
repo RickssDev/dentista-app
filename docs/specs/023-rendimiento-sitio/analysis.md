@@ -4,7 +4,7 @@ round: 2
 mode: full
 constitution_version: 1.0.0
 date: 2026-11-17
-spec_sha: 8a28b6c02337
+spec_sha: 5b88f7eed3b9
 plan_sha: 9059c26e13ef
 tasks_sha: 00ebc05c27f1
 ---
@@ -23,6 +23,8 @@ Todos se corrigieron en esta misma ronda, con tres decisiones del usuario. Las h
 son de los artefactos ya corregidos. Comprobé cada corrección releyendo las secciones afectadas
 contra el código, sin subagente (delta pequeño). No quedan hallazgos abiertos.
 Conteo de la ronda (nuevos): CRÍTICA 1 · ALTA 2 · MEDIA 8 · BAJA 3, todos corregidos
+
+Huellas actualizadas el 2026-11-17 tras la aprobación del usuario: solo cambiaron los campos `status` y una fila del Historial de la spec (`git diff e41b643 936a965`).
 
 ## Cobertura
 | Métrica | Valor |
