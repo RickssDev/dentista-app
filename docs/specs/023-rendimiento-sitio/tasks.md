@@ -1,7 +1,7 @@
 ---
 spec: 023-rendimiento-sitio
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 023 Rendimiento del sitio público y el login
