@@ -1,9 +1,9 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: approved
+status: draft
 created: 2026-11-17
-extends: [017]
+extends: [017, 022]
 ---
 
 # 023 · Rendimiento del sitio público y el login
@@ -19,8 +19,8 @@ por el mapa. Las causas, medidas el 2026-11-17 sobre el código de v1.3.0:
   portal del paciente. Unos 250 KiB no se usan.
 - El servicio de inicio de sesión con Google (101 KiB) se carga en todas las páginas, aunque solo
   se usa al iniciar sesión.
-- Las fotos de `/nosotros` y `/contacto` vienen de un servidor externo (Unsplash), y la de
-  `/nosotros` empieza a descargarse tarde.
+- La foto de `/nosotros` viene de un servidor externo (Unsplash) y empieza a descargarse tarde; los
+  datos del sitio guardan además una segunda foto externa que hoy no se muestra.
 - El mapa de `/contacto` descarga unos 330 KiB de un servicio externo nada más entrar, aunque el
   visitante no lo mire.
 - El texto depende de un servicio externo de fuentes.
@@ -58,12 +58,13 @@ el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/co
   de sesión de Google; dado el login, iniciar sesión con Google funciona igual que antes, y también
   donde hoy se ofrece ese botón.
 - [ ] CA6 · Dada la página de contacto, cuando se abre, entonces el mapa interactivo no se descarga;
-  en su lugar se ve la dirección y un botón "Ver mapa". Al activarlo con ratón, toque o teclado, el
-  mapa aparece en el mismo sitio, y el enlace para abrir la ubicación en Google Maps sigue
-  disponible en todo momento.
+  en su lugar se ve la dirección y la acción "Ver mapa". Al activarla con ratón, toque o teclado
+  (Enter), el mapa aparece en el mismo sitio, y el enlace "Cómo llegar", que abre la ubicación en
+  Google Maps, sigue disponible en todo momento.
 - [ ] CA7 · Dadas las páginas públicas, cuando se cargan, entonces ninguna foto viene de un servidor
-  externo: las fotos de nosotros y contacto se sirven desde el propio sitio, en un tamaño adecuado a
-  la pantalla, y la de nosotros no se retrasa si está a la vista al cargar.
+  externo: la foto de nosotros se sirve desde el propio sitio, en un tamaño adecuado a la pantalla,
+  y no se retrasa si está a la vista al cargar; los datos del sitio no guardan direcciones de fotos
+  externas.
 - [ ] CA8 · Dadas las siete páginas, cuando se cargan, entonces no contactan con ningún servicio
   externo de fuentes, el texto se ve mientras cargan las fuentes y la tipografía es la misma de hoy.
 - [ ] CA9 · Dadas las siete páginas, después del cambio, entonces se ven igual que antes, salvo el mapa
@@ -94,7 +95,7 @@ el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/co
 
 ## Diseño
 Lo único visible que cambia es el bloque del mapa en `/contacto`: antes de cargar el mapa se ve la
-dirección con el botón "Ver mapa" y el enlace "Abrir en Google Maps", con los componentes y tokens
+dirección con "Ver mapa" y el enlace "Cómo llegar", con los componentes y tokens
 del [sistema de diseño](../../design/system.md). El resto de pantallas debe verse idéntico. Acta: [design.md](design.md) (sin ciclo de candidatos).
 
 ## Criterios de diseño
@@ -103,8 +104,8 @@ mapa).
 
 | ID | Qué se mide | Objetivo | Sale de |
 |---|---|---|---|
-| K1 | Botón "Ver mapa" visible y accionable sin desplazamiento horizontal | visible a 390 y 1440 px; objetivo de toque ≥ 44 × 44 px | CA6 |
-| K2 | El bloque reserva el espacio del mapa | sin salto de diseño al cargar el mapa (CLS ≤ 0,1) | CA2, CA6 |
+| K1 | "Ver mapa" visible y accionable sin desplazamiento horizontal | visible a 390 y 1440 px; objetivo de toque ≥ 44 × 44 px | CA6 |
+| K2 | El bloque reserva el espacio del mapa | el bloque mide lo mismo antes y después de cargar el mapa (Lighthouse no pulsa "Ver mapa": se comprueba con un test y una captura) | CA6 |
 | K3 | Resto de páginas sin cambios visuales | comparación a 390 y 1440 px con la versión actual | CA9 |
 
 Puertas: las de `design-spec/references/criterios.md` §2.
@@ -114,8 +115,8 @@ Puertas: las de `design-spec/references/criterios.md` §2.
   liberar, con las mismas metas como referencia.
 - Descubribilidad: sin cambios; las reglas de `docs/seo.md` siguen (SEO 100, `noindex` en privadas,
   canónicas).
-- Accesibilidad: WCAG 2.1 AA (P16). El botón "Ver mapa" se maneja con teclado, tiene nombre
-  accesible y, al cargar el mapa, el foco no se pierde.
+- Accesibilidad: WCAG 2.1 AA (P16). "Ver mapa" se maneja con teclado, tiene nombre accesible y
+  contraste ≥ 4,5:1, y al cargar el mapa el foco no se pierde.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
@@ -123,12 +124,14 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 | 2026-11-17 | brecha | ¿Qué páginas entran? | Las seis públicas y el login; paneles con sesión en otra spec | usuario |
 | 2026-11-17 | brecha | Meta de rendimiento | Lighthouse móvil ≥ 90, LCP ≤ 2,5 s y CLS ≤ 0,1 en las siete | usuario |
 | 2026-11-17 | brecha | Meta más alta por página | 100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto (reemplaza el ≥ 90 general) | usuario |
-| 2026-11-17 | supuesto | Ruido de Lighthouse en las páginas con meta 100 | Cuenta la mediana de 3; si tras las optimizaciones una se queda en 98–99 solo por variación entre corridas, se decide en /review con la evidencia de las 3 corridas, sin rebajar la meta en la spec | sesión |
+| 2026-11-17 | supuesto | Ruido de Lighthouse en las páginas con meta 100 | Cuenta la mediana de 3; si tras las optimizaciones una se queda en 98–99 solo por variación entre corridas, se decide en /review con la evidencia de las 3 corridas, sin rebajar la meta en la spec | sesión · confirmado por el usuario 2026-11-17 (/analyze A22) |
 | 2026-11-17 | brecha | Mapa de contacto | Vista previa con "Ver mapa"; el mapa carga al activarlo | usuario |
 | 2026-11-17 | brecha | Fotos de Unsplash | Alojarlas en el sitio, optimizadas (la licencia de Unsplash lo permite) | usuario |
-| 2026-11-17 | supuesto | Cómo se mide | Lighthouse 13.6.0 móvil, mediana de 3, contenedor local con el backend ficticio, igual que la línea base de 022 T002 | sesión |
+| 2026-11-17 | supuesto | Cómo se mide | Lighthouse 13.6.0 móvil, mediana de 3, contenedor local con el backend ficticio, igual que la línea base de 022 T002; el login se mide con el client ID de Google en el build | sesión · confirmado por el usuario 2026-11-17 (/analyze A22, A8) |
 | 2026-11-17 | supuesto | Tipografía | Se conserva la misma fuente, servida desde el propio sitio | sesión |
 | 2026-11-17 | diseño | Bloque del mapa | Sin ciclo de candidatos; piezas del sistema; K1–K3 en /implement ([design.md](design.md)) | usuario |
+| 2026-11-17 | implícita | La "foto de contacto" de `site.js` no se muestra en ninguna página | CA7 se limita a la foto de nosotros y a quitar la dirección externa sin uso | código: `IMAGES.contact` sin referencias (/analyze A7) |
+| 2026-11-17 | implícita | `/login` deja de recibir `app.html` (022, CA8) | Se declara `extends: [022]`: el login sigue con `noindex`, ahora con su propio HTML | `docs/specs/022-sitio-indexable/plan.md` (/analyze A12) |
 | 2026-11-17 | implícita | No hay principio de rendimiento en la constitución | La meta la fija esta spec; no hay presupuesto de JavaScript previo | `docs/constitution.md`, `docs/seo.md` (Presupuesto) |
 
 ## Notas para /plan
@@ -162,3 +165,4 @@ Pistas observadas, no requisitos:
 | 2026-11-17 | Spec creada en borrador | /specify, decisión del usuario tras v1.3.0 |
 | 2026-11-17 | Metas por página en CA1 (100 / ≥ 95) | usuario |
 | 2026-11-17 | Aprobada | usuario |
+| 2026-11-17 | Correcciones de /analyze A7, A12, A22, A23 (foto de contacto, extends 022, supuestos confirmados, nombres del mapa); vuelve a draft | /analyze 023 |

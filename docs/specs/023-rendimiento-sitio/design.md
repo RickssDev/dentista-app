@@ -1,6 +1,6 @@
 ---
 spec: 023-rendimiento-sitio
-status: approved         # draft | approved (solo el usuario aprueba)
+status: draft            # draft | approved (solo el usuario aprueba)
 exploration: none
 threshold: 80
 floor: 3
@@ -9,7 +9,7 @@ accepted: none
 score: 0
 system_version: 1.0.0
 created: 2026-11-17
-updated: 2026-11-17
+updated: 2026-11-17  # refinado por /analyze A1, A21, A23
 ---
 
 # Diseño · 023 Rendimiento del sitio público y el login
@@ -27,19 +27,21 @@ Ninguno: sin ciclo por decisión del usuario (ver Decisiones).
 `/contacto`. Se compone solo con piezas que el sistema ya tiene:
 - el contenedor `.map`, con el mismo tamaño, borde y radio;
 - los botones `.dt-btn`;
-- el ícono `pin` de `Icon.jsx`.
+- el ícono `pin` de `Icon.jsx`;
+- para "Ver mapa", un token que ya existe (`--primary-700`) para cumplir el contraste.
 
 No hay pantalla ni sección nueva. El ciclo de candidatos no se hizo por dos motivos:
 - en el equipo no hay Playwright para `evaluate.mjs`;
-- la puerta de contraste fallaría en cualquier candidato por la deuda previa DS4 del botón principal.
+- la puerta de contraste fallaría en cualquier candidato por la deuda previa DS4 del botón principal
+  del resto de la página (el bloque nuevo sí cumple: ver Accesibilidad).
 
-Los criterios K1–K3 se comprueban en la tarea que construye el bloque. Esa tarea hace capturas a 390
-y 1440 px, mide CLS con Lighthouse y la revisión manual la hace el usuario.
+Los criterios K1–K3 se comprueban en la tarea que construye el bloque, con tests y con capturas a 390
+y 1440 px que revisa el usuario.
 
 | Criterio | Objetivo | Cómo se comprueba | |
 |---|---|---|---|
-| K1 · "Ver mapa" visible y accionable (CA6) | visible a 390 y 1440 px; toque ≥ 44 × 44 px | `.dt-btn` mide 46 px de alto; captura a ambos anchos en `/implement` | pendiente de `/implement` |
-| K2 · El bloque reserva el espacio del mapa (CA2, CA6) | sin salto al cargar el mapa; CLS ≤ 0,1 | mismo `.map` con `aspect-ratio` y `min-height` antes y después; Lighthouse en `/contacto` | pendiente de `/implement` |
+| K1 · "Ver mapa" visible y accionable (CA6) | visible a 390 y 1440 px; toque ≥ 44 × 44 px; contraste ≥ 4,5:1 | `.dt-btn` mide 46 px de alto; test de contraste de los colores del bloque; captura a ambos anchos | pendiente de `/implement` |
+| K2 · El bloque reserva el espacio del mapa (CA6) | el bloque mide lo mismo antes y después de cargar el mapa | test: el mismo `.map` (clases y estilos de tamaño) antes y después de activar "Ver mapa"; captura de ambos estados (Lighthouse no pulsa "Ver mapa") | pendiente de `/implement` |
 | K3 · Resto de páginas sin cambios visuales (CA9) | igual que hoy a 390 y 1440 px | capturas antes y después de cada página | pendiente de `/implement` |
 
 ## Imágenes de muestra
@@ -61,14 +63,16 @@ fuera de esta spec.
 - **Del sistema:**
   - `.map`, el contenedor actual de `Contact.css`: `aspect-ratio: 21/9`, `min-height: 320px` y en
     móvil `4/5` con `max-height: 460px`, `--radius-lg`, borde `--line`.
-  - `.dt-btn--primary` para "Ver mapa", la acción del bloque.
+  - `.dt-btn` para "Ver mapa", la acción del bloque, con fondo `--primary-700` (`#b63d62`) y texto
+    blanco (5,48:1), en lugar de `--primary` (3,96:1, DS4). Solo este botón; hover con
+    `--primary-700` y foco con el anillo `--color-focus`.
   - `.dt-btn--ghost` para "Cómo llegar".
   - El ícono `pin`.
 - **Composición del estado inicial** (dentro de `.map`, centrada; no es un componente nuevo):
   1. el ícono `pin` en un círculo `--primary-50` con trazo `--primary`;
   2. la etiqueta "Ubicación" en `--muted`;
   3. la dirección de `CLINIC.address` en `--ink`, peso 600;
-  4. los botones "Ver mapa" y "Cómo llegar", en fila que pasa a columna si no caben;
+  4. "Ver mapa" (enlace con aspecto de botón) y "Cómo llegar", en fila que pasa a columna si no caben;
   5. una nota en `--muted`: "El mapa se carga desde Google Maps al pulsar «Ver mapa»."
 
   Fondo `--tint` (`--color-surface`).
@@ -90,11 +94,11 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
 ## Accesibilidad
 
 - **Contraste:**
-  - "Ver mapa" hereda el contraste de `.dt-btn--primary`: 3,96:1, deuda DS4 que comparten todos
-    los botones principales del sitio y que se corrige fuera de esta spec.
+  - "Ver mapa": blanco sobre `--primary-700`, 5,48:1 (cumple 4,5:1). Los demás botones principales
+    del sitio siguen con la deuda DS4, fuera de esta spec.
   - La dirección (`--ink` sobre `--tint`) y la nota (`--muted` sobre `--tint`, 4,51:1) cumplen.
 - **Toque:** `.dt-btn` mide 46 px de alto.
-- **Teclado y foco:** "Ver mapa" se alcanza con Tab y se activa con Enter. Al cargar el mapa, el
+- **Teclado y foco:** "Ver mapa" es un enlace: se alcanza con Tab y se activa con Enter. Al cargar el mapa, el
   foco pasa al mapa (título "Ubicación de Dentissa en Google Maps"), así que no se pierde. Orden:
   "Ver mapa" y luego "Cómo llegar".
 - **Estructura:** sin encabezados nuevos. El ícono es decorativo (`aria-hidden`).
@@ -104,6 +108,9 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-17 | diseño | ¿Ciclo de candidatos para el bloque del mapa? | Sin ciclo (`exploration: none`): el bloque usa piezas del sistema; K1–K3 se comprueban en `/implement` con capturas y Lighthouse | usuario |
-| 2026-11-17 | implícita | Contraste de "Ver mapa" | Hereda `.dt-btn--primary` (DS4, 3,96:1); se corrige con DS4 para todo el sitio, no aquí | `docs/design/system.md` (Color, DS4) |
+| 2026-11-17 | implícita | Contraste de "Ver mapa" | ~~Hereda `.dt-btn--primary` (DS4)~~: sustituida por la fila `refinado` de abajo | `docs/design/system.md` (Color, DS4) |
 | 2026-11-17 | supuesto | "Ver mapa" sin JavaScript | Enlace a Google Maps que, con JavaScript, carga el mapa en el sitio | sesión |
 | 2026-11-17 | cierre | Aprobación del acta | Aprobada | usuario |
+| 2026-11-17 | refinado | Contraste de "Ver mapa" contra P16 (la constitución no exime un control nuevo) | Fondo `--primary-700` (5,48:1) solo en este botón; sin cambios al sistema (el token ya existe) | usuario (/analyze A1) |
+| 2026-11-17 | refinado | Cómo se comprueba K2 | Test del tamaño de `.map` antes y después y captura de los dos estados, no CLS de Lighthouse | /analyze A21 |
+| 2026-11-17 | refinado | Nombres del bloque | "Ver mapa" (enlace, Enter) y "Cómo llegar"; sin "Abrir en Google Maps" | /analyze A23 |
