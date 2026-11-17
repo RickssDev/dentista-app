@@ -1,7 +1,7 @@
 // Prerender de las páginas públicas (spec 022, ADR 0009). Corre después de los dos builds de Vite:
 // escribe una página HTML por ruta pública, la 404, el armazón de la SPA, robots.txt y sitemap.xml.
 // El build falla si una página queda sin h1, título, descripción, canónica o el CSS de su ruta.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -44,10 +44,33 @@ for (const modulo of modulosPrivadosEnEntrada(manifiesto, MODULOS_PRIVADOS)) {
   exigir(false, `${modulo}: forma parte del JavaScript de entrada (debe cargarse bajo demanda)`);
 }
 
+// Spec 023 · CA1, CA2: precarga del woff2 latino de cada fuente y de la foto principal
+const ASSETS = readdirSync(join(DIST, "assets"));
+const fuente = (familia) => {
+  const archivo = ASSETS.find((a) => new RegExp(`^${familia}-latin-wght-normal-[\\w-]+\\.woff2$`).test(a));
+  exigir(Boolean(archivo), `sin el woff2 latino de ${familia} en dist/assets`);
+  return archivo ? [{ href: `/assets/${archivo}`, as: "font", type: "font/woff2" }] : [];
+};
+const FUENTE_SITIO = fuente("plus-jakarta-sans");
+const FUENTE_LOGIN = fuente("jost");
+
+// La foto principal sale del propio HTML: el <img> con fetchPriority="high" (SmartImage con priority)
+const atributo = (etiqueta, nombre) =>
+  (etiqueta.match(new RegExp(`\\s${nombre}="([^"]*)"`, "i")) || [])[1]?.replace(/&amp;/g, "&");
+const fotoPrincipal = (cuerpo) => {
+  const img = (cuerpo.match(/<img\b[^>]*fetchPriority="high"[^>]*>/i) || [])[0];
+  if (!img) return [];
+  return [{ href: atributo(img, "src"), as: "image", srcset: atributo(img, "srcSet"), sizes: atributo(img, "sizes") }];
+};
+const precargaDeFuente = (html, precargas) =>
+  precargas.every(({ href }) => html.includes(`<link rel="preload" href="${href}" as="font"`));
+
 for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   const todos = modulo ? estilosDeRuta(manifiesto, modulo) : [];
   const css = todos.filter((hoja) => !plantilla.includes(`href="${hoja}"`));
-  const html = construirPagina(plantilla, { cuerpo: await render(ruta), ruta, css });
+  const cuerpo = await render(ruta);
+  const html = construirPagina(plantilla, { cuerpo, ruta, css, precargas: [...FUENTE_SITIO, ...fotoPrincipal(cuerpo)] });
+  exigir(FUENTE_SITIO.length > 0 && precargaDeFuente(html, FUENTE_SITIO), `${ruta}: sin la precarga de la fuente`);
 
   exigir(/<h1[\s>]/.test(html), `${ruta}: sin h1`);
   exigir(contenidoDe(html, /<title>([^<]*)<\/title>/) === titulo, `${ruta}: título distinto del de la tabla`);
@@ -83,7 +106,9 @@ escribir("app.html", construirPagina(plantilla, { noindex: true }));
 const login = paginaLogin(plantilla, {
   cuerpo: await render("/login"),
   css: estilosNuevos("src/pages/admin/login.jsx"),
+  precargas: FUENTE_LOGIN,
 });
+exigir(FUENTE_LOGIN.length > 0 && precargaDeFuente(login, FUENTE_LOGIN), "login.html: sin la precarga de la fuente");
 exigir(/id="login-correo"/.test(login), "login.html: sin el formulario de acceso");
 exigir(/<meta name="robots" content="noindex"/.test(login), "login.html: sin noindex");
 exigir(!/rel="canonical"/.test(login), "login.html: no puede llevar canónica");

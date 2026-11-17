@@ -46,8 +46,18 @@ const etiquetasIndexables = (datos) => {
  * Página del login prerenderizado (spec 023): noindex, su título y el CSS de su chunk; sin
  * canónica, Open Graph ni JSON-LD. La usan scripts/prerender.mjs y las pruebas.
  */
-export const paginaLogin = (plantilla, { cuerpo = "", css = [] } = {}) =>
-  construirPagina(plantilla, { cuerpo, noindex: true, titulo: TITULO_LOGIN, css });
+export const paginaLogin = (plantilla, { cuerpo = "", css = [], precargas = [] } = {}) =>
+  construirPagina(plantilla, { cuerpo, noindex: true, titulo: TITULO_LOGIN, css, precargas });
+
+// <link rel="preload"> de una fuente (con crossorigin, obligatorio para fuentes) o de la foto
+// principal (prioridad alta y, si la hay, su lista de tamaños) (spec 023)
+const precarga = ({ href, as, type, srcset, sizes }) => {
+  const extra =
+    as === "font"
+      ? ` type="${escapar(type || "font/woff2")}" crossorigin`
+      : ` fetchpriority="high"${srcset ? ` imagesrcset="${escapar(srcset)}"` : ""}${sizes ? ` imagesizes="${escapar(sizes)}"` : ""}`;
+  return `<link rel="preload" href="${escapar(href)}" as="${escapar(as)}"${extra}>`;
+};
 
 /**
  * @param {string} plantilla  index.html de la build (con <title>, descripción y <div id="root">)
@@ -57,8 +67,9 @@ export const paginaLogin = (plantilla, { cuerpo = "", css = [] } = {}) =>
  *   noindex  página que no debe indexarse (armazón de la SPA, 404)
  *   titulo   título para una página sin ruta pública (p. ej. la 404)
  *   css      hojas de estilo de la ruta, en rutas absolutas
+ *   precargas recursos que el navegador debe pedir cuanto antes: { href, as: "font"|"image", type, srcset, sizes }
  */
-export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false, titulo, css = [] } = {}) => {
+export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false, titulo, css = [], precargas = [] } = {}) => {
   const datos = ruta ? RUTAS_PUBLICAS.find((r) => r.ruta === ruta) : null;
   if (ruta && !datos) throw new Error(`La ruta ${ruta} no está en la tabla de rutas públicas`);
 
@@ -88,6 +99,13 @@ export const construirPagina = (plantilla, { cuerpo = "", ruta, noindex = false,
       : []),
     ...css.map((archivo) => `<link rel="stylesheet" href="${escapar(archivo)}">`),
   ];
+
+  // Las precargas van justo tras el charset: antes que cualquier hoja de estilo o script
+  if (precargas.length) {
+    const charset = /<meta charset="[^"]*"\s*\/?>/i;
+    const inicio = (html.match(charset) || [""])[0];
+    html = reemplazar(html, charset, `${inicio}\n    ${precargas.map(precarga).join("\n    ")}`, "meta charset");
+  }
 
   if (cabecera.length) html = reemplazar(html, /<\/head>/, `    ${cabecera.join("\n    ")}\n  </head>`, "</head>");
   return reemplazar(html, /<div id="root"><\/div>/, `<div id="root">${cuerpo}</div>`, '<div id="root"></div>');
