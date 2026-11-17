@@ -162,3 +162,4 @@ Ninguna.
 | 2026-11-12 | Review r1: changes_requested (R1–R11, R15, R16, R19, R20 a corregir) | /review |
 | 2026-11-12 | Implementadas las correcciones de la review r1 (T033–T044) | /implement |
 | 2026-11-17 | Liberada en v1.3.0 | /release |
+| 2026-11-17 | Comportamiento modificado por 023 en v1.4.0 | /release |

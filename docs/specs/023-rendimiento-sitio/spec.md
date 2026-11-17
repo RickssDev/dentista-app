@@ -1,7 +1,8 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: implemented
+status: released
+released: v1.4.0 (2026-11-17)
 created: 2026-11-17
 extends: [017, 022]
 ---
@@ -174,3 +175,6 @@ Pistas observadas, no requisitos:
 | 2026-11-17 | Aprobada de nuevo (con diseño, plan y tareas) tras /analyze ronda 2 | usuario |
 | 2026-11-17 | Implementada: CA1–CA10 con sus pruebas; CA1 con `/login` 99 y `/nosotros` 97 aceptados por el usuario | /implement |
 | 2026-11-17 | Review r1: changes_requested (R1–R12, R15–R23, R35 a corregir; tokens P20 y excepción de picomatch) | /review |
+| 2026-11-17 | Review r2: changes_requested (R37 región de estado de la galería, R38 excepción en el backend) | /review |
+| 2026-11-17 | Review r3: approved; firmada por RickssDev (revisó y fusionó el PR #79) | /review |
+| 2026-11-17 | Liberada en v1.4.0 | /release |

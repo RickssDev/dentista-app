@@ -1,6 +1,7 @@
 ---
 lane: chore
-status: done
+status: released
+released: v1.4.0 (2026-11-17)
 base: e2c7493
 relates: [022]
 covers: []
