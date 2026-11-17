@@ -70,9 +70,35 @@ function CampoPass({ id, etiqueta, visible, onAlternar, ...props }) {
 // clic de "Crear cuenta" podía terminar ejecutando el manejador de "Iniciar sesión".
 // Importante: onSuccess y onError deben ser funciones ESTABLES (useCallback);
 // si cambian en cada render, GoogleLogin vuelve a inicializar Google cada vez.
+// Google se carga cuando la página ya está pintada y el navegador queda libre (spec 023): su script,
+// su marco y su fuente no compiten con lo primero que ve el usuario. Como mucho, 2 s tras cargar.
+function useGoogleTrasPintar() {
+  const [listo, setListo] = useState(false);
+
+  useEffect(() => {
+    let id;
+    const marcar = () => setListo(true);
+    const programar = () => {
+      id = window.requestIdleCallback
+        ? window.requestIdleCallback(marcar, { timeout: 2000 })
+        : window.setTimeout(marcar, 200);
+    };
+    if (document.readyState === "complete") programar();
+    else window.addEventListener("load", programar, { once: true });
+    return () => {
+      window.removeEventListener("load", programar);
+      if (window.cancelIdleCallback) window.cancelIdleCallback(id);
+      window.clearTimeout(id);
+    };
+  }, []);
+
+  return listo;
+}
+
 function GoogleBoton({ onSuccess, onError, texto, activo }) {
   const ref = useRef(null);
   const [ancho, setAncho] = useState(null);
+  const googleListo = useGoogleTrasPintar();
 
   useEffect(() => {
     const el = ref.current;
@@ -87,17 +113,20 @@ function GoogleBoton({ onSuccess, onError, texto, activo }) {
 
   return (
     <div className="google-btn" ref={ref}>
-      {ancho && activo && (
-        <GoogleLogin
-          onSuccess={onSuccess}
-          onError={onError}
-          text={texto}
-          locale="es"
-          theme="outline"
-          size="large"
-          shape="pill"
-          width={String(ancho)}
-        />
+      {/* El proveedor solo envuelve al botón: el resto del sitio no carga el script de Google */}
+      {ancho && activo && googleListo && (
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <GoogleLogin
+            onSuccess={onSuccess}
+            onError={onError}
+            text={texto}
+            locale="es"
+            theme="outline"
+            size="large"
+            shape="pill"
+            width={String(ancho)}
+          />
+        </GoogleOAuthProvider>
       )}
     </div>
   );
@@ -601,11 +630,4 @@ const handleRecuperacion = async (e) => {
   );
 }
 
-// El inicio de sesión con Google solo se monta aquí: el resto del sitio no carga su script (spec 023)
-export default function LoginConGoogle() {
-  return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <Login />
-    </GoogleOAuthProvider>
-  );
-}
+export default Login;
