@@ -100,6 +100,24 @@ function Lightbox({ items, index, onClose, onNavigate }) {
   );
 }
 
+// Huecos del esqueleto mientras carga la galería
+const HUECOS = 8;
+
+// Los avisos de error y de galería vacía ocupan el mismo alto que el esqueleto: así la página no
+// salta cuando la galería no llega a cargar (spec 023, CLS)
+function AvisoConReserva({ children }) {
+  return (
+    <div className="gallery-estado">
+      <div className="gallery-grid gallery-estado__reserva" aria-hidden="true">
+        {Array.from({ length: HUECOS }, (_, i) => (
+          <div key={i} className="skeleton--tile" />
+        ))}
+      </div>
+      <div className="gallery-estado__aviso">{children}</div>
+    </div>
+  );
+}
+
 export default function Gallery() {
   const { data, loading, error, retry } = usePublicData(
     "imagenes",
@@ -170,23 +188,27 @@ export default function Gallery() {
 
           {loading ? (
             <div className="gallery-grid">
-              {Array.from({ length: 8 }, (_, i) => (
+              {Array.from({ length: HUECOS }, (_, i) => (
                 <div key={i} className="skeleton skeleton--tile" />
               ))}
             </div>
           ) : error ? (
-            <EmptyState
-              icon="image"
-              title="No pudimos cargar la galería"
-              text="Revisa tu conexión e inténtalo de nuevo."
-              onRetry={retry}
-            />
+            <AvisoConReserva>
+              <EmptyState
+                icon="image"
+                title="No pudimos cargar la galería"
+                text="Revisa tu conexión e inténtalo de nuevo."
+                onRetry={retry}
+              />
+            </AvisoConReserva>
           ) : filtered.length === 0 ? (
-            <EmptyState
-              icon="image"
-              title="Galería en preparación"
-              text="Muy pronto compartiremos nuevas fotos."
-            />
+            <AvisoConReserva>
+              <EmptyState
+                icon="image"
+                title="Galería en preparación"
+                text="Muy pronto compartiremos nuevas fotos."
+              />
+            </AvisoConReserva>
           ) : (
             <>
               <ul className="gallery-grid">

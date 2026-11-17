@@ -40,6 +40,19 @@
   aspect-ratio: 1 / 1;
   border-radius: var(--radius);
 }
+/* Aviso de error o de galería vacía sobre una reserva invisible del alto del esqueleto (spec 023) */
+.gallery-estado {
+  position: relative;
+}
+.gallery-estado__reserva {
+  visibility: hidden;
+}
+.gallery-estado__aviso {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
 .gallery-tile {
   position: relative;
   display: block;
