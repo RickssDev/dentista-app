@@ -31,7 +31,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const hidratar = async (ruta, { otroAnio = false } = {}) => {
+const hidratar = async (ruta, { otroAnio = false, esperar } = {}) => {
   document.body.innerHTML = `<div id="root">${paginas[ruta]}</div>`
   const errores = []
   // R6: todo error recuperable cuenta (p. ej. "Switched to client rendering"); el filtro es solo para console.error
@@ -52,6 +52,8 @@ const hidratar = async (ruta, { otroAnio = false } = {}) => {
   })
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
+    // Páginas cargadas bajo demanda (spec 023): se hidratan cuando llega su módulo
+    if (esperar) await esperar()
   })
   return [...recuperables, ...errores.filter((e) => /hydrat|did not match|Recoverable|mismatch|Router/i.test(e))]
 }
@@ -73,7 +75,13 @@ describe('023 CA5, CA9 · hidratación del login prerenderizado', () => {
     let errores
     let fallo
     try {
-      errores = await hidratar('/login')
+      // El login se carga bajo demanda: se espera a su módulo para que la hidratación ocurra de verdad
+      errores = await hidratar('/login', {
+        esperar: async () => {
+          await import('../src/pages/admin/login.jsx')
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        },
+      })
     } catch (e) {
       fallo = e
     }

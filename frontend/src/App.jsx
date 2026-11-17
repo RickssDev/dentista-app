@@ -8,16 +8,42 @@ import {
 
 import Layout from "./components/home/Layout";
 import Home from "./pages/Home";
-import Login from "./pages/admin/login";
-
-import AdminPanel from "./pages/admin/AdminPanel";
-import InicioPaciente from "./pages/paciente/InicioPaciente";
-import CitasPaciente from "./pages/paciente/CitasPaciente";
-import PerfilPaciente from "./pages/paciente/PerfilPaciente";
-import CompletarPerfil from "./pages/paciente/CompletarPerfil";
-import RestablecerContrasena from "./pages/admin/RestablecerContrasena";
 
 import "./styles/home/global.css";
+
+const MARCA_RECARGA = "dentissa:recarga-chunk";
+const almacen = () => (typeof sessionStorage === "undefined" ? null : sessionStorage);
+
+/**
+ * Carga una página bajo demanda (spec 023). Si el archivo ya no existe, porque la pestaña quedó
+ * abierta con la versión anterior tras un despliegue, recarga la página una sola vez para tomar la
+ * nueva; si vuelve a fallar, propaga el error en lugar de recargar en bucle.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- utilidad del enrutado, probada aparte
+export const cargarPagina = (importar, recargar = () => window.location.reload()) => () =>
+  importar()
+    .then((modulo) => {
+      almacen()?.removeItem(MARCA_RECARGA);
+      return modulo;
+    })
+    .catch((error) => {
+      const marca = almacen();
+      if (!marca || marca.getItem(MARCA_RECARGA)) throw error;
+      marca.setItem(MARCA_RECARGA, "1");
+      recargar();
+      return new Promise(() => {});
+    });
+
+// Login, panel, portal y restablecer contraseña: fuera del JavaScript de las páginas públicas
+const Login = lazy(cargarPagina(() => import("./pages/admin/login")));
+const AdminPanel = lazy(cargarPagina(() => import("./pages/admin/AdminPanel")));
+const InicioPaciente = lazy(cargarPagina(() => import("./pages/paciente/InicioPaciente")));
+const CitasPaciente = lazy(cargarPagina(() => import("./pages/paciente/CitasPaciente")));
+const PerfilPaciente = lazy(cargarPagina(() => import("./pages/paciente/PerfilPaciente")));
+const CompletarPerfil = lazy(cargarPagina(() => import("./pages/paciente/CompletarPerfil")));
+const RestablecerContrasena = lazy(cargarPagina(() => import("./pages/admin/RestablecerContrasena")));
+
+const Cargando = ({ children }) => <Suspense fallback={<p>Cargando página...</p>}>{children}</Suspense>;
 
 // Páginas públicas cargadas bajo demanda
 const About = lazy(() => import("./pages/About"));
@@ -102,9 +128,11 @@ export function AppRoutes() {
         </Route>
 
         {/* Login: fuera del layout público */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Cargando><Login /></Cargando>} />
         {/* Recuperación de contraseña: ruta pública */}
-        <Route path="/restablecer-contrasena"element={<RestablecerContrasena />}
+        <Route
+          path="/restablecer-contrasena"
+          element={<Cargando><RestablecerContrasena /></Cargando>}
         />
 
         {/* Rutas privadas del administrador */}
@@ -112,7 +140,7 @@ export function AppRoutes() {
           path="/admin/*"
           element={
             <PrivateRoute>
-              <AdminPanel />
+              <Cargando><AdminPanel /></Cargando>
             </PrivateRoute>
           }
         />
@@ -122,7 +150,7 @@ export function AppRoutes() {
           path="/paciente/completar-perfil"
           element={
             <PrivateRoute>
-              <CompletarPerfil />
+              <Cargando><CompletarPerfil /></Cargando>
             </PrivateRoute>
           }
         />
@@ -131,7 +159,7 @@ export function AppRoutes() {
           path="/paciente"
           element={
             <PrivateRoute>
-              <InicioPaciente />
+              <Cargando><InicioPaciente /></Cargando>
             </PrivateRoute>
           }
         />
@@ -140,7 +168,7 @@ export function AppRoutes() {
           path="/paciente/citaspaciente"
           element={
             <PrivateRoute>
-              <CitasPaciente />
+              <Cargando><CitasPaciente /></Cargando>
             </PrivateRoute>
           }
         />
@@ -149,7 +177,7 @@ export function AppRoutes() {
           path="/paciente/perfil"
           element={
             <PrivateRoute>
-              <PerfilPaciente />
+              <Cargando><PerfilPaciente /></Cargando>
             </PrivateRoute>
           }
         />

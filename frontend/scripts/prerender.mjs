@@ -7,7 +7,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { construirPagina, estilosDeRuta } from "../src/seo/cabecera.js";
 import { generarRobots, generarSitemap } from "../src/seo/archivos.js";
-import { RUTAS_PUBLICAS, TITULO_404, canonica } from "../src/seo/rutas.js";
+import { modulosPrivadosEnEntrada } from "../src/seo/guardas.js";
+import { MODULOS_PRIVADOS, RUTAS_PUBLICAS, TITULO_404, canonica } from "../src/seo/rutas.js";
 
 const CARPETA = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(CARPETA, "dist");
@@ -37,6 +38,11 @@ const escribir = (archivo, contenido) => {
 };
 
 const contenidoDe = (html, patron) => (html.match(patron) || [])[1];
+
+// Spec 023 · CA4: el código del login, el panel y el portal no pesa en las páginas públicas
+for (const modulo of modulosPrivadosEnEntrada(manifiesto, MODULOS_PRIVADOS)) {
+  exigir(false, `${modulo}: forma parte del JavaScript de entrada (debe cargarse bajo demanda)`);
+}
 
 for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   const todos = modulo ? estilosDeRuta(manifiesto, modulo) : [];
