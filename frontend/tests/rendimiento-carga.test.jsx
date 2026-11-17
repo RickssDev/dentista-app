@@ -7,9 +7,10 @@ import { act, cleanup, render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 // El botón real exige red externa: se simula el proveedor (solo pinta a sus hijos) y el botón
+// Las marcas data-prueba dejan ver cuándo se montan
 vi.mock('@react-oauth/google', () => ({
-  GoogleOAuthProvider: ({ children }) => children,
-  GoogleLogin: () => null,
+  GoogleOAuthProvider: ({ children }) => <div data-prueba="proveedor-google">{children}</div>,
+  GoogleLogin: () => <div data-prueba="boton-google" />,
 }))
 vi.mock('../src/services/api', async (original) => ({ ...(await original()), api: vi.fn() }))
 
@@ -85,5 +86,41 @@ describe('023 CA4 · cargarPagina recarga una vez si el chunk ya no existe', () 
     // Tras la recarga, si vuelve a fallar no recarga en bucle: propaga el error
     await expect(cargar()).rejects.toBe(error)
     expect(recargar).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('023 CA1, CA5 · el botón de Google se monta cuando la página ya está pintada', () => {
+  let pendientes
+  beforeEach(() => {
+    pendientes = []
+    vi.stubGlobal('requestIdleCallback', vi.fn((cb) => pendientes.push(cb)))
+    vi.stubGlobal('cancelIdleCallback', vi.fn())
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  const montarLogin = () =>
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+  test('al montar el login, el contenedor del botón está pero Google aún no se monta', () => {
+    montarLogin()
+    expect(document.querySelector('.google-btn')).not.toBeNull()
+    expect(document.querySelector('[data-prueba="proveedor-google"]')).toBeNull()
+    expect(document.querySelector('[data-prueba="boton-google"]')).toBeNull()
+  })
+
+  test('cuando el navegador queda libre tras cargar, se montan el proveedor y el botón', async () => {
+    montarLogin()
+    expect(pendientes.length).toBeGreaterThan(0)
+    await act(async () => {
+      for (const cb of pendientes.splice(0)) cb({ didTimeout: false, timeRemaining: () => 50 })
+    })
+    expect(document.querySelector('[data-prueba="proveedor-google"]')).not.toBeNull()
+    expect(document.querySelector('[data-prueba="boton-google"]')).not.toBeNull()
   })
 })
