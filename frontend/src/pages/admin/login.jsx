@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { api } from "../../services/api";
+import { TITULO_LOGIN } from "../../seo/rutas";
 import logoBlanco from "../../assets/logo-melissa-blanco.png";
 import "../../styles/login.css";
 
@@ -145,6 +146,11 @@ function Login() {
     setActive(registro);
     window.scrollTo?.({ top: 0 });
   };
+
+  // Título propio, también al llegar navegando desde el sitio (spec 023)
+  useEffect(() => {
+    document.title = TITULO_LOGIN;
+  }, []);
 
   // Escape cierra el aviso
   useEffect(() => {
@@ -595,4 +601,11 @@ const handleRecuperacion = async (e) => {
   );
 }
 
-export default Login;
+// El inicio de sesión con Google solo se monta aquí: el resto del sitio no carga su script (spec 023)
+export default function LoginConGoogle() {
+  return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <Login />
+    </GoogleOAuthProvider>
+  );
+}
