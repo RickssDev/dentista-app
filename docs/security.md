@@ -66,6 +66,7 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 ## Excepciones aceptadas
 | ID | Hallazgo | Severidad | Motivo | Aprobado por | Vence |
 |---|---|---|---|---|---|
+| GHSA-fc5q-39xc-vjpf | `picomatch` ≤ 4.0.7: ReDoS con extglobs repetidos de una sola rama (frontend, vía `fdir` y `tinyglobby` de Vite y ESLint) | alta en origen · real baja | Solo en desarrollo y build: los patrones los escribe el propio proyecto, no llegan de usuarios, y no entra en la imagen de producción (`npm audit --omit=dev`: 0 vulnerabilidades). No hay versión corregida publicada (2026-11-17). El job "Seguridad (solo cambios del PR)" del CI sigue marcándola mientras dure | usuario, 2026-11-17 (review 023, R3) | 2027-01-31, o antes si se publica `picomatch` ≥ 4.0.8: entonces se actualiza con `/chore` |
 
 ## Riesgos conocidos
 
