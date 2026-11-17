@@ -46,9 +46,9 @@ y 1440 px que revisa el usuario.
 
 ## Imágenes de muestra
 
-Ninguna en el bloque. Las fotos de nosotros y contacto, hoy de Unsplash, se alojan en el sitio por
-CA7. Siguen siendo fotos de banco (licencia Unsplash) y se pueden sustituir por fotos de la clínica
-fuera de esta spec.
+Ninguna en el bloque. La foto de nosotros, hoy de Unsplash, se aloja en el sitio por CA7. Sigue
+siendo una foto de banco (licencia Unsplash) y se puede sustituir por una foto de la clínica fuera
+de esta spec. `/contacto` no muestra fotos.
 
 ## Pantallas
 
@@ -66,7 +66,9 @@ fuera de esta spec.
   - `.dt-btn` para "Ver mapa", la acción del bloque, con fondo `--primary-700` (`#b63d62`) y texto
     blanco (5,48:1), en lugar de `--primary` (3,96:1, DS4). Solo este botón; hover con
     `--primary-700` y foco con el anillo `--color-focus`.
-  - `.dt-btn--ghost` para "Cómo llegar".
+  - `.dt-btn--ghost` para "Cómo llegar", con borde `--muted` (4,76:1 sobre blanco) en lugar de
+    `--line` (DS6), en los dos estados del bloque. Sustituye al `.dt-btn--primary dt-btn--sm` que
+    hay hoy sobre el mapa.
   - El ícono `pin`.
 - **Composición del estado inicial** (dentro de `.map`, centrada; no es un componente nuevo):
   1. el ícono `pin` en un círculo `--primary-50` con trazo `--primary`;
@@ -75,9 +77,9 @@ fuera de esta spec.
   4. "Ver mapa" (enlace con aspecto de botón) y "Cómo llegar", en fila que pasa a columna si no caben;
   5. una nota en `--muted`: "El mapa se carga desde Google Maps al pulsar «Ver mapa»."
 
-  Fondo `--tint` (`--color-surface`).
+  Fondo `--tint` (`--color-surface`), sin el brillo animado (`shimmer`) que tiene hoy `.map`.
 - **Estado cargado:** el mapa de Google ocupa el mismo `.map`, como hoy, con "Cómo llegar"
-  superpuesto abajo a la derecha.
+  superpuesto abajo a la derecha, con el mismo estilo `ghost` de borde `--muted`.
 - **Sin JavaScript:** "Ver mapa" es un enlace a la ubicación en Google Maps (`mapLink`). Con
   JavaScript, el mismo enlace carga el mapa en el sitio en lugar de navegar. Así nunca hay un botón
   que no hace nada.
@@ -97,9 +99,11 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
   - "Ver mapa": blanco sobre `--primary-700`, 5,48:1 (cumple 4,5:1). Los demás botones principales
     del sitio siguen con la deuda DS4, fuera de esta spec.
   - La dirección (`--ink` sobre `--tint`) y la nota (`--muted` sobre `--tint`, 4,51:1) cumplen.
+  - "Cómo llegar": texto `--ink` sobre blanco y borde `--muted` (4,76:1, ≥ 3:1).
 - **Toque:** `.dt-btn` mide 46 px de alto.
 - **Teclado y foco:** "Ver mapa" es un enlace: se alcanza con Tab y se activa con Enter. Al cargar el mapa, el
-  foco pasa al mapa (título "Ubicación de Dentissa en Google Maps"), así que no se pierde. Orden:
+  foco pasa al mapa (título "Ubicación de Dentissa en Google Maps"), así que no se pierde. El anillo
+  de foco es la regla global `:focus-visible` del sitio (contorno de 3 px `--primary-600`). Orden:
   "Ver mapa" y luego "Cómo llegar".
 - **Estructura:** sin encabezados nuevos. El ícono es decorativo (`aria-hidden`).
 
@@ -114,3 +118,5 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
 | 2026-11-17 | refinado | Contraste de "Ver mapa" contra P16 (la constitución no exime un control nuevo) | Fondo `--primary-700` (5,48:1) solo en este botón; sin cambios al sistema (el token ya existe) | usuario (/analyze A1) |
 | 2026-11-17 | refinado | Cómo se comprueba K2 | Test del tamaño de `.map` antes y después y captura de los dos estados, no CLS de Lighthouse | /analyze A21 |
 | 2026-11-17 | refinado | Nombres del bloque | "Ver mapa" (enlace, Enter) y "Cómo llegar"; sin "Abrir en Google Maps" | /analyze A23 |
+| 2026-11-17 | refinado | Borde de "Cómo llegar" (1,23:1, DS6) contra P16 | Borde `--muted` solo en este bloque, mismo estilo en los dos estados | usuario (/analyze A28) |
+| 2026-11-17 | refinado | Fondo de la vista previa y foco | `--tint` sin brillo animado; foco con la regla global `:focus-visible` | /analyze A30, A31 |

@@ -32,6 +32,12 @@ contacto. Hay dos cosas que el código actual no permite:
    `/login` con ese archivo y el resto de rutas privadas sigue con `app.html`. El inicio de sesión
    con Google se monta solo dentro del login.
 
+3. **División de código del enrutado:** el login, el panel, el portal y restablecer contraseña se
+   cargan con `lazy()`. Si un chunk falla tras un despliegue, la página se recarga una sola vez.
+4. **Guardas del build** en `src/seo/guardas.js`: funciones puras probadas con Vitest que hacen
+   fallar `npm run build` si una página referencia un servicio externo prohibido, si el código
+   privado entra en el archivo principal o si `login.html` lleva datos de sesión.
+
 ## Alternativas consideradas
 - Descargar a mano los `woff2` de Google Fonts a `public/`: sin dependencia, pero sin versiones ni
   `unicode-range` por subconjunto, y distinto de cómo se sirve Jost.

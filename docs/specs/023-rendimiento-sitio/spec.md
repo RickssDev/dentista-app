@@ -67,6 +67,7 @@ el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/co
   externas.
 - [ ] CA8 · Dadas las siete páginas, cuando se cargan, entonces no contactan con ningún servicio
   externo de fuentes, el texto se ve mientras cargan las fuentes y la tipografía es la misma de hoy.
+  En `/login` no cuentan los recursos que carga el botón de Google dentro de su propio marco (CA5).
 - [ ] CA9 · Dadas las siete páginas, después del cambio, entonces se ven igual que antes, salvo el mapa
   de CA6, a 390 y 1440 px. Lighthouse SEO sigue en 100, la accesibilidad no empeora y las páginas se
   hidratan sin errores.
@@ -132,6 +133,8 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 | 2026-11-17 | diseño | Bloque del mapa | Sin ciclo de candidatos; piezas del sistema; K1–K3 en /implement ([design.md](design.md)) | usuario |
 | 2026-11-17 | implícita | La "foto de contacto" de `site.js` no se muestra en ninguna página | CA7 se limita a la foto de nosotros y a quitar la dirección externa sin uso | código: `IMAGES.contact` sin referencias (/analyze A7) |
 | 2026-11-17 | implícita | `/login` deja de recibir `app.html` (022, CA8) | Se declara `extends: [022]`: el login sigue con `noindex`, ahora con su propio HTML | `docs/specs/022-sitio-indexable/plan.md` (/analyze A12) |
+| 2026-11-17 | brecha | Fuente que carga el botón de Google en `/login` | Se permite solo ahí, dentro del marco de Google, como CA5 | usuario (/analyze A36) |
+| 2026-11-17 | brecha | Título de `/login` | "Iniciar sesión \| Dentissa", al cargar y al llegar navegando | usuario (/analyze A40) |
 | 2026-11-17 | implícita | No hay principio de rendimiento en la constitución | La meta la fija esta spec; no hay presupuesto de JavaScript previo | `docs/constitution.md`, `docs/seo.md` (Presupuesto) |
 
 ## Notas para /plan
@@ -166,3 +169,4 @@ Pistas observadas, no requisitos:
 | 2026-11-17 | Metas por página en CA1 (100 / ≥ 95) | usuario |
 | 2026-11-17 | Aprobada | usuario |
 | 2026-11-17 | Correcciones de /analyze A7, A12, A22, A23 (foto de contacto, extends 022, supuestos confirmados, nombres del mapa); vuelve a draft | /analyze 023 |
+| 2026-11-17 | CA8: excepción del marco de Google en `/login`; título del login (/analyze A36, A40) | /analyze 023 |

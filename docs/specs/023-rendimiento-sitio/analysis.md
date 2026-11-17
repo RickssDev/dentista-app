@@ -1,87 +1,76 @@
 ---
-result: fail
-round: 1
+result: pass
+round: 2
 mode: full
 constitution_version: 1.0.0
 date: 2026-11-17
-spec_sha: 788c7c328686
-plan_sha: eef7d215ba07
-tasks_sha: d315d7b79b3f
+spec_sha: 8a28b6c02337
+plan_sha: 9059c26e13ef
+tasks_sha: 00ebc05c27f1
 ---
 
 # Análisis · 023 Rendimiento del sitio público y el login
 
 ## Resumen
-**Falla.** Hay un hallazgo crítico: el botón nuevo "Ver mapa" no cumple el contraste de P16, y la
-constitución solo exime el código previo mientras no se toca. Hay además varios altos que harían
-inviables tareas tal como están escritas:
-- la guarda del build rompe el build durante varias tareas;
-- la regla de módulos privados es imposible tal como se redactó;
-- hay archivos que faltan en T021 y T024;
-- la "foto de contacto" no existe.
+**Pasa.** Un subagente revisó entera la versión corregida tras la ronda 1
+([history/analysis.r1.md](history/analysis.r1.md)):
+- de la ronda 1, 20 hallazgos quedaron resueltos y A7 seguía abierto por una frase residual del
+  acta de diseño;
+- seis correcciones (A3, A9, A10, A14, A15 y A20) introdujeron hallazgos nuevos, que están entre
+  los 14 nuevos de esta ronda (A28–A41).
 
-Las correcciones son localizadas: `/specify --edit`, `/design-spec --fix`, `/plan --fix` y `/tasks
---fix`. Hay tres decisiones del usuario.
-Conteo: CRÍTICA 1 · ALTA 10 · MEDIA 11 · BAJA 5
+Todos se corrigieron en esta misma ronda, con tres decisiones del usuario. Las huellas de arriba
+son de los artefactos ya corregidos. Comprobé cada corrección releyendo las secciones afectadas
+contra el código, sin subagente (delta pequeño). No quedan hallazgos abiertos.
+Conteo de la ronda (nuevos): CRÍTICA 1 · ALTA 2 · MEDIA 8 · BAJA 3, todos corregidos
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 10 / 10 (CA1 y CA2 con medición manual) |
-| Amenazas con control y test | 0 / 0 (el plan no declara amenazas; ver A9) |
+| Criterios con tarea de test e implementación | 10 / 10 (CA1 y CA2 con medición manual en T002 y T060) |
+| Amenazas con control y test | 1 / 1 (TM1: T020, T027 / T013, T015) |
 | Principios de la constitución evaluados | 20 / 20 |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | CRÍTICA | resuelto | `design.md`: "Ver mapa" con `--primary-700` (5,48:1); T014 lo prueba |
+| A2 | ALTA | resuelto | T028 activa los hosts y depende de T024–T027 |
+| A3 | ALTA | resuelto con efecto nuevo (→ A33, corregido) | Reglas activadas por tarea; build en verde por commit |
+| A4 | ALTA | resuelto | `modulosPrivadosEnEntrada` con `isDynamicEntry` y cierre de `imports` |
+| A5 | ALTA | resuelto | T022 incluye `login-redireccion.test.jsx` |
+| A6 | ALTA | resuelto | T023 añade `srcSet`; T025 depende de T023 |
+| A7 | ALTA | resuelto | La frase residual de `design.md` ("Imágenes de muestra") se corrigió en esta ronda |
+| A8 | ALTA | resuelto | PR #78 como requisito previo (plan, nota de T002) |
+| A9 | ALTA | resuelto con efecto nuevo (→ A29, corregido) | TM1 en plan y tareas |
+| A10 | ALTA | resuelto con efecto nuevo (→ A30, corregido) | Contraste y foco en T014 |
+| A11 | ALTA | resuelto | T014: sin literales en las reglas de `.map` |
+| A12–A13, A16–A19, A21–A27 | MEDIA/BAJA | resueltos | Ver tabla de la ronda 2 del subagente (resumen arriba) |
+| A14 | MEDIA | resuelto con efecto nuevo (→ A32, corregido) | `paginaLogin` compartida |
+| A15 | MEDIA | resuelto | T012 |
+| A20 | MEDIA | resuelto con efecto nuevo (→ A34, corregido) | `sitemap.xml` y `robots.txt` en T017 |
 
 ## Hallazgos nuevos
-| ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
+| ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección (aplicada) |
 |---|---|---|---|---|---|
-| A1 | Constitución | CRÍTICA | `design.md` (Accesibilidad, Decisiones); plan P16 | "Ver mapa" es un control nuevo con `.dt-btn--primary` (3,96:1 < 4,5:1). La exención de código previo (`constitution.md` "Código previo") no cubre un uso nuevo. La fila `implícita` resuelve un conflicto con la constitución sin el usuario | El texto de "Ver mapa" cumple 4,5:1 sobre su fondo o hay una excepción aprobada por el usuario. Se comprueba con un test de contraste de los colores del bloque (A10). Decisión del usuario; luego `/design-spec 023 --fix` |
-| A2 | Inconsistencia | ALTA | T023 | T023 exige que la guarda de hosts pase, pero Unsplash y Maps siguen hasta T024 y T025 | La guarda de hosts se exige solo en una tarea que depende de T023, T024 y T025 (`/tasks --fix`) |
-| A3 | Inconsistencia | ALTA | T016, T015, T002; plan Riesgos | Desde T016 el build falla hasta T025: no hay commit con el build en verde y no se puede medir entre bloques | Cada commit deja `npm run build` en verde. La lógica de la guarda se prueba con Vitest sobre manifiestos de ejemplo, y cada regla se activa en el build en la tarea que la hace pasar. T015 va antes que cualquier regla nueva (`/plan --fix`, `/tasks --fix`) |
-| A4 | Viabilidad | ALTA | T016; plan fila `prerender.mjs` | "`src/pages/admin/*` y `paciente/*` son entradas dinámicas" siempre falla: las subpáginas del panel se importan estáticamente desde `AdminPanel`. Un módulo incrustado en el chunk de entrada no tiene clave en el manifiesto | La regla nombra los siete módulos de T020: cada uno es `isDynamicEntry` y su chunk no está en el cierre de `imports` de `index.html` (test sobre un manifiesto de ejemplo) |
-| A5 | Archivos | ALTA | T021; `frontend/tests/login-redireccion.test.jsx:7` | El mock de `@react-oauth/google` solo exporta `GoogleLogin`. Con el proveedor dentro de `login.jsx`, ese test falla | T021 incluye ese test, con el proveedor simulado que solo pinta a sus hijos |
-| A6 | Archivos | ALTA | T022, T024 | `SmartImage` no acepta `srcSet`. T024 lo necesita y no lista `SmartImage.jsx` ni depende de T022 | T022 añade `srcSet` a `SmartImage` y T024 depende de T022 |
-| A7 | Spec ↔ código | ALTA | spec Problema y CA7; plan; T024, T025 | `IMAGES.contact` no se usa: `/contacto` no pinta ninguna foto. La "foto de contacto" no existe | En la spec, CA7 se refiere a la foto de nosotros y a que no queden URLs externas en `site.js`. Se quitan las variantes `contacto-*` y la foto de T025 (`/specify --edit`, `/plan --fix`, `/tasks --fix`) |
-| A8 | Medición | ALTA | spec supuesto "Cómo se mide"; plan; T002, T021, T060 | La imagen local no lleva el client ID de Google (Dockerfile sin `ARG`). `/login` se mediría sin el script `gsi/client` que tiene en producción, y la verificación de T021 no se puede hacer | Decisión del usuario sobre cómo llega el client ID al build local. La meta de `/login` se mide con el script de Google cargado (riesgo añadido al plan) |
-| A9 | Seguridad / P12 | ALTA | plan Modelo de amenazas; tasks P12 | El plan dice que la guarda comprueba `login.html` con los textos privados de la 022, pero esos textos son del propio login y ninguna tarea lo implementa. Plan (✅) y tareas (➖) no coinciden en P12 | `login.html` no contiene token, JWT ni datos de usuario. Test sobre el HTML generado (T013 o T026), amenaza TM1 en el plan y P12 alineado |
-| A10 | P16 | ALTA | plan P16; T011, T025 | El contraste y el foco visible del bloque nuevo solo se comprueban a mano | Test que calcula el contraste de los pares de color del bloque (texto, nota y botón) y comprueba que hay un estilo de foco visible |
-| A11 | P20 | ALTA | plan P20; tasks P20 | La prohibición de literales en estilos nuevos (`Contact.css`) solo se comprueba a mano | Test que falla si el CSS nuevo del bloque del mapa usa colores literales en lugar de variables |
-| A12 | Extends | MEDIA | spec `extends` | La 023 cambia comportamiento de la 022 (`/login` deja `app.html`), no declarado | `extends: [017, 022]` y su nota |
-| A13 | Docs | MEDIA | plan Impacto; T090 | Ninguna tarea actualiza `docs/seo.md` (renderizado, fila `/login`) ni la línea de `architecture.md` sobre Google Fonts y Unsplash | Añadirlo a T090 |
-| A14 | Test | MEDIA | T013, T026 | El caso de login prueba `construirPagina` con parámetros del test, no lo que genera el prerender | Una función compartida para la página de login, usada por el test y por `prerender.mjs` |
-| A15 | Test | MEDIA | T012 | Montar `AppRoutes` sin el árbol raíz no puede fallar hoy (el proveedor está en `main.jsx`) | El test monta el mismo árbol raíz que `main.jsx` (exportado), o se apoya solo en la comprobación del código y en la manual |
-| A16 | Viabilidad | MEDIA | plan `App.jsx`; T020 | No hay `Suspense` alrededor de `/login`, `/admin` ni `/paciente` | El plan fija el `Suspense` y su respaldo para las rutas privadas; T014 lo cubre con la hidratación del login |
-| A17 | Inconsistencia | MEDIA | plan, T016, T013, T026 | El alcance de la guarda de hosts es de siete páginas en el plan y de seis en T016; `login.html` no entra | Siete páginas, `login.html` incluido |
-| A18 | Inconsistencia | MEDIA | plan `prerender.mjs, cabecera.js`; T026 `rutas.js` | Plan y tareas no coinciden en los archivos | Alinear el plan con T026 |
-| A19 | Tarea sin plan | MEDIA | T003 | `capturas.mjs` no está en el plan, y `--screenshot` no captura la página completa | Al plan, con el mecanismo (Chrome DevTools Protocol desde Node 22) |
-| A20 | CA10 | MEDIA | T015 | XML y texto sin comprobar | `sitemap.xml` en T015; `robots.txt` exento por tamaño (`gzip_min_length`), explícito |
-| A21 | Medición | MEDIA | spec y `design.md` K2 | Lighthouse no pulsa "Ver mapa": el CLS no mide el salto al cargar el mapa | Test: el `.map` mantiene sus clases de tamaño antes y después; verificación manual con captura |
-| A22 | Supuestos | MEDIA | spec Decisiones | Que una página quede en 98–99 se decide en `/review`; con el backend ficticio, las secciones de la API se miden vacías | Decisión del usuario (confirmar o cambiar) |
-| A23 | Terminología | BAJA | spec CA6, Diseño; `design.md`; plan | "Abrir en Google Maps" frente a "Cómo llegar"; "botón" frente a enlace | Unificar en "Cómo llegar"; "Ver mapa" es un enlace (Enter) |
-| A24 | Ambigüedad | BAJA | T014 | "Hoy pasa o falla" | Se espera el fallo: `GoogleLogin` sin proveedor |
-| A25 | Conflicto | BAJA | plan Riesgos | La rama de la maqueta también cambia `package.json` y el lockfile (`qrcode.react`) | Añadirlos al riesgo |
-| A26 | Cobertura | BAJA | CA8; T010 | `font-display` sin prueba | T010 comprueba `font-display: swap` en la fuente |
-| A27 | Cobertura | BAJA | CA4; T060 | Solo se comprueba "al recargar" | Añadir la navegación del login al panel |
+| A28 | Constitución P16 | CRÍTICA | `design.md`; `global.css:185` | "Cómo llegar" (`ghost`) con borde `--line` 1,23:1 en un control nuevo | Borde `--muted` (4,76:1) en los dos estados (decisión del usuario); probado en T014 |
+| A29 | Viabilidad / TM1 | ALTA | TM1; T013, T015, T027; `login.jsx:369,411,536` | `datosDeSesion` daba positivo con los `placeholder="tu@correo.com"` del login real | La regla mira el texto y los `value`, no los `placeholder`; el caso limpio de T013 usa esos placeholders |
+| A30 | Viabilidad / P16 | ALTA | T014; plan; `design.md` | No existe `.dt-btn:focus-visible`; el foco es la regla global (`global.css:94`) | T014 prueba la regla global (≥ 2 px) y el anillo `--primary-600` sobre `--tint` (≥ 3:1) |
+| A31 | Cobertura P16/P20 | MEDIA | T014; `Contact.css:183-196` | La vista previa podía quedar sobre el brillo animado con literales | Estado inicial `var(--tint)` sin animación; literales prohibidos en toda regla de `.map` |
+| A32 | Test | MEDIA | T015 | `paginaLogin` y `TITULO_LOGIN` no existían al escribir el test | T015 crea `TITULO_LOGIN` y la firma de `paginaLogin`; llamadas dentro de cada `test` |
+| A33 | Inconsistencia | MEDIA | `tasks.md` (cabecera) | "Tests en verde en cada commit" no se cumple con tests escritos antes | Build en verde por commit; tests nuevos en rojo hasta su tarea; PR al final |
+| A34 | CA10 | MEDIA | plan; T017 | La exención de `robots.txt` era falsa (66 bytes > 20) | `robots.txt` entra en la comprobación de gzip |
+| A35 | Viabilidad | MEDIA | plan; T010 | La variable es `--font`, no `--font-sans` | Plan y T010 usan `--font` |
+| A36 | Ambigüedad | MEDIA | CA8 | El marco de Google en `/login` carga su fuente | CA8 lo exceptúa solo en `/login` (decisión del usuario) |
+| A37 | Riesgos | MEDIA | plan Rollout; T021 | Un chunk viejo tras un despliegue deja la pantalla en blanco | `cargarPagina` recarga una vez (T012, T021) y comprobación en T097 |
+| A38 | Cobertura | MEDIA | CA3 | "No parpadea con JavaScript" sin prueba | T018 (jsdom) y T023 depende de ella |
+| A39 | Inconsistencia | BAJA | plan | Números de tarea desfasados | Alineados (T021, T022, T027) |
+| A40 | Inconsistencia | BAJA | plan; `Metadatos.jsx` | Título de `/login` distinto al cargar y al navegar | "Iniciar sesión \| Dentissa" en los dos casos (decisión del usuario; T012, T022) |
+| A41 | Constitución P4 | BAJA | ADR 0010 | El ADR no recogía la división de código ni las guardas | Añadidas al ADR 0010 |
 
 ## Decisiones pendientes del usuario
-- **A1:** "Ver mapa" con un fondo que cumpla 4,5:1 (`--primary-700`, 5,48:1) o una excepción con
-  vencimiento.
-- **A8:** cómo llega el client ID de Google al build local: hacer antes el `/fix` del Dockerfile
-  (`ARG VITE_GOOGLE_CLIENT_ID`) o pasarlo solo en los scripts de medición.
-- **A22:** confirmar los supuestos de medición (backend ficticio y decisión en `/review` por ruido)
-  o cambiarlos.
-
-Respuestas del usuario (2026-11-17):
-- **A1:** "Ver mapa" con fondo `--primary-700` (5,48:1), solo en este botón → `/design-spec 023 --fix`.
-- **A8:** primero un `/fix` del Dockerfile (`ARG VITE_GOOGLE_CLIENT_ID` con test); los scripts de
-  medición pasan el ID desde `frontend/.env` sin mostrarlo.
-- **A22:** confirmados los supuestos de medición (backend ficticio; ruido de 98–99 decidido en `/review`).
-
-Correcciones: `/specify --edit 023` (A7, A12, A22, A23), `/design-spec 023 --fix` (A1, A21, A23),
-`/plan 023 --fix` (A1–A4, A7–A11, A13–A21, A25) y `/tasks 023 --fix` (todos los que tocan tareas).
-Después, `/analyze 023` en modo delta.
+Ninguna. Respondidas el 2026-11-17: A28 (borde `--muted`), A36 (excepción del marco de Google en
+`/login`) y A40 ("Iniciar sesión | Dentissa").
 
 ## Aceptados
-Ninguno: se corrigen todos.
+Ninguno: se corrigieron todos.
