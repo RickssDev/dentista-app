@@ -11,18 +11,40 @@ export const HOSTS_PROHIBIDOS = [
   "maps.googleapis.com",
 ];
 
-const sinImplementar = () => {
-  throw new Error("sin implementar");
+/** Hosts prohibidos que aparecen en el HTML. */
+export const hostsProhibidos = (html) => HOSTS_PROHIBIDOS.filter((host) => html.includes(host));
+
+// Claves del manifiesto que index.html carga de forma estática (su cierre de `imports`)
+const cierreEstatico = (manifiesto) => {
+  const vistos = new Set();
+  const visitar = (clave) => {
+    if (vistos.has(clave) || !manifiesto[clave]) return;
+    vistos.add(clave);
+    for (const importada of manifiesto[clave].imports || []) visitar(importada);
+  };
+  visitar("index.html");
+  return vistos;
 };
 
-/** Hosts prohibidos que aparecen en el HTML. */
-export const hostsProhibidos = (html) => sinImplementar(html);
+/**
+ * Módulos privados que pesan en la entrada: no son entrada dinámica del manifiesto (un módulo
+ * incrustado en otro chunk no tiene clave propia) o su chunk está en el cierre de importaciones
+ * estáticas de index.html.
+ */
+export const modulosPrivadosEnEntrada = (manifiesto, modulos) => {
+  const estaticos = cierreEstatico(manifiesto);
+  return modulos.filter((modulo) => !manifiesto[modulo]?.isDynamicEntry || estaticos.has(modulo));
+};
+
+const JWT = /eyJ[\w-]{5,}\.[\w-]{5,}/g;
+const PALABRA_TOKEN = /["']token["']/gi;
+const CORREO = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
 
 /**
- * Módulos privados que pesan en la entrada: no son entrada dinámica del manifiesto o su chunk está
- * en el cierre de importaciones estáticas de index.html.
+ * Restos de sesión en un HTML generado: tokens JWT, la palabra "token" entre comillas o correos en
+ * el texto o en un `value` (TM1). Los `placeholder` no cuentan: el login muestra "tu@correo.com".
  */
-export const modulosPrivadosEnEntrada = (manifiesto, modulos) => sinImplementar(manifiesto, modulos);
-
-/** Restos de sesión en un HTML generado: tokens JWT, la palabra "token" entre comillas o correos (TM1). */
-export const datosDeSesion = (html) => sinImplementar(html);
+export const datosDeSesion = (html) => {
+  const sinEjemplos = html.replace(/\splaceholder="[^"]*"/gi, "");
+  return [JWT, PALABRA_TOKEN, CORREO].flatMap((patron) => sinEjemplos.match(patron) || []);
+};
