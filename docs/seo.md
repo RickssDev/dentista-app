@@ -47,42 +47,42 @@ Evidencia: `frontend/dist/index.html` no tiene contenido, solo `<div id="root">`
 devuelve el mismo documento de 1140 bytes para `/`, `/admin` y una URL inexistente. El rastreador
 sin JavaScript no ve título, descripción ni contenido propios de cada ruta.
 Correcciones:
-- SE1.a Prerenderizar o renderizar en servidor las 6 rutas públicas, con ADR — estado: pendiente
-- SE1.b Título y descripción únicos por ruta indexable — estado: pendiente
+- SE1.a Prerenderizar o renderizar en servidor las 6 rutas públicas, con ADR — estado: mitigada (v1.3.0)
+- SE1.b Título y descripción únicos por ruta indexable — estado: mitigada (v1.3.0)
 
 ### SE2 · media — Sin `robots.txt` ni sitemap
 Evidencia: `GET /robots.txt` y `GET /sitemap.xml` responden 200 con `Content-Type: text/html` (la SPA). Lighthouse lo marca como `robots.txt is not valid` y es lo único que baja la categoría SEO a 92 (2026-11-12).
 Correcciones:
-- SE2.a Generar `robots.txt` con la URL absoluta del sitemap — estado: pendiente
-- SE2.b Generar `sitemap.xml` con las 6 rutas indexables — estado: pendiente
+- SE2.a Generar `robots.txt` con la URL absoluta del sitemap — estado: mitigada (v1.3.0)
+- SE2.b Generar `sitemap.xml` con las 6 rutas indexables — estado: mitigada (v1.3.0)
 
 ### SE3 · media — 404 blando y rutas privadas indexables
 Evidencia: una URL inexistente y `/admin` responden 200 sin sesión; el HTML no lleva `noindex` y
 el servidor no envía `X-Robots-Tag`.
 Correcciones:
-- SE3.a Responder 404 real a las URL inexistentes — estado: pendiente
-- SE3.b Aplicar `noindex` a login, restablecer contraseña, `/admin/*`, `/paciente/*` y a la 404 — estado: pendiente
+- SE3.a Responder 404 real a las URL inexistentes — estado: mitigada (v1.3.0)
+- SE3.b Aplicar `noindex` a login, restablecer contraseña, `/admin/*`, `/paciente/*` y a la 404 — estado: mitigada (v1.3.0)
 
 ### SE4 · media — Sin canónica
 Evidencia: no hay `<link rel="canonical">` en `frontend/dist/index.html`.
 Correcciones:
-- SE4.a Canónica absoluta por ruta desde `seo.site_url` — estado: pendiente
+- SE4.a Canónica absoluta por ruta desde `seo.site_url` — estado: mitigada (v1.3.0)
 
 ### SE5 · baja — Sin Open Graph ni imagen para compartir
 Evidencia: no hay metaetiquetas `og:*` en `frontend/dist/index.html`.
 Correcciones:
-- SE5.a Open Graph por ruta indexable — estado: pendiente
-- SE5.b Imagen general de 1200×630 — estado: pendiente
+- SE5.a Open Graph por ruta indexable — estado: mitigada (v1.3.0)
+- SE5.b Imagen general de 1200×630 — estado: mitigada (v1.3.0)
 
 ### SE6 · baja — Sin datos estructurados
 Evidencia: no hay JSON-LD en `frontend/dist/index.html`.
 Correcciones:
-- SE6.a Añadir datos de negocio local de la clínica en la portada — estado: pendiente
+- SE6.a Añadir datos de negocio local de la clínica en la portada — estado: mitigada (v1.3.0)
 
 ### SE7 · baja — Íconos incompletos
 Evidencia: solo `favicon.jpeg`; sin ícono PNG/SVG ni `apple-touch-icon`.
 Correcciones:
-- SE7.a Añadir íconos PNG (`favicon-32.png`, 192, 512) y `apple-touch-icon.png` — estado: pendiente
+- SE7.a Añadir íconos PNG (`favicon-32.png`, 192, 512) y `apple-touch-icon.png` — estado: mitigada (v1.3.0)
 - SE7.b Añadir `favicon.svg` desde un logo vectorial — estado: pendiente (no hay logo vectorial; decisión del usuario, 2026-11-12)
 
 ## Brechas por confirmar
@@ -95,12 +95,16 @@ Correcciones:
 | 2026-11-08 | robots.txt y sitemap.xml responden 200 | ❌ | Responden 200 con HTML de la SPA |
 | 2026-11-08 | Producción sin noindex en rutas indexables | ✅ | Sin `noindex` en `/` ni `X-Robots-Tag` |
 | 2026-11-08 | URL inexistente responde 404 | ❌ | `/ruta-inexistente-aidd` → 200 |
+| 2026-11-17 | robots.txt (`text/plain`) y sitemap.xml válidos | ✅ | Usuario: `curl -sI` tras caducar la caché de Cloudflare; Search Console: sitemap "Correcto" |
+| 2026-11-17 | URL inexistente responde 404 con página propia | ✅ | Usuario: `/no-existe` → "Página no encontrada" |
+| 2026-11-17 | Lighthouse SEO en producción | ✅ | Usuario: 100 |
+| 2026-11-17 | Páginas públicas con HTML propio; privadas funcionan al recargar | ✅ | Usuario: "Ver código fuente" y navegación; contenedor con las carpetas por ruta |
 
 ## Exclusiones deliberadas
 - Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex` y el armazón `app.html` (con `<meta name="robots" content="noindex">`), no 401/404. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
 
 ## Pendientes operativos
-- Alta del sitio en Google Search Console (propiedad `https://sistema.dentissa.app`) y envío del sitemap, cuando exista — lo hace el usuario.
+- ~~Alta del sitio en Google Search Console y envío del sitemap~~ — hecho por el usuario el 2026-11-17 (verificación por archivo HTML, indexación solicitada).
 - Perfil de Google Business de la clínica con el mismo nombre, dirección, teléfono y horario que el sitio — lo hace el usuario; es lo que más pesa al buscar "dentissa".
 - Confirmar la dirección y el teléfono reales de la clínica (hoy `frontend/src/data/site.js` tiene valores provisionales).
 - Dominio: el sitio público sigue en `sistema.dentissa.app` (decisión del usuario, 2026-11-12).
@@ -112,3 +116,4 @@ Correcciones:
 | 2026-11-12 | SE7 separada: PNG en SE7.a y SVG en SE7.b (no hay logo vectorial) | /analyze 022 A7 |
 | 2026-11-12 | Re-auditoría: título y descripción generales presentes; Lighthouse SEO 92 por `robots.txt`; pendientes operativos de Search Console y Google Business | /seo audit |
 | 2026-11-12 | Exclusión deliberada de las rutas privadas (200 con `noindex`) y etiquetas para compartir de la spec 022 | /review 022 R9, R16 |
+| 2026-11-17 | SE1.a–SE7.a mitigadas en v1.3.0; verificación en producción; Search Console dado de alta | /release 022 |

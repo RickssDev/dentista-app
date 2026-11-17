@@ -12,7 +12,7 @@ updated: 2026-11-12
 | 1 | Tests y CI | Framework de tests adoptado con ADR; autenticación, citas, perfil del paciente y portada cubiertos en verde; CI ejecuta validación, lint, build y tests en cada PR. Riesgos: RD8.a, RD8.b, RD8.c | [018](specs/018-base-tests-autenticacion/spec.md), 019 y 020 (previstas) | en curso |
 | 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) (v1.2.0) | cumplido |
 | 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | — | pendiente |
-| 4 | Sitio indexable | Lighthouse SEO 100 en las 6 rutas públicas; cada ruta pública con HTML propio (prerender), título, descripción, canónica y Open Graph únicos; `robots.txt` y `sitemap.xml` válidos; `noindex` en las rutas privadas; 404 real; datos de la clínica para buscadores. Brechas: SE1.a, SE1.b, SE2.a, SE2.b, SE3.a, SE3.b, SE4.a, SE5.a, SE5.b, SE6.a, SE7.a; fuera: SE7.b (sin logo vectorial, pendiente en `docs/seo.md`) | [022](specs/022-sitio-indexable/spec.md) | en curso |
+| 4 | Sitio indexable | Lighthouse SEO 100 en las 6 rutas públicas; cada ruta pública con HTML propio (prerender), título, descripción, canónica y Open Graph únicos; `robots.txt` y `sitemap.xml` válidos; `noindex` en las rutas privadas; 404 real; datos de la clínica para buscadores. Brechas: SE1.a, SE1.b, SE2.a, SE2.b, SE3.a, SE3.b, SE4.a, SE5.a, SE5.b, SE6.a, SE7.a; fuera: SE7.b (sin logo vectorial, pendiente en `docs/seo.md`) | [022](specs/022-sitio-indexable/spec.md) (v1.3.0) | cumplido |
 
 ## Próxima etapa
 El proyecto ya está en producción. Pasar a una operación estable requiere cerrar los tres objetivos
@@ -36,7 +36,19 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - OB4 Logger: OB4.a, OB4.b · OB5 Alertas: OB5.a, OB5.b · OB6 Avisos apagados: OB6.a mitigada en v1.1.0
 
 **SEO**
-- SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12.
+- SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12; mitigadas en v1.3.0 salvo SE7.b (sin logo vectorial).
+- Cloudflare guarda `robots.txt` y `sitemap.xml` 4 h (`max-age=14400`): tras un despliegue sirve la versión anterior. Propuesta: `/fix` con `Cache-Control` corto en nginx para esos archivos (hallado al liberar v1.3.0).
+- Rendimiento de la portada: Lighthouse 75, LCP ~6,5 s por la foto de Unsplash; spec propia (decisión del usuario, 2026-11-12).
+
+**Deuda de la spec 022** (aceptada en /review, ronda 1)
+- 022/R12 `/index.html`, `/<ruta>/index.html` y `/app.html` responden 200 (la canónica evita el duplicado).
+- 022/R13 Las rutas con mayúsculas (`/Nosotros`) dan 404; documentarlo o redirigirlas.
+- 022/R14 La prueba de hidratación no usa el árbol raíz de `main.jsx`.
+- 022/R17 Salto a h3 en el footer, logo sin `width`/`height`, `theme-color` fuera de los tokens y `vite.svg` publicado.
+- 022/R18 Lógica de `estilosNuevos` repetida y estilos distintos entre los scripts de `frontend/scripts`.
+- 022/R21 `probar-nginx.mjs` sin mensaje propio con el puerto ocupado.
+- 022/R22 Sin cabeceras de seguridad en nginx; `add_header` en la ubicación privada anula las del server (ver RS6).
+- 022/R23 Accesibilidad previa: foco al navegar en la SPA, texto del loader y `aria-hidden` del skeleton.
 
 **Diseño**
 - Deuda DS1 a DS12 en `docs/design/system.md`; prioritarias: DS1 (dos rosas de marca) y DS4 (contraste del botón principal).

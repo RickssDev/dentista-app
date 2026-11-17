@@ -169,12 +169,18 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones manuales se hacen con el contenedor local (T029, T060)
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: no aplica: sin staging; equivalentes locales en T029, T060 y la prueba de nginx (22/22)
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-17 para v1.3.0 ("desplegar v1.3.0 a producción")
+  - nota: el usuario ya había desplegado antes de escribir la frase (2026-11-14); la aprobación se registra al confirmar el resultado
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
   - `/seo verify` en producción: robots, sitemap, 404, `noindex`; Lighthouse SEO 100 en producción
-- [ ] T098 Marcar spec como `released`
+  - nota: un primer `git pull` falló en silencio (el servidor seguía en el PR #71, con cambios locales del compose); se rehízo con `git stash` y `build --no-cache` (2026-11-14). Contenedor con `robots.txt`, `sitemap.xml`, `404.html`, `app.html` y las carpetas de cada página
+  - nota: Cloudflare sirvió el `robots.txt` viejo 4 h (`cf-cache-status: HIT`, `max-age=14400`); al caducar, el usuario confirma Lighthouse SEO 100, páginas, 404, login, paneles al recargar y edición de cuentas (2026-11-17). Search Console verificado, sitemap "Correcto" e indexación solicitada
+  - nota: `/seo verify` lo hizo el usuario (las peticiones a producción no las hace el agente); registrado en `docs/seo.md` → Verificación en producción
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
