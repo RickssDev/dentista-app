@@ -501,6 +501,11 @@ ul {
 .smart-img.is-loaded img {
   opacity: 1;
 }
+/* Foto principal (LCP): visible desde el HTML, sin fundido ni esqueleto (spec 023) */
+.smart-img.is-priority img {
+  opacity: 1;
+  transition: none;
+}
 .smart-img.is-loading::after,
 .skeleton {
   background: linear-gradient(100deg, #eef2f4 30%, #f8fafb 50%, #eef2f4 70%);
