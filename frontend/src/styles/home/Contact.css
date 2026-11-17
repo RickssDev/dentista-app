@@ -180,6 +180,7 @@
   }
 }
 
+/* Mapa bajo demanda (spec 023, design.md): la vista previa ocupa el mismo espacio que el mapa */
 .map {
   position: relative;
   aspect-ratio: 21 / 9;
@@ -187,13 +188,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--line);
-  background: linear-gradient(100deg, #eef2f4 30%, #f8fafb 50%, #eef2f4 70%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
-}
-.map.is-loaded {
-  animation: none;
-  background: #eef2f4;
+  background: var(--tint);
 }
 .map iframe {
   position: absolute;
@@ -201,6 +196,59 @@
   width: 100%;
   height: 100%;
   border: 0;
+}
+.map__vista {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px var(--gutter);
+  text-align: center;
+}
+.map__pin {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary-50);
+  color: var(--primary);
+}
+.map__etiqueta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.map__direccion {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--ink);
+  font-weight: 600;
+}
+.map__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.map__ver {
+  background: var(--primary-700);
+  color: var(--bg);
+}
+.map__ver:hover {
+  background: var(--primary-700);
+  color: var(--bg);
+}
+.map__llegar {
+  border-color: var(--muted);
+}
+.map__nota {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 .map__open {
   position: absolute;

@@ -30,7 +30,7 @@ describe('023 CA6 · mapa bajo demanda en contacto', () => {
   test('al abrir no hay mapa: se ven "Ver mapa" (enlace a Google Maps) y "Cómo llegar"', () => {
     montar()
     expect(document.querySelector('iframe')).toBeNull()
-    expect(verMapa()).toHaveAttribute('href', mapLink)
+    expect(verMapa().getAttribute('href')).toBe(mapLink)
     expect(comoLlegar().length).toBeGreaterThan(0)
   })
 
