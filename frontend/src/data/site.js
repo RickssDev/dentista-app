@@ -62,8 +62,9 @@ export const STATS = [
 
 export const IMAGES = {
   hero: "/images/hero-dentissa.webp",
-  about: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=900&q=70",
-  contact: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=900&q=70",
+  // Foto de nosotros: banco de imágenes (licencia Unsplash), alojada en el sitio en WebP (spec 023)
+  about: "/images/nosotros-900.webp",
+  aboutSrcSet: "/images/nosotros-600.webp 600w, /images/nosotros-900.webp 900w, /images/nosotros-1200.webp 1200w",
 };
 
 export const whatsappLink = (text = "Hola, me gustaría agendar una cita en Dentissa.") =>
