@@ -112,7 +112,7 @@ function MapaContacto() {
             referrerPolicy="no-referrer-when-downgrade"
             allowFullScreen
           />
-          {comoLlegar("dt-btn--sm map__open")}
+          {comoLlegar("map__open")}
         </>
       ) : (
         <div className="map__vista">

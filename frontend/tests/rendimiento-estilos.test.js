@@ -100,9 +100,13 @@ describe('023 P20 · el bloque del mapa usa solo tokens', () => {
 })
 
 describe('023 · review r1: foco, "Cómo llegar" y tamaño del bloque', () => {
-  test('R1 · el anillo de foco del mapa se dibuja hacia dentro (no lo recorta overflow: hidden)', () => {
-    const foco = regla(CONTACT, '.map iframe:focus-visible')
-    expect(foco, '.map iframe:focus-visible').toBeDefined()
+  // El iframe delega el foco en su documento: en Chrome no coincide con :focus ni :focus-visible,
+  // pero el bloque sí con :focus-within (comprobado en el navegador en T038)
+  test('R1 · con el foco en el mapa, el bloque dibuja un anillo visible hacia dentro', () => {
+    const foco = regla(CONTACT, '.map.is-activo:focus-within:not(:has(.map__open:focus))')
+    expect(foco, '.map.is-activo:focus-within').toBeDefined()
+    const grosor = Number((foco.cuerpo.match(/outline:\s*(\d+)px\s+solid\s+var\(--[\w-]+\)/) || [])[1])
+    expect(grosor).toBeGreaterThanOrEqual(2)
     const desplazamiento = Number((foco.cuerpo.match(/outline-offset:\s*(-?\d+)px/) || [])[1])
     expect(desplazamiento).toBeLessThanOrEqual(-2)
   })
