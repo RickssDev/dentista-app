@@ -43,8 +43,9 @@ frontend construido para producción y servido en local, **mediana de 3 corridas
 el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/contacto`,
 `/aviso-de-privacidad`, `/terminos-de-servicio` y `/login`.
 
-- [ ] CA1 · Dadas las siete páginas, cuando se hace la medición, entonces cada una obtiene
-  **Rendimiento ≥ 90**.
+- [ ] CA1 · Dadas las siete páginas, cuando se hace la medición, entonces obtienen en Rendimiento:
+  **100** en `/nosotros`, `/galeria`, `/aviso-de-privacidad`, `/terminos-de-servicio` y `/login`, y
+  **≥ 95** en `/` (portada) y `/contacto`.
 - [ ] CA2 · Dadas las siete páginas, cuando se hace la medición, entonces cada una tiene **LCP ≤ 2,5 s**
   y **CLS ≤ 0,1**.
 - [ ] CA3 · Dada la portada, cuando se abre sin JavaScript, entonces su foto principal y su título se
@@ -80,7 +81,7 @@ el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/co
 - Sustituir las fotos de ejemplo por fotos reales de la clínica (se podrá hacer después sin perder la
   optimización).
 - La caché de Cloudflare de `robots.txt` y `sitemap.xml` (va en su propio `/fix`).
-- Puntuaciones de 100 en todas las páginas: la meta es ≥ 90.
+- 100 en la portada y en contacto: su meta es ≥ 95 (foto principal, contenido de la API y mapa).
 - Rendimiento en escritorio: la meta se fija en móvil, que es la más exigente.
 
 ## Seguridad y privacidad
@@ -110,7 +111,7 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 
 ## Requisitos no funcionales
 - Rendimiento: CA1 y CA2 sobre la medición. En producción (tras Cloudflare) se comprueba a mano al
-  liberar, con la misma meta de referencia.
+  liberar, con las mismas metas como referencia.
 - Descubribilidad: sin cambios; las reglas de `docs/seo.md` siguen (SEO 100, `noindex` en privadas,
   canónicas).
 - Accesibilidad: WCAG 2.1 AA (P16). El botón "Ver mapa" se maneja con teclado, tiene nombre
@@ -121,6 +122,8 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 |---|---|---|---|---|
 | 2026-11-17 | brecha | ¿Qué páginas entran? | Las seis públicas y el login; paneles con sesión en otra spec | usuario |
 | 2026-11-17 | brecha | Meta de rendimiento | Lighthouse móvil ≥ 90, LCP ≤ 2,5 s y CLS ≤ 0,1 en las siete | usuario |
+| 2026-11-17 | brecha | Meta más alta por página | 100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto (reemplaza el ≥ 90 general) | usuario |
+| 2026-11-17 | supuesto | Ruido de Lighthouse en las páginas con meta 100 | Cuenta la mediana de 3; si tras las optimizaciones una se queda en 98–99 solo por variación entre corridas, se decide en /review con la evidencia de las 3 corridas, sin rebajar la meta en la spec | sesión |
 | 2026-11-17 | brecha | Mapa de contacto | Vista previa con "Ver mapa"; el mapa carga al activarlo | usuario |
 | 2026-11-17 | brecha | Fotos de Unsplash | Alojarlas en el sitio, optimizadas (la licencia de Unsplash lo permite) | usuario |
 | 2026-11-17 | supuesto | Cómo se mide | Lighthouse 13.6.0 móvil, mediana de 3, contenedor local con el backend ficticio, igual que la línea base de 022 T002 | sesión |
