@@ -206,12 +206,17 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: re-marcada tras las correcciones de la review r1 (T036–T047), 2026-11-17: backend 24/24 suites, frontend 188/188, build con todas las guardas, lint sin errores en archivos de la spec (7 + 4 previos, bajo la línea base)
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen con el contenedor local (T060)
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: no aplica: sin staging; equivalentes locales en T060, las revisiones manuales de T038, T042 y T049 y la prueba de nginx
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-17 para v1.4.0: fusionó el PR #80 y desplegó él mismo
+  - nota: el usuario no escribió la frase literal ("desplegar v1.4.0 a producción"); como en v1.3.0, la aprobación se registra al confirmar el resultado
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
   - Lighthouse en producción en las siete rutas (usuario); entrar con Google de verdad (usuario, CA5); panel y portal al recargar
-- [ ] T098 Marcar spec como `released`
+  - nota: tras el `git pull` (servidor en `6990c03`, merge del #80), el contenedor seguía sirviendo el build de v1.3.0: `/login` con `fonts.googleapis.com`, `preconnect` a Unsplash y `#root` vacío, y Lighthouse móvil 82. Se rehízo con `build --no-cache frontend` y `up -d frontend`; el contenedor ya tiene `login.html`, `404.html`, `app.html` y las carpetas de cada página (2026-11-17)
+  - nota: el usuario confirma en producción "ya se ve lo esperado" (2026-11-17). No se registraron cifras de Lighthouse en producción tras el rebuild
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

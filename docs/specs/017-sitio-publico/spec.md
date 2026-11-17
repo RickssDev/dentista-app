@@ -56,3 +56,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-17 | Comportamiento modificado por 022 en v1.3.0 | /release |
+| 2026-11-17 | Comportamiento modificado por 023 en v1.4.0 | /release |

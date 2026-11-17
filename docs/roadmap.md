@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-12
+updated: 2026-11-17
 ---
 
 # Roadmap
@@ -38,8 +38,8 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 **SEO**
 - SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12; mitigadas en v1.3.0 salvo SE7.b (sin logo vectorial).
 - Cloudflare guarda `robots.txt` y `sitemap.xml` 4 h (`max-age=14400`): tras un despliegue sirve la versión anterior. Propuesta: `/fix` con `Cache-Control` corto en nginx para esos archivos (hallado al liberar v1.3.0).
-- `frontend/Dockerfile` no declara `ARG VITE_GOOGLE_CLIENT_ID`: una imagen construida desde el repo sale sin client ID (el botón de Google no funciona en local). Producción funciona por un cambio local sin commitear del `Dockerfile` en el servidor. Propuesta: `/fix` que lo declare y un test que compare las `VITE_*` del código con el Dockerfile (hallado 2026-11-17).
-- Rendimiento de la portada: Lighthouse 75, LCP ~6,5 s por la foto de Unsplash; spec propia (decisión del usuario, 2026-11-12) → [023](specs/023-rendimiento-sitio/spec.md) (borrador).
+- ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
+- ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
 
 **Deuda de la spec 022** (aceptada en /review, ronda 1)
 - 022/R12 `/index.html`, `/<ruta>/index.html` y `/app.html` responden 200 (la canónica evita el duplicado).
@@ -50,6 +50,23 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 022/R21 `probar-nginx.mjs` sin mensaje propio con el puerto ocupado.
 - 022/R22 Sin cabeceras de seguridad en nginx; `add_header` en la ubicación privada anula las del server (ver RS6).
 - 022/R23 Accesibilidad previa: foco al navegar en la SPA, texto del loader y `aria-hidden` del skeleton.
+
+**Deuda de la spec 023** (aceptada en /review, rondas 1 y 2)
+- 023/R13 Las páginas públicas `lazy` no pasan por `cargarPagina` (sin recarga ante un chunk viejo).
+- 023/R14 Mover `cargarPagina` de `App.jsx` a `src/utils/` (hoy con `eslint-disable`).
+- 023/R24 Cabeceras de seguridad (CSP, `frame-ancestors`, `X-Content-Type-Options`, `Referrer-Policy`) en nginx; ver RS6 y 022/R22.
+- 023/R25 `login.html` sin `<main>` y con dos `h1` (registro e inicio).
+- 023/R26 El respaldo de `Suspense` ("Cargando página...") sin `role="status"`.
+- 023/R27 Esqueleto de la galería sin `aria-busy` (ver 022/R23).
+- 023/R28 "Cómo llegar" abre otra pestaña sin avisarlo.
+- 023/R29 "Ver mapa" usa `--bg` como color de texto; falta un token de texto sobre acción principal.
+- 023/R30 Robustez de `medir-rendimiento.mjs` y `capturas.mjs` (comillas en `--chrome-flags`, `catch` mudo, espera sin límite, puerto CDP fijo).
+- 023/R32 La guarda de hosts prohibidos solo revisa el HTML, no el CSS ni el JS de `dist/assets`.
+- 023/R33 `cierreEstatico` da por hecho la clave `index.html` del manifiesto.
+- 023/R34 `login.html` hereda la descripción de la portada.
+- 023/R36 CA1 y CA2 (Lighthouse) solo se miden a mano; propuesta: presupuesto de bytes por ruta en el build.
+- 023/R39 El anillo del mapa también aparece al hacer clic con el ratón (`:focus-within`).
+- 023/R40 El job "Seguridad (solo cambios del PR)" no lee las excepciones de `docs/security.md`: sigue en rojo con picomatch (`/chore` del workflow).
 
 **Diseño**
 - Deuda DS1 a DS12 en `docs/design/system.md`; prioritarias: DS1 (dos rosas de marca) y DS4 (contraste del botón principal).

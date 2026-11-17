@@ -102,6 +102,7 @@ Correcciones:
 | 2026-11-17 | URL inexistente responde 404 con página propia | ✅ | Usuario: `/no-existe` → "Página no encontrada" |
 | 2026-11-17 | Lighthouse SEO en producción | ✅ | Usuario: 100 |
 | 2026-11-17 | Páginas públicas con HTML propio; privadas funcionan al recargar | ✅ | Usuario: "Ver código fuente" y navegación; contenedor con las carpetas por ruta |
+| 2026-11-17 | v1.4.0: `/login` prerenderizado con `noindex` y sin fuentes ni recursos externos | ✅ | Usuario: contenedor con `login.html` tras `build --no-cache frontend`; "ya se ve lo esperado" |
 
 ## Exclusiones deliberadas
 - Rutas privadas (`/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*`) responden **200** con `X-Robots-Tag: noindex`, no 401/404. `/login` recibe `login.html` (prerenderizado, spec 023); las demás, el armazón `app.html`; los dos llevan `<meta name="robots" content="noindex">`. Motivo: la SPA necesita ese HTML para abrirlas o recargarlas, y la sesión se valida en el cliente y en la API. Decidido en el plan de la spec 022 y registrado en su review (R9).
