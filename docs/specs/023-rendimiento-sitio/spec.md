@@ -1,7 +1,7 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: implemented
+status: approved
 created: 2026-11-17
 extends: [017, 022]
 ---

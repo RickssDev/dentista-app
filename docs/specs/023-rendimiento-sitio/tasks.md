@@ -178,6 +178,14 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: añadida por /review: R3 (decisión del usuario, 2026-11-17)
   - nota: fila registrada. `npm audit --omit=dev` del frontend: 0 vulnerabilidades. El job "Seguridad (solo cambios del PR)" ejecuta `npm audit --audit-level=high` sin leer las excepciones, así que seguirá en rojo por esta advisory aunque se vuelva a lanzar; que el workflow respete las excepciones documentadas sería un `/chore` aparte (`.github` es ruta protegida y no está en esta tarea). El check no es obligatorio en `main`
 
+### Correcciones de /review (ronda 2)
+- [ ] T048 Escribir la prueba de la región de estado de la galería — `frontend/tests/galeria-estados.test.jsx` — hecho cuando: falla por la razón esperada y comprueba: hay un único elemento con `role="status"` en la sección de la galería y está montado ya mientras carga (vacío de texto); al pasar a error contiene "No pudimos cargar la galería" y al pasar a vacía, "Galería en preparación" (el mismo nodo, sin volver a montarse); con fotos cargadas queda sin texto; el aviso visible no lleva `role` — cubre: CA9
+  - nota: añadida por /review: R37
+- [ ] T049 Región de estado persistente en la galería — `frontend/src/pages/Gallery.jsx`, `frontend/src/styles/home/global.css` — hecho cuando: T048 pasa (dos ejecuciones) y T030 y T039 siguen en verde; la región usa una clase `.sr-only` nueva en `global.css` (oculta visualmente, sin tokens visuales); revisión de accesibilidad: en Chrome, el árbol de accesibilidad muestra la región `status` antes del error y su texto al fallar la carga — cubre: CA9 — depende: T048
+  - nota: añadida por /review: R37
+- [ ] T050 Ampliar la excepción de picomatch al backend — `docs/security.md` — hecho cuando: la fila de GHSA-fc5q-39xc-vjpf dice que afecta al frontend (Vite, ESLint) y al backend (Jest), con `npm audit --omit=dev` sin altas en los dos — cubre: —
+  - nota: añadida por /review: R38
+
 ## Integración y documentación
 - [x] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual: `medir-rendimiento.mjs` con mediana de 3 por ruta cumple CA1 (100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto) y CA2 (LCP ≤ 2,5 s, CLS ≤ 0,1), SEO 100 y Accesibilidad no menor que la línea base (T002); capturas `despues` (T003) iguales a las de `antes` salvo el mapa, revisadas por el usuario (CA9); login, panel y portal funcionan al recargar y al entrar desde el login — cubre: CA1, CA2, CA9 — depende: T021, T022, T023, T024, T025, T026, T027, T028, T029, T031, T033, T035
   - nota: suite completa en verde en dos ejecuciones (backend 256 + 5 `todo`; frontend 172 + 1 tras T035); lint del frontend 12 problemas (13 previos, ninguno nuevo); build con todas las guardas; `npm audit`: 0 vulnerabilidades; `probar-nginx` 29/29
@@ -189,7 +197,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `architecture.md` (resumen: `login.html`, carga bajo demanda, guardas, compresión y caché; fila "SEO y prerender"; Google Sign-In solo en el login; Google Maps bajo demanda en lugar de "Google Fonts e imágenes de Unsplash") y `seo.md` (regla de Renderizado y fila `/login`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre; `VITE_GOOGLE_CLIENT_ID` ya llega al build por el `/fix` del Dockerfile (PR #78), sin variables, logs ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
+  - nota: desmarcada por /review ronda 2 (2026-11-17): tareas T048–T050
   - nota: re-marcada tras las correcciones de la review r1 (T036–T047), 2026-11-17: backend 24/24 suites, frontend 188/188, build con todas las guardas, lint sin errores en archivos de la spec (7 + 4 previos, bajo la línea base)
 
 ## Despliegue (lo ejecuta `/release`)
@@ -211,7 +220,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | CA6 | T011, T014, T015, T036 | T026, T037, T038 |
 | CA7 | T010, T013, T015 | T020, T025, T028 |
 | CA8 | T010, T013, T015 | T020, T024, T028 |
-| CA9 | T003, T016, T030, T039, T041, T060 | T027, T031, T040, T042 |
+| CA9 | T003, T016, T030, T039, T041, T048, T060 | T027, T031, T040, T042, T049 |
 | CA10 | T017, T043 | T029, T044 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
