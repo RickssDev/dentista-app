@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { api } from "../../services/api";
-import { TITULO_LOGIN } from "../../seo/rutas";
+import { TITULO_GENERAL, TITULO_LOGIN } from "../../seo/rutas";
 import logoBlanco from "../../assets/logo-melissa-blanco.png";
 import "../../styles/login.css";
 
@@ -64,71 +65,68 @@ function CampoPass({ id, etiqueta, visible, onAlternar, ...props }) {
   );
 }
 
-// El botón de Google necesita un ancho en px: lo medimos del contenedor.
-// Solo se monta el botón del formulario visible (activo): Google usa la última
-// instancia inicializada para todos los botones, y con dos montados a la vez el
-// clic de "Crear cuenta" podía terminar ejecutando el manejador de "Iniciar sesión".
-// Importante: onSuccess y onError deben ser funciones ESTABLES (useCallback);
-// si cambian en cada render, GoogleLogin vuelve a inicializar Google cada vez.
 // Google se carga cuando la página ya está pintada y el navegador queda libre (spec 023): su script,
 // su marco y su fuente no compiten con lo primero que ve el usuario. Como mucho, 2 s tras cargar.
 function useGoogleTrasPintar() {
   const [listo, setListo] = useState(false);
 
   useEffect(() => {
-    let id;
+    // requestIdleCallback y setTimeout tienen ids distintos: se cancela solo con el que se usó
+    let cancelar = () => {};
     const marcar = () => setListo(true);
     const programar = () => {
-      id = window.requestIdleCallback
-        ? window.requestIdleCallback(marcar, { timeout: 2000 })
-        : window.setTimeout(marcar, 200);
+      if (window.requestIdleCallback) {
+        const id = window.requestIdleCallback(marcar, { timeout: 2000 });
+        cancelar = () => window.cancelIdleCallback?.(id);
+      } else {
+        const id = window.setTimeout(marcar, 200);
+        cancelar = () => window.clearTimeout(id);
+      }
     };
     if (document.readyState === "complete") programar();
     else window.addEventListener("load", programar, { once: true });
     return () => {
       window.removeEventListener("load", programar);
-      if (window.cancelIdleCallback) window.cancelIdleCallback(id);
-      window.clearTimeout(id);
+      cancelar();
     };
   }, []);
 
   return listo;
 }
 
-function GoogleBoton({ onSuccess, onError, texto, activo }) {
-  const ref = useRef(null);
+// Botón de Google del panel visible, pintado dentro de su contenedor (.google-btn) con un portal.
+// Hay un solo GoogleOAuthProvider en el login, así que al cambiar de panel el script de Google no se
+// vuelve a cargar; el botón sí se monta de nuevo (key), porque Google usa la última instancia
+// inicializada: con dos botones a la vez, el clic de "Crear cuenta" podía ejecutar el manejador de
+// "Iniciar sesión". Importante: onSuccess y onError deben ser funciones ESTABLES (useCallback); si
+// cambian en cada render, GoogleLogin vuelve a inicializar Google cada vez.
+function BotonGoogle({ contenedor, onSuccess, onError, texto }) {
   const [ancho, setAncho] = useState(null);
-  const googleListo = useGoogleTrasPintar();
 
+  // El botón de Google necesita un ancho en px: se mide del contenedor
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    if (!contenedor) return;
     const medir = () =>
-      setAncho(Math.min(400, Math.max(200, Math.round(el.clientWidth))));
+      setAncho(Math.min(400, Math.max(200, Math.round(contenedor.clientWidth))));
     medir();
     const ro = new ResizeObserver(medir);
-    ro.observe(el);
+    ro.observe(contenedor);
     return () => ro.disconnect();
-  }, []);
+  }, [contenedor]);
 
-  return (
-    <div className="google-btn" ref={ref}>
-      {/* El proveedor solo envuelve al botón: el resto del sitio no carga el script de Google */}
-      {ancho && activo && googleListo && (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <GoogleLogin
-            onSuccess={onSuccess}
-            onError={onError}
-            text={texto}
-            locale="es"
-            theme="outline"
-            size="large"
-            shape="pill"
-            width={String(ancho)}
-          />
-        </GoogleOAuthProvider>
-      )}
-    </div>
+  if (!contenedor || !ancho) return null;
+  return createPortal(
+    <GoogleLogin
+      onSuccess={onSuccess}
+      onError={onError}
+      text={texto}
+      locale="es"
+      theme="outline"
+      size="large"
+      shape="pill"
+      width={String(ancho)}
+    />,
+    contenedor,
   );
 }
 
@@ -176,10 +174,19 @@ function Login() {
     window.scrollTo?.({ top: 0 });
   };
 
-  // Título propio, también al llegar navegando desde el sitio (spec 023)
+  // Título propio, también al llegar navegando desde el sitio; al salir (panel, portal) vuelve el
+  // general, para no dejar "Iniciar sesión" en la pestaña (spec 023, WCAG 2.4.2)
   useEffect(() => {
     document.title = TITULO_LOGIN;
+    return () => {
+      document.title = TITULO_GENERAL;
+    };
   }, []);
+
+  // Contenedores de los dos botones de Google y momento de cargar Google (tras el pintado)
+  const [nodoRegistro, setNodoRegistro] = useState(null);
+  const [nodoLogin, setNodoLogin] = useState(null);
+  const googleListo = useGoogleTrasPintar();
 
   // Escape cierra el aviso
   useEffect(() => {
@@ -418,12 +425,7 @@ const handleRecuperacion = async (e) => {
             <button type="submit" className="btn-principal">Crear cuenta</button>
 
             <div className="separador"><span>o continúa con</span></div>
-            <GoogleBoton
-              activo={active}
-              onSuccess={onGoogleRegister}
-              onError={onGoogleError}
-              texto="signup_with"
-            />
+            <div className="google-btn" ref={setNodoRegistro} />
 
             <p className="cambiar-modo">
               ¿Ya tienes cuenta?{" "}
@@ -471,12 +473,7 @@ const handleRecuperacion = async (e) => {
             </button>
 
             <div className="separador"><span>o continúa con</span></div>
-            <GoogleBoton
-              activo={!active}
-              onSuccess={onGoogleLogin}
-              onError={onGoogleError}
-              texto="signin_with"
-            />
+            <div className="google-btn" ref={setNodoLogin} />
 
             <p className="cambiar-modo">
               ¿No tienes cuenta?{" "}
@@ -625,6 +622,20 @@ const handleRecuperacion = async (e) => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Un solo proveedor de Google para los dos paneles: el botón del panel visible se pinta en
+          su contenedor; el resto del sitio no carga el script de Google (spec 023) */}
+      {googleListo && (
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <BotonGoogle
+            key={active ? "registro" : "login"}
+            contenedor={active ? nodoRegistro : nodoLogin}
+            onSuccess={active ? onGoogleRegister : onGoogleLogin}
+            onError={onGoogleError}
+            texto={active ? "signup_with" : "signin_with"}
+          />
+        </GoogleOAuthProvider>
       )}
     </div>
   );

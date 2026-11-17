@@ -12,7 +12,15 @@ import Home from "./pages/Home";
 import "./styles/home/global.css";
 
 const MARCA_RECARGA = "dentissa:recarga-chunk";
-const almacen = () => (typeof sessionStorage === "undefined" ? null : sessionStorage);
+// Con las cookies o el almacenamiento del sitio bloqueados, acceder a sessionStorage lanza un
+// SecurityError: entonces se trabaja sin marca (y sin recarga automática)
+const almacen = () => {
+  try {
+    return typeof sessionStorage === "undefined" ? null : sessionStorage;
+  } catch {
+    return null;
+  }
+};
 
 /**
  * Carga una página bajo demanda (spec 023). Si el archivo ya no existe, porque la pestaña quedó
