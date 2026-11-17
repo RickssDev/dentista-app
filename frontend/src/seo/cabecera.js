@@ -1,7 +1,7 @@
 // Arma el HTML final de cada página prerenderizada (spec 022): el contenido dentro de #root y, en el
 // <head>, título, descripción, canónica, Open Graph, robots, JSON-LD y el CSS de la ruta.
 import { generarNegocioLocal, serializarJsonLd } from "./negocioLocal.js";
-import { RUTAS_PUBLICAS, SITIO, canonica } from "./rutas.js";
+import { RUTAS_PUBLICAS, SITIO, TITULO_LOGIN, canonica } from "./rutas.js";
 
 const IMAGEN_COMPARTIR = `${SITIO}/og-dentissa.jpg`;
 
@@ -46,10 +46,8 @@ const etiquetasIndexables = (datos) => {
  * Página del login prerenderizado (spec 023): noindex, su título y el CSS de su chunk; sin
  * canónica, Open Graph ni JSON-LD. La usan scripts/prerender.mjs y las pruebas.
  */
-// eslint-disable-next-line no-unused-vars -- firma; se implementa en T027
-export const paginaLogin = (plantilla, { cuerpo = "", css = [] } = {}) => {
-  throw new Error("sin implementar");
-};
+export const paginaLogin = (plantilla, { cuerpo = "", css = [] } = {}) =>
+  construirPagina(plantilla, { cuerpo, noindex: true, titulo: TITULO_LOGIN, css });
 
 /**
  * @param {string} plantilla  index.html de la build (con <title>, descripción y <div id="root">)

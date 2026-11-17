@@ -5,9 +5,9 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { construirPagina, estilosDeRuta } from "../src/seo/cabecera.js";
+import { construirPagina, estilosDeRuta, paginaLogin } from "../src/seo/cabecera.js";
 import { generarRobots, generarSitemap } from "../src/seo/archivos.js";
-import { modulosPrivadosEnEntrada } from "../src/seo/guardas.js";
+import { datosDeSesion, modulosPrivadosEnEntrada } from "../src/seo/guardas.js";
 import { MODULOS_PRIVADOS, RUTAS_PUBLICAS, TITULO_404, canonica } from "../src/seo/rutas.js";
 
 const CARPETA = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -76,6 +76,18 @@ escribir(
   }),
 );
 escribir("app.html", construirPagina(plantilla, { noindex: true }));
+
+// Spec 023: el login llega ya pintado, fuera de los buscadores y sin restos de sesión (TM1)
+const login = paginaLogin(plantilla, {
+  cuerpo: await render("/login"),
+  css: estilosNuevos("src/pages/admin/login.jsx"),
+});
+exigir(/id="login-correo"/.test(login), "login.html: sin el formulario de acceso");
+exigir(/<meta name="robots" content="noindex"/.test(login), "login.html: sin noindex");
+exigir(!/rel="canonical"/.test(login), "login.html: no puede llevar canónica");
+for (const dato of datosDeSesion(login)) exigir(false, `login.html: contiene datos de sesión (${dato.slice(0, 12)}…)`);
+escribir("login.html", login);
+
 escribir("robots.txt", generarRobots());
 escribir("sitemap.xml", generarSitemap());
 
@@ -86,4 +98,4 @@ if (errores.length) {
   console.error(`Prerender incompleto:\n- ${errores.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Prerender: ${RUTAS_PUBLICAS.length} páginas públicas, 404, app.html, robots.txt y sitemap.xml`);
+console.log(`Prerender: ${RUTAS_PUBLICAS.length} páginas públicas, login, 404, app.html, robots.txt y sitemap.xml`);
