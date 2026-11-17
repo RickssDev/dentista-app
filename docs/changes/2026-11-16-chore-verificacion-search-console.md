@@ -27,7 +27,7 @@ rutas protegidas.
 ## Verificación
 - `aidd.py lane-check`: 1 archivo, "Escalar: no".
 - `npm run build`: `dist/google60dda98198eff864.html` con el texto exacto; prerender sin cambios.
-- `node scripts/probar-nginx.mjs`: 22/22. En la misma imagen, `GET /google60dda98198eff864.html`
+- `node scripts/probar-nginx.mjs`: 22/22. En la misma imagen, el archivo anterior (`google7cfa08437e46fc40.html`, mismo mecanismo)
   → `200`, `text/html`, `google-site-verification: google60dda98198eff864.html`.
 - Sin dependencias ni código de la app: no aplican suite, SAST ni SCA. Review ligera de chore no requerida.
 
