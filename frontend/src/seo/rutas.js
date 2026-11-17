@@ -57,6 +57,8 @@ export const TITULO_GENERAL = "Dentissa | Clínica Dental";
 export const DESCRIPCION_GENERAL =
   "Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.";
 export const TITULO_404 = "Página no encontrada | Dentissa";
+// Título del login, al cargar (login.html) y al llegar navegando (spec 023)
+export const TITULO_LOGIN = "Iniciar sesión | Dentissa";
 
 // URL canónica absoluta, sin barra final salvo la portada
 export const canonica = (ruta) => (ruta === "/" ? `${SITIO}/` : `${SITIO}${ruta}`);

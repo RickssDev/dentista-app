@@ -3,8 +3,9 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test } from 'vitest'
 import { render } from '../src/entry-prerender.jsx'
-import { construirPagina, estilosDeRuta } from '../src/seo/cabecera.js'
-import { RUTAS_PUBLICAS, canonica } from '../src/seo/rutas.js'
+import { construirPagina, estilosDeRuta, paginaLogin } from '../src/seo/cabecera.js'
+import { datosDeSesion, hostsProhibidos } from '../src/seo/guardas.js'
+import { RUTAS_PUBLICAS, TITULO_LOGIN, canonica } from '../src/seo/rutas.js'
 
 const PLANTILLA = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const TEXTOS_PRIVADOS =
@@ -175,5 +176,61 @@ describe('022 A5, A16 · cada página enlaza el CSS de su chunk', () => {
     expect(modulos['/nosotros']).toBe('src/pages/About.jsx')
     expect(modulos['/galeria']).toBe('src/pages/Gallery.jsx')
     expect(modulos['/contacto']).toBe('src/pages/Contact.jsx')
+  })
+})
+
+// ── Spec 023 · CA2, CA3, CA6, CA7, CA8 y TM1: lo que el navegador recibe sin esperar a la app ──
+describe('023 CA7, CA8 · sin servicios externos al cargar', () => {
+  test.each(RUTAS)('%s no referencia hosts prohibidos', (ruta) => {
+    expect(hostsProhibidos(pagina(ruta).html)).toEqual([])
+  })
+})
+
+describe('023 CA3 · la foto principal de la portada no espera a la app', () => {
+  test('su contenedor lleva is-priority y no is-loading', () => {
+    const clases = (pagina('/').html.match(/<div class="(smart-img[^"]*hero__image[^"]*)"/) || [])[1]
+    expect(clases, 'contenedor de la foto de portada').toBeTruthy()
+    expect(clases.split(/\s+/)).toContain('is-priority')
+    expect(clases.split(/\s+/)).not.toContain('is-loading')
+  })
+})
+
+describe('023 CA2, CA7 · la foto de nosotros es propia y no se retrasa', () => {
+  test('se carga sin demora y con variantes locales', () => {
+    const img = (pagina('/nosotros').html.match(/<img[^>]*alt="Instalaciones de la clínica Dentissa"[^>]*>/) || [])[0]
+    expect(img, 'foto de nosotros').toBeTruthy()
+    expect(img).toMatch(/loading="eager"/)
+    expect(img).toMatch(/srcSet="[^"]*\/images\/nosotros-\d+\.webp/i)
+  })
+})
+
+describe('023 CA6 · contacto llega sin el mapa', () => {
+  test('no hay iframe y sí el enlace "Ver mapa"', () => {
+    const { html } = pagina('/contacto')
+    expect(html).not.toMatch(/<iframe/)
+    expect(html).toMatch(/<a\b[^>]*>(?:(?!<\/a>)[\s\S])*Ver mapa(?:(?!<\/a>)[\s\S])*<\/a>/)
+  })
+})
+
+describe('023 CA5, TM1 · el login prerenderizado', () => {
+  const login = async () => paginaLogin(PLANTILLA, { cuerpo: await render('/login') })
+
+  test('lleva noindex, su título y el formulario de acceso', async () => {
+    const html = await login()
+    expect(html).toMatch(/<meta name="robots" content="noindex"/)
+    expect(html).toContain(`<title>${TITULO_LOGIN}</title>`)
+    expect(html).toMatch(/id="login-correo"/)
+  })
+
+  test('no lleva canónica, Open Graph ni JSON-LD, ni hosts prohibidos', async () => {
+    const html = await login()
+    expect(html).not.toMatch(/rel="canonical"/)
+    expect(html).not.toMatch(/property="og:/)
+    expect(html).not.toContain('application/ld+json')
+    expect(hostsProhibidos(html)).toEqual([])
+  })
+
+  test('no contiene datos de sesión', async () => {
+    expect(datosDeSesion(await login())).toEqual([])
   })
 })

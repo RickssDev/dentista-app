@@ -43,6 +43,15 @@ const etiquetasIndexables = (datos) => {
 };
 
 /**
+ * Página del login prerenderizado (spec 023): noindex, su título y el CSS de su chunk; sin
+ * canónica, Open Graph ni JSON-LD. La usan scripts/prerender.mjs y las pruebas.
+ */
+// eslint-disable-next-line no-unused-vars -- firma; se implementa en T027
+export const paginaLogin = (plantilla, { cuerpo = "", css = [] } = {}) => {
+  throw new Error("sin implementar");
+};
+
+/**
  * @param {string} plantilla  index.html de la build (con <title>, descripción y <div id="root">)
  * @param {object} opciones
  *   cuerpo   HTML prerenderizado para #root
