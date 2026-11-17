@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { construirPagina, estilosDeRuta, paginaLogin } from "../src/seo/cabecera.js";
 import { generarRobots, generarSitemap } from "../src/seo/archivos.js";
-import { datosDeSesion, modulosPrivadosEnEntrada } from "../src/seo/guardas.js";
+import { datosDeSesion, hostsProhibidos, modulosPrivadosEnEntrada } from "../src/seo/guardas.js";
 import { MODULOS_PRIVADOS, RUTAS_PUBLICAS, TITULO_404, canonica } from "../src/seo/rutas.js";
 
 const CARPETA = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -61,6 +61,8 @@ for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   exigir(contenidoDe(html, /<link rel="canonical" href="([^"]+)">/) === canonica(ruta), `${ruta}: sin canónica correcta`);
   exigir(!modulo || todos.length > 0, `${ruta}: sin el CSS de ${modulo} en el manifiesto`);
   for (const hoja of todos) exigir(html.includes(`href="${hoja}"`), `${ruta}: no enlaza ${hoja}`);
+  // Spec 023 · CA7, CA8: nada de servicios externos al cargar
+  for (const host of hostsProhibidos(html)) exigir(false, `${ruta}: referencia ${host}`);
 
   escribir(ruta === "/" ? "index.html" : join(ruta.slice(1), "index.html"), html);
 }
@@ -86,6 +88,7 @@ exigir(/id="login-correo"/.test(login), "login.html: sin el formulario de acceso
 exigir(/<meta name="robots" content="noindex"/.test(login), "login.html: sin noindex");
 exigir(!/rel="canonical"/.test(login), "login.html: no puede llevar canónica");
 for (const dato of datosDeSesion(login)) exigir(false, `login.html: contiene datos de sesión (${dato.slice(0, 12)}…)`);
+for (const host of hostsProhibidos(login)) exigir(false, `login.html: referencia ${host}`);
 escribir("login.html", login);
 
 escribir("robots.txt", generarRobots());
