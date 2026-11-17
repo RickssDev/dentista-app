@@ -5,7 +5,7 @@ round: 3
 date: 2026-11-17
 base: 8a6396c
 head: f5f9aa2
-human_signoff: pending
+human_signoff: RickssDev 2026-11-17 (revisó y fusionó el PR #79)
 ---
 
 # Review · 023 Rendimiento del sitio público y el login
