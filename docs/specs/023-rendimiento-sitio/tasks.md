@@ -138,9 +138,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 
 ## Integración y documentación
 - [ ] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual: `medir-rendimiento.mjs` con mediana de 3 por ruta cumple CA1 (100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto) y CA2 (LCP ≤ 2,5 s, CLS ≤ 0,1), SEO 100 y Accesibilidad no menor que la línea base (T002); capturas `despues` (T003) iguales a las de `antes` salvo el mapa, revisadas por el usuario (CA9); login, panel y portal funcionan al recargar y al entrar desde el login — cubre: CA1, CA2, CA9 — depende: T021, T022, T023, T024, T025, T026, T027, T028, T029, T031, T033, T035
-- [ ] T090 Actualizar `docs/architecture.md` (login prerenderizado, guardas, división de código de las rutas privadas, compresión y caché en nginx; sustituir la línea de Google Fonts y Unsplash) y `docs/seo.md` (regla de Renderizado y fila `/login` del inventario)
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
-  - nota: el plan no cambia ninguno; registrar "sin cambios" al cerrar
+- [x] T090 Actualizar `docs/architecture.md` (login prerenderizado, guardas, división de código de las rutas privadas, compresión y caché en nginx; sustituir la línea de Google Fonts y Unsplash) y `docs/seo.md` (regla de Renderizado y fila `/login` del inventario)
+  - nota: `architecture.md` (resumen: `login.html`, carga bajo demanda, guardas, compresión y caché; fila "SEO y prerender"; Google Sign-In solo en el login; Google Maps bajo demanda en lugar de "Google Fonts e imágenes de Unsplash") y `seo.md` (regla de Renderizado y fila `/login`)
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
+  - nota: sin cambios: el frontend se reconstruye como siempre; `VITE_GOOGLE_CLIENT_ID` ya llega al build por el `/fix` del Dockerfile (PR #78), sin variables, logs ni métricas nuevos
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)

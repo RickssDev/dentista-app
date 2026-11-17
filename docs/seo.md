@@ -14,6 +14,8 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 - URL canónica: https://sistema.dentissa.app (confirmado por el usuario, 2026-11-08) · variante única: sin `www`, sin barra final (las demás redirigen con `301`/`308`).
 - Idiomas: es.
 - Renderizado: spa — todas las rutas reciben el mismo `index.html`; el contenido lo pinta JavaScript.
+  Desde la spec 022, las páginas públicas se prerenderizan; desde la 023, también `/login` (`login.html`,
+  con `noindex`, sin canónica y fuera del sitemap).
 - No se indexa: 404, `/login`, `/restablecer-contrasena`, `/admin/*`, `/paciente/*` y cualquier entorno que no sea producción (decisión del usuario, 2026-11-08) — mecanismo: `noindex`; hoy no existe.
 - Páginas de error: 404 propia en `frontend/src/pages/Legal.jsx`, servida con código 200; rutas privadas sin sesión → redirección en cliente a `/login`.
 - Archivos generados: `robots.txt` y `sitemap.xml` no existen.
@@ -31,7 +33,7 @@ No incluye palabras clave, estrategia de contenido ni enlaces externos.
 | `/contacto` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
 | `/aviso-de-privacidad` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
 | `/terminos-de-servicio` | sí | ❌ repetido | ❌ repetida | ❌ | ❌ | ❌ | ❌ | mismo HTML de la SPA |
-| `/login` | no (inicio de sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
+| `/login` | no (inicio de sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` (2026-11-08); desde la 023, `login.html` prerenderizado con `noindex` y `X-Robots-Tag` |
 | `/restablecer-contrasena` | no (flujo privado) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
 | `/admin/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | producción: `GET /admin` → 200 |
 | `/paciente/*` | no (requiere sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | sin `noindex` en `dist/index.html` |
