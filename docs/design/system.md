@@ -55,8 +55,10 @@ declarados. Modo oscuro: no aplica.
 | Cuerpo | 16px | 16px | 1.6 |
 | Botón | 15px | 15px | 1 |
 
-No hay escala tokenizada: se mezclan px y rem; los más frecuentes son 15px, 14px, 16px y 0.85rem.
-Fuentes: Plus Jakarta Sans desde Google Fonts, Jost autoalojada con `@fontsource-variable/jost` (DS8).
+No hay escala tokenizada completa: se mezclan px y rem; los más frecuentes son 15px, 14px, 16px y
+0.85rem. Primer token de tamaño de texto: `--text-sm` 14px (spec 023, bloque del mapa), en modo
+`fijo`. Fuentes autoalojadas: Plus Jakarta Sans con `@fontsource-variable/plus-jakarta-sans` (spec
+023, ADR 0010) y Jost con `@fontsource-variable/jost`.
 
 ## Modo de los tokens
 
@@ -64,7 +66,9 @@ Los tamaños son `fijo`, salvo `--gutter`, `--section-y` y `--nav-h`, que son fl
 
 ## Espaciado, radios, bordes y sombras
 
-- Escala de espaciado: no hay.
+- Escala de espaciado (spec 023, modo `fijo`): `--space-1` 6px · `--space-2` 10px · `--space-3` 12px ·
+  `--space-4` 16px · `--space-6` 24px. Tamaño de icono destacado: `--icono-lg` 52px. Las pantallas
+  nuevas o modificadas los usan (P20); el código previo sigue con literales (deuda DS).
 - Margen lateral de pantalla: `--gutter` = `clamp(16px, 4vw, 32px)`.
 - Contenedor: `--container` 1200px. Sección: `--section-y` `clamp(64px, 9vw, 112px)`.
 - Radios: `--radius-sm` 10px · `--radius` 16px · `--radius-lg` 24px; solo los usa `global.css`.
@@ -189,5 +193,6 @@ código previo; se corrige cuando una spec toca la pantalla o como objetivo del 
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-08 | diseño | ¿Documentar el diseño existente? | Sí, sin cambiar código | usuario |
+| 2026-11-17 | diseño | P20 exige tokens de espaciado y texto y el sistema no los tenía | Escala mínima `--space-1…6`, `--icono-lg` y `--text-sm`, con los valores que ya usaba el bloque del mapa | usuario (/review 023 R2) |
 | 2026-11-08 | diseño | ¿Capturas de las vistas con API simulada? | Sin capturas | usuario |
 | 2026-11-08 | brecha | ¿Dentissa o Melissa López N.? | Ambos son intencionales | usuario |

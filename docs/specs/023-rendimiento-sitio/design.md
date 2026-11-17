@@ -86,7 +86,11 @@ de esta spec. `/contacto` no muestra fotos.
 
 ## Cambios a incorporar al sistema
 
-Ninguno.
+| Token, componente o regla | Modo | Valor (menor) | Valor (mayor) | Motivo |
+|---|---|---|---|---|
+| `--space-1` · `--space-2` · `--space-3` · `--space-4` · `--space-6` | fijo | 6 · 10 · 12 · 16 · 24 px | — | P20: el bloque del mapa no puede usar literales de espaciado (/review 023 R2) |
+| `--icono-lg` | fijo | 52px | — | Círculo del pin de la vista previa |
+| `--text-sm` | fijo | 14px | — | Etiqueta "Ubicación" y nota del bloque |
 
 ## Movimiento
 
@@ -120,3 +124,4 @@ Ninguno nuevo. El fundido actual de `.map` al cargar se conserva y respeta
 | 2026-11-17 | refinado | Nombres del bloque | "Ver mapa" (enlace, Enter) y "Cómo llegar"; sin "Abrir en Google Maps" | /analyze A23 |
 | 2026-11-17 | refinado | Borde de "Cómo llegar" (1,23:1, DS6) contra P16 | Borde `--muted` solo en este bloque, mismo estilo en los dos estados | usuario (/analyze A28) |
 | 2026-11-17 | refinado | Fondo de la vista previa y foco | `--tint` sin brillo animado; foco con la regla global `:focus-visible` | /analyze A30, A31 |
+| 2026-11-17 | refinado | P20: literales de espaciado y texto en el bloque | Tokens nuevos en el sistema con los mismos valores; se ve igual | usuario (/review 023 R2) |
