@@ -6,12 +6,26 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { act, cleanup, render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
-// El botón real exige red externa: se simula el proveedor (solo pinta a sus hijos) y el botón
-// Las marcas data-prueba dejan ver cuándo se montan
-vi.mock('@react-oauth/google', () => ({
-  GoogleOAuthProvider: ({ children }) => <div data-prueba="proveedor-google">{children}</div>,
-  GoogleLogin: () => <div data-prueba="boton-google" />,
-}))
+// El botón real exige red externa. El proveedor simulado hace lo que importa del real: al
+// montarse inserta el <script> de Google y lo quita al desmontarse (review R8). Las marcas
+// data-prueba y el contador dejan ver cuándo y cuántas veces se montan
+const google = vi.hoisted(() => ({ montajes: 0 }))
+vi.mock('@react-oauth/google', async () => {
+  const { useEffect } = await import('react')
+  return {
+    GoogleOAuthProvider: ({ children }) => {
+      useEffect(() => {
+        google.montajes += 1
+        const script = document.createElement('script')
+        script.src = 'https://accounts.google.com/gsi/client'
+        document.head.appendChild(script)
+        return () => script.remove()
+      }, [])
+      return <div data-prueba="proveedor-google">{children}</div>
+    },
+    GoogleLogin: ({ text }) => <div data-prueba="boton-google" data-texto={text} />,
+  }
+})
 vi.mock('../src/services/api', async (original) => ({ ...(await original()), api: vi.fn() }))
 
 import * as App from '../src/App.jsx'
@@ -122,5 +136,98 @@ describe('023 CA1, CA5 · el botón de Google se monta cuando la página ya est�
     })
     expect(document.querySelector('[data-prueba="proveedor-google"]')).not.toBeNull()
     expect(document.querySelector('[data-prueba="boton-google"]')).not.toBeNull()
+  })
+})
+
+describe('023 · review r1: login con un solo proveedor y título al salir', () => {
+  let pendientes
+  beforeEach(() => {
+    pendientes = []
+    google.montajes = 0
+    vi.stubGlobal('requestIdleCallback', vi.fn((cb) => pendientes.push(cb)))
+    vi.stubGlobal('cancelIdleCallback', vi.fn())
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  const montarLogin = () =>
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+  const pintar = () =>
+    act(async () => {
+      for (const cb of pendientes.splice(0)) cb({ didTimeout: false, timeRemaining: () => 50 })
+    })
+  const scriptsDeGoogle = () => document.querySelectorAll('script[src*="accounts.google.com/gsi/client"]').length
+
+  test('R7 · al salir del login, el título vuelve al general', () => {
+    const { unmount } = montarLogin()
+    expect(document.title).toBe('Iniciar sesión | Dentissa')
+    unmount()
+    expect(document.title).toBe('Dentissa | Clínica Dental')
+  })
+
+  test('R9 · tras el pintado hay un solo proveedor y un solo script, con el botón de iniciar sesión', async () => {
+    montarLogin()
+    await pintar()
+    expect(google.montajes).toBe(1)
+    expect(scriptsDeGoogle()).toBe(1)
+    const boton = document.querySelector('.sign-in .google-btn [data-prueba="boton-google"]')
+    expect(boton, 'botón en el panel de iniciar sesión').not.toBeNull()
+    expect(boton.getAttribute('data-texto')).toBe('signin_with')
+  })
+
+  test('R9 · al cambiar a "Crear cuenta" se mantiene el proveedor y aparece el botón de registro', async () => {
+    montarLogin()
+    await pintar()
+    await act(async () => {
+      document.querySelector('.sign-in .cambiar-modo .enlace').click()
+    })
+    expect(google.montajes).toBe(1)
+    expect(scriptsDeGoogle()).toBe(1)
+    const boton = document.querySelector('.sign-up .google-btn [data-prueba="boton-google"]')
+    expect(boton, 'botón en el panel de registro').not.toBeNull()
+    expect(boton.getAttribute('data-texto')).toBe('signup_with')
+    expect(document.querySelector('.sign-in .google-btn [data-prueba="boton-google"]')).toBeNull()
+  })
+})
+
+describe('023 · review r1: cargarPagina robusta', () => {
+  test('R11 · con el almacenamiento bloqueado, una carga correcta se resuelve', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'sessionStorage')
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('Acceso denegado', 'SecurityError')
+      },
+    })
+    try {
+      const modulo = { default: () => null }
+      await expect(App.cargarPagina(() => Promise.resolve(modulo), vi.fn())()).resolves.toBe(modulo)
+    } finally {
+      Object.defineProperty(window, 'sessionStorage', descriptor)
+    }
+  })
+
+  test('R12 · tras recargar por un fallo y cargar bien, un fallo nuevo vuelve a recargar', async () => {
+    const error = new Error('chunk viejo')
+    const recargar = vi.fn()
+    let falla = true
+    const cargar = App.cargarPagina(() => (falla ? Promise.reject(error) : Promise.resolve({ default: () => null })), recargar)
+
+    void cargar()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(recargar).toHaveBeenCalledTimes(1)
+
+    falla = false
+    await cargar()
+
+    falla = true
+    void cargar()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(recargar).toHaveBeenCalledTimes(2)
   })
 })
