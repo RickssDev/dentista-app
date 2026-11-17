@@ -164,8 +164,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 - [x] T043 [P] Escribir la prueba de los tipos comprimidos de nginx — `frontend/tests/rendimiento-nginx.test.js` — hecho cuando: falla por la razón esperada y comprueba que `gzip_types` de `frontend/nginx.conf` incluye `text/javascript` y no incluye `application/json` — cubre: CA10
   - nota: añadida por /review: R20, R21
   - nota: fallan los 2 casos por la razón esperada (falta `text/javascript`; está `application/json`)
-- [ ] T044 Ajustar los tipos comprimidos de nginx — `frontend/nginx.conf` — hecho cuando: T043 pasa y `node frontend/scripts/probar-nginx.mjs` sigue en 29/29 — cubre: CA10 — depende: T043
+- [x] T044 Ajustar los tipos comprimidos de nginx — `frontend/nginx.conf` — hecho cuando: T043 pasa y `node frontend/scripts/probar-nginx.mjs` sigue en 29/29 — cubre: CA10 — depende: T043
   - nota: añadida por /review: R20, R21 (ruta protegida, tarea aprobada por el usuario en /review)
+  - nota: T043 (3/3) y `seo-rutas` pasan; `scripts/probar-nginx.mjs` pasa todas sus comprobaciones en el contenedor local
 - [ ] T045 Reforzar las guardas del build: foto principal, login sin Open Graph y mensaje sin datos — `frontend/scripts/prerender.mjs` — hecho cuando: el build falla si `/` o `/nosotros` no llevan la precarga de su foto principal (R16) o si `login.html` lleva `property="og:` (R17), y el error de `datosDeSesion` muestra solo el tipo (JWT, token o correo), no el dato (R22) · comprobado rompiendo cada regla — cubre: CA2, CA5 — depende: T042
   - nota: añadida por /review: R16, R17, R22
 - [ ] T046 Poner al día la documentación de SEO y del plan — `docs/seo.md`, `docs/specs/023-rendimiento-sitio/plan.md`, `docs/specs/023-rendimiento-sitio/tasks.md` — hecho cuando: las "Reglas del sitio", el inventario y la exclusión de privadas de `seo.md` describen el estado tras 022 y 023 (R18); `plan.md` ya no dice "sin `preload` adicional" (R19) y TM1 se mapea a A02:2025 con el texto de lo que la guarda controla (R23); T001 cita `backend/tests/seguridad/dependencias-produccion.json` (R35)
