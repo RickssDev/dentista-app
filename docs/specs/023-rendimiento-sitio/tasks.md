@@ -136,6 +136,32 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: comprobado rompiendo: sin la precarga de la fuente, el build se detiene ("/: sin la precarga de la fuente", etc.); restaurado, verde
   - nota: corrección tras medir: con las precargas antes de `<meta name="viewport">`, el navegador resolvía `imagesizes` con el ancho de escritorio por defecto y `/nosotros` descargaba dos fotos (1200 y 900; LCP 2,9 s). Ahora van tras el `viewport`; prueba nueva en `seo-prerender.test.jsx` (falla sin el arreglo, pasa con él). Comprobado en Chrome: una sola foto (900 px en móvil DPR 1,75; 600 px en escritorio)
 
+### Correcciones de /review (ronda 1)
+- [ ] T036 Escribir las pruebas del bloque del mapa corregido — `frontend/tests/rendimiento-estilos.test.js`, `frontend/tests/rendimiento-mapa.test.jsx` — hecho cuando: fallan por la razón esperada y comprueban: `.map iframe:focus-visible` dibuja el contorno hacia dentro (`outline-offset` negativo de al menos 2 px) (R1); `.map__llegar:hover` usa `var(--primary-700)` de texto y su contraste sobre blanco es ≥ 4,5:1 (R5); ninguna regla de `.map` en `Contact.css` lleva literales de longitud ni de `font-size` (salvo `0`, porcentajes y proporciones) (R2, R10); ninguna regla `.map.is-activo` cambia `aspect-ratio`, `height`, `min-height`, `max-height` ni `padding` (R31); con el mapa cargado, "Cómo llegar" no lleva `dt-btn--sm` (R4); ejecutadas dos veces — cubre: CA6
+  - nota: añadida por /review: R1, R2, R4, R5, R10, R31
+- [ ] T037 Añadir al sistema los tokens de espaciado y texto del bloque del mapa — `frontend/src/styles/home/global.css`, `docs/design/system.md`, `docs/specs/023-rendimiento-sitio/design.md` — hecho cuando: `:root` declara `--space-1` 6px, `--space-2` 10px, `--space-3` 12px, `--space-6` 24px, `--icono-lg` 52px y `--text-sm` 14px (modo `fijo`); `system.md` los recoge en "Espaciado, radios, bordes y sombras" y en "Tipografía", con su fila en Decisiones, y `design.md` en "Cambios a incorporar al sistema"; la suite sigue en verde — cubre: CA6 — depende: T036
+  - nota: añadida por /review: R2 (decisión del usuario, 2026-11-17: añadir tokens)
+- [ ] T038 Corregir el bloque del mapa: foco visible, tamaño y contraste de "Cómo llegar" y solo tokens — `frontend/src/pages/Contact.jsx`, `frontend/src/styles/home/Contact.css` — hecho cuando: T036 pasa (dos ejecuciones) y T011, T014 siguen en verde · verificación manual: con teclado, "Ver mapa" y Enter dejan el anillo de foco visible sobre el mapa; "Cómo llegar" mide ≥ 44 px en los dos estados a 390 y 1440 px (capturas medidas con Chrome sin cabeza) — cubre: CA6 — depende: T036, T037
+  - nota: añadida por /review: R1, R2, R4, R5
+- [ ] T039 [P] Escribir la prueba del aviso accesible de la galería — `frontend/tests/galeria-estados.test.jsx` — hecho cuando: falla por la razón esperada y comprueba: en error y vacía, el aviso está dentro de un elemento con `role="status"`; al pulsar "Reintentar", el foco pasa al título de la sección de la galería (`tabIndex=-1`) y no se queda en el `body` — cubre: CA9
+  - nota: añadida por /review: R6
+- [ ] T040 Anunciar el aviso de la galería y conservar el foco al reintentar — `frontend/src/pages/Gallery.jsx` — hecho cuando: T039 pasa (dos ejecuciones) y T030 sigue en verde — cubre: CA9 — depende: T039
+  - nota: añadida por /review: R6
+- [ ] T041 Escribir las pruebas del login y de `cargarPagina` corregidos — `frontend/tests/rendimiento-carga.test.jsx` — hecho cuando: fallan por la razón esperada y comprueban: el mock de `GoogleOAuthProvider` inserta un `<script src="https://accounts.google.com/gsi/client">` al montarse, y `/`, `/nosotros` y `/contacto` no lo tienen (R8); al desmontar el login, `document.title` vuelve a `TITULO_GENERAL` (R7); tras el pintado hay un solo proveedor montado, y al cambiar de "Iniciar sesión" a "Crear cuenta" se mantiene el mismo proveedor (sin volver a montarse) y se pinta el botón del panel activo (R9); con `sessionStorage` que lanza al leerse, `cargarPagina` resuelve una carga correcta (R11); tras recargar por un fallo y cargar bien, un fallo nuevo vuelve a recargar (R12); ejecutadas dos veces — cubre: CA4, CA5, CA9
+  - nota: añadida por /review: R7, R8, R9, R11, R12
+- [ ] T042 Un solo proveedor de Google en el login, título al salir y almacenamiento bloqueado — `frontend/src/pages/admin/login.jsx`, `frontend/src/App.jsx` — hecho cuando: T041 pasa (dos ejecuciones); T016, T032 y los tests del login siguen en verde; la limpieza de `useGoogleTrasPintar` cancela solo con la API que usó (R15) · verificación manual: con la build local, `/login` sigue pidiendo `gsi/client` una vez y muestra el botón en los dos paneles — cubre: CA4, CA5, CA9 — depende: T041
+  - nota: añadida por /review: R7, R9, R11, R15
+- [ ] T043 [P] Escribir la prueba de los tipos comprimidos de nginx — `frontend/tests/rendimiento-nginx.test.js` — hecho cuando: falla por la razón esperada y comprueba que `gzip_types` de `frontend/nginx.conf` incluye `text/javascript` y no incluye `application/json` — cubre: CA10
+  - nota: añadida por /review: R20, R21
+- [ ] T044 Ajustar los tipos comprimidos de nginx — `frontend/nginx.conf` — hecho cuando: T043 pasa y `node frontend/scripts/probar-nginx.mjs` sigue en 29/29 — cubre: CA10 — depende: T043
+  - nota: añadida por /review: R20, R21 (ruta protegida, tarea aprobada por el usuario en /review)
+- [ ] T045 Reforzar las guardas del build: foto principal, login sin Open Graph y mensaje sin datos — `frontend/scripts/prerender.mjs` — hecho cuando: el build falla si `/` o `/nosotros` no llevan la precarga de su foto principal (R16) o si `login.html` lleva `property="og:` (R17), y el error de `datosDeSesion` muestra solo el tipo (JWT, token o correo), no el dato (R22) · comprobado rompiendo cada regla — cubre: CA2, CA5 — depende: T042
+  - nota: añadida por /review: R16, R17, R22
+- [ ] T046 Poner al día la documentación de SEO y del plan — `docs/seo.md`, `docs/specs/023-rendimiento-sitio/plan.md`, `docs/specs/023-rendimiento-sitio/tasks.md` — hecho cuando: las "Reglas del sitio", el inventario y la exclusión de privadas de `seo.md` describen el estado tras 022 y 023 (R18); `plan.md` ya no dice "sin `preload` adicional" (R19) y TM1 se mapea a A02:2025 con el texto de lo que la guarda controla (R23); T001 cita `backend/tests/seguridad/dependencias-produccion.json` (R35)
+  - nota: añadida por /review: R18, R19, R23, R35
+- [ ] T047 Registrar la excepción de picomatch — `docs/security.md` — hecho cuando: "Excepciones aceptadas" tiene la fila de GHSA-fc5q-39xc-vjpf (picomatch ≤ 4.0.7, alta en origen, real baja: solo desarrollo y build), motivo, "aprobada por el usuario 2026-11-17", vence 2027-01-31 o al publicarse picomatch ≥ 4.0.8; y el job de seguridad del CI se rehace con esa excepción documentada — cubre: —
+  - nota: añadida por /review: R3 (decisión del usuario, 2026-11-17)
+
 ## Integración y documentación
 - [x] T060 Verificar el sitio completo — sin archivos — hecho cuando: `npm test` en verde; lint sin errores nuevos en los archivos tocados; `npm run build` correcto; `npm audit --audit-level=high` sin altas ni críticas · verificación manual: `medir-rendimiento.mjs` con mediana de 3 por ruta cumple CA1 (100 en nosotros, galería, aviso, términos y login; ≥ 95 en portada y contacto) y CA2 (LCP ≤ 2,5 s, CLS ≤ 0,1), SEO 100 y Accesibilidad no menor que la línea base (T002); capturas `despues` (T003) iguales a las de `antes` salvo el mapa, revisadas por el usuario (CA9); login, panel y portal funcionan al recargar y al entrar desde el login — cubre: CA1, CA2, CA9 — depende: T021, T022, T023, T024, T025, T026, T027, T028, T029, T031, T033, T035
   - nota: suite completa en verde en dos ejecuciones (backend 256 + 5 `todo`; frontend 172 + 1 tras T035); lint del frontend 12 problemas (13 previos, ninguno nuevo); build con todas las guardas; `npm audit`: 0 vulnerabilidades; `probar-nginx` 29/29
@@ -147,7 +173,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `architecture.md` (resumen: `login.html`, carga bajo demanda, guardas, compresión y caché; fila "SEO y prerender"; Google Sign-In solo en el login; Google Maps bajo demanda en lugar de "Google Fonts e imágenes de Unsplash") y `seo.md` (regla de Renderizado y fila `/login`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre; `VITE_GOOGLE_CLIENT_ID` ya llega al build por el `/fix` del Dockerfile (PR #78), sin variables, logs ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -161,15 +187,15 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T002, T032, T034, T060 | T021, T022, T023, T024, T025, T026, T027, T028, T029, T033, T035 |
-| CA2 | T002, T015, T030, T034, T060 | T023, T025, T027, T031, T035 |
+| CA2 | T002, T015, T030, T034, T060 | T023, T025, T027, T031, T035, T045 |
 | CA3 | T015, T018 | T023 |
-| CA4 | T012, T013 | T020, T021 |
-| CA5 | T012, T016, T032 | T022, T027, T033 |
-| CA6 | T011, T014, T015 | T026 |
+| CA4 | T012, T013, T041 | T020, T021, T042 |
+| CA5 | T012, T016, T032, T041 | T022, T027, T033, T042, T045 |
+| CA6 | T011, T014, T015, T036 | T026, T037, T038 |
 | CA7 | T010, T013, T015 | T020, T025, T028 |
 | CA8 | T010, T013, T015 | T020, T024, T028 |
-| CA9 | T003, T016, T030, T060 | T027, T031 |
-| CA10 | T017 | T029 |
+| CA9 | T003, T016, T030, T039, T041, T060 | T027, T031, T040, T042 |
+| CA10 | T017, T043 | T029, T044 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -190,11 +216,13 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 | `frontend/src/pages/Contact.jsx`, `styles/home/Contact.css` | T026 |
 | `frontend/src/seo/cabecera.js` | T015, T027 |
 | `frontend/scripts/prerender.mjs` | T021, T027, T028 |
-| `frontend/nginx.conf` | T029 |
+| `frontend/nginx.conf` | T029, T044 |
 | `frontend/src/pages/Gallery.jsx`, `styles/home/Gallery.css` | T031 |
 | `frontend/scripts/probar-nginx.mjs` | T017 |
 | `frontend/tests/` | T010, T011, T012, T013, T014, T015, T016, T018, T030, T032, T034 |
-| `docs/architecture.md`, `docs/seo.md` | T090 |
+| `docs/architecture.md`, `docs/seo.md` | T090, T046 |
+| `docs/design/system.md`, `global.css` (tokens) | T037 |
+| `docs/security.md` (excepción) | T047 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
