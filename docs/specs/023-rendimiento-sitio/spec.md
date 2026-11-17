@@ -95,7 +95,7 @@ el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/co
 ## Diseño
 Lo único visible que cambia es el bloque del mapa en `/contacto`: antes de cargar el mapa se ve la
 dirección con el botón "Ver mapa" y el enlace "Abrir en Google Maps", con los componentes y tokens
-del [sistema de diseño](../../design/system.md). El resto de pantallas debe verse idéntico.
+del [sistema de diseño](../../design/system.md). El resto de pantallas debe verse idéntico. Acta: [design.md](design.md) (sin ciclo de candidatos).
 
 ## Criterios de diseño
 Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 3 candidatos (solo para el bloque del
@@ -128,6 +128,7 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 | 2026-11-17 | brecha | Fotos de Unsplash | Alojarlas en el sitio, optimizadas (la licencia de Unsplash lo permite) | usuario |
 | 2026-11-17 | supuesto | Cómo se mide | Lighthouse 13.6.0 móvil, mediana de 3, contenedor local con el backend ficticio, igual que la línea base de 022 T002 | sesión |
 | 2026-11-17 | supuesto | Tipografía | Se conserva la misma fuente, servida desde el propio sitio | sesión |
+| 2026-11-17 | diseño | Bloque del mapa | Sin ciclo de candidatos; piezas del sistema; K1–K3 en /implement ([design.md](design.md)) | usuario |
 | 2026-11-17 | implícita | No hay principio de rendimiento en la constitución | La meta la fija esta spec; no hay presupuesto de JavaScript previo | `docs/constitution.md`, `docs/seo.md` (Presupuesto) |
 
 ## Notas para /plan
