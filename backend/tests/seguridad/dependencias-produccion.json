@@ -18,6 +18,7 @@
   ],
   "frontend": [
     "@fontsource-variable/jost",
+    "@fontsource-variable/plus-jakarta-sans",
     "@react-oauth/google",
     "react",
     "react-dom",

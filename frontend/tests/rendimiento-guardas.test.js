@@ -1,5 +1,8 @@
 // @vitest-environment node
 // Spec 023 · CA4, CA7, CA8 y TM1: las guardas que hacen fallar el build.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import process from 'node:process'
 import { describe, expect, test } from 'vitest'
 import { HOSTS_PROHIBIDOS, datosDeSesion, hostsProhibidos, modulosPrivadosEnEntrada } from '../src/seo/guardas.js'
 
@@ -53,9 +56,18 @@ describe('023 CA4 · modulosPrivadosEnEntrada', () => {
 })
 
 describe('023 TM1 · datosDeSesion', () => {
+  // Los placeholders de correo se leen del login real (A29); así ningún correo ajeno vive en las
+  // pruebas (regla CA8 de la spec 018: solo @example.test)
+  const PLACEHOLDERS = [
+    ...readFileSync(join(process.cwd(), 'src/pages/admin/login.jsx'), 'utf8').matchAll(/placeholder="([^"]*@[^"]*)"/g),
+  ].map((m) => m[1])
   const LOGIN_LIMPIO =
-    '<form><input id="login-correo" type="email" autoComplete="email" placeholder="tu@correo.com" value="">' +
-    '<input id="reg-correo" placeholder="tu@correo.com"><p>Entra para ver y agendar tus citas</p></form>'
+    `<form>${PLACEHOLDERS.map((p, i) => `<input id="correo-${i}" type="email" placeholder="${p}" value="">`).join('')}` +
+    '<p>Entra para ver y agendar tus citas</p></form>'
+
+  test('el login real tiene placeholders de correo (si no, el caso limpio no probaría nada)', () => {
+    expect(PLACEHOLDERS.length).toBeGreaterThan(0)
+  })
 
   test('un login limpio, con los placeholders de correo del login real, no tiene datos de sesión', () => {
     expect(datosDeSesion(LOGIN_LIMPIO)).toEqual([])
