@@ -73,5 +73,15 @@ Primera ronda.
 - **A22:** confirmar los supuestos de medición (backend ficticio y decisión en `/review` por ruido)
   o cambiarlos.
 
+Respuestas del usuario (2026-11-17):
+- **A1:** "Ver mapa" con fondo `--primary-700` (5,48:1), solo en este botón → `/design-spec 023 --fix`.
+- **A8:** primero un `/fix` del Dockerfile (`ARG VITE_GOOGLE_CLIENT_ID` con test); los scripts de
+  medición pasan el ID desde `frontend/.env` sin mostrarlo.
+- **A22:** confirmados los supuestos de medición (backend ficticio; ruido de 98–99 decidido en `/review`).
+
+Correcciones: `/specify --edit 023` (A7, A12, A22, A23), `/design-spec 023 --fix` (A1, A21, A23),
+`/plan 023 --fix` (A1–A4, A7–A11, A13–A21, A25) y `/tasks 023 --fix` (todos los que tocan tareas).
+Después, `/analyze 023` en modo delta.
+
 ## Aceptados
-(pendiente de la decisión del usuario)
+Ninguno: se corrigen todos.
