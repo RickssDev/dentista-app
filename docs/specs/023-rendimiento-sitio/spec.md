@@ -1,7 +1,7 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: approved
+status: implemented
 created: 2026-11-17
 extends: [017, 022]
 ---
@@ -43,35 +43,35 @@ frontend construido para producción y servido en local, **mediana de 3 corridas
 el mismo equipo que la línea base. Páginas: `/`, `/nosotros`, `/galeria`, `/contacto`,
 `/aviso-de-privacidad`, `/terminos-de-servicio` y `/login`.
 
-- [ ] CA1 · Dadas las siete páginas, cuando se hace la medición, entonces obtienen en Rendimiento:
+- [x] CA1 · Dadas las siete páginas, cuando se hace la medición, entonces obtienen en Rendimiento:
   **100** en `/nosotros`, `/galeria`, `/aviso-de-privacidad`, `/terminos-de-servicio` y `/login`, y
   **≥ 95** en `/` (portada) y `/contacto`.
-- [ ] CA2 · Dadas las siete páginas, cuando se hace la medición, entonces cada una tiene **LCP ≤ 2,5 s**
+- [x] CA2 · Dadas las siete páginas, cuando se hace la medición, entonces cada una tiene **LCP ≤ 2,5 s**
   y **CLS ≤ 0,1**.
-- [ ] CA3 · Dada la portada, cuando se abre sin JavaScript, entonces su foto principal y su título se
+- [x] CA3 · Dada la portada, cuando se abre sin JavaScript, entonces su foto principal y su título se
   ven (la foto no queda oculta a la espera de la aplicación); con JavaScript, la foto no parpadea
   ni se oculta y vuelve a aparecer.
-- [ ] CA4 · Dada cualquiera de las siete páginas, cuando se carga, entonces no descarga el código del
+- [x] CA4 · Dada cualquiera de las siete páginas, cuando se carga, entonces no descarga el código del
   panel del personal ni del portal del paciente; ese código se descarga solo al entrar en esas
   secciones, y el panel y el portal funcionan igual que antes.
-- [ ] CA5 · Dada una página pública, cuando se carga, entonces no contacta con el servicio de inicio
+- [x] CA5 · Dada una página pública, cuando se carga, entonces no contacta con el servicio de inicio
   de sesión de Google; dado el login, iniciar sesión con Google funciona igual que antes, y también
   donde hoy se ofrece ese botón.
-- [ ] CA6 · Dada la página de contacto, cuando se abre, entonces el mapa interactivo no se descarga;
+- [x] CA6 · Dada la página de contacto, cuando se abre, entonces el mapa interactivo no se descarga;
   en su lugar se ve la dirección y la acción "Ver mapa". Al activarla con ratón, toque o teclado
   (Enter), el mapa aparece en el mismo sitio, y el enlace "Cómo llegar", que abre la ubicación en
   Google Maps, sigue disponible en todo momento.
-- [ ] CA7 · Dadas las páginas públicas, cuando se cargan, entonces ninguna foto viene de un servidor
+- [x] CA7 · Dadas las páginas públicas, cuando se cargan, entonces ninguna foto viene de un servidor
   externo: la foto de nosotros se sirve desde el propio sitio, en un tamaño adecuado a la pantalla,
   y no se retrasa si está a la vista al cargar; los datos del sitio no guardan direcciones de fotos
   externas.
-- [ ] CA8 · Dadas las siete páginas, cuando se cargan, entonces no contactan con ningún servicio
+- [x] CA8 · Dadas las siete páginas, cuando se cargan, entonces no contactan con ningún servicio
   externo de fuentes, el texto se ve mientras cargan las fuentes y la tipografía es la misma de hoy.
   En `/login` no cuentan los recursos que carga el botón de Google dentro de su propio marco (CA5).
-- [ ] CA9 · Dadas las siete páginas, después del cambio, entonces se ven igual que antes, salvo el mapa
+- [x] CA9 · Dadas las siete páginas, después del cambio, entonces se ven igual que antes, salvo el mapa
   de CA6, a 390 y 1440 px. Lighthouse SEO sigue en 100, la accesibilidad no empeora y las páginas se
   hidratan sin errores.
-- [ ] CA10 · Dado el sitio desplegado, entonces cada archivo de texto que sirve el servidor propio
+- [x] CA10 · Dado el sitio desplegado, entonces cada archivo de texto que sirve el servidor propio
   (HTML, JavaScript, CSS, XML, texto) llega comprimido a quien lo pide, y los archivos con huella
   en el nombre se pueden guardar en caché durante mucho tiempo.
 
@@ -135,6 +135,7 @@ Puertas: las de `design-spec/references/criterios.md` §2.
 | 2026-11-17 | implícita | `/login` deja de recibir `app.html` (022, CA8) | Se declara `extends: [022]`: el login sigue con `noindex`, ahora con su propio HTML | `docs/specs/022-sitio-indexable/plan.md` (/analyze A12) |
 | 2026-11-17 | brecha | Fuente que carga el botón de Google en `/login` | Se permite solo ahí, dentro del marco de Google, como CA5 | usuario (/analyze A36) |
 | 2026-11-17 | brecha | Título de `/login` | "Iniciar sesión \| Dentissa", al cargar y al llegar navegando | usuario (/analyze A40) |
+| 2026-11-17 | brecha | Metas de CA1 no alcanzadas en dos páginas | Se aceptan `/login` en 99 (mediana de 5: 98/99/99/98/99) y `/nosotros` en 97 (LCP 2,5–2,6 s); el resto cumple | usuario (2026-11-17, tras T060) |
 | 2026-11-17 | implícita | No hay principio de rendimiento en la constitución | La meta la fija esta spec; no hay presupuesto de JavaScript previo | `docs/constitution.md`, `docs/seo.md` (Presupuesto) |
 
 ## Notas para /plan
@@ -171,3 +172,4 @@ Pistas observadas, no requisitos:
 | 2026-11-17 | Correcciones de /analyze A7, A12, A22, A23 (foto de contacto, extends 022, supuestos confirmados, nombres del mapa); vuelve a draft | /analyze 023 |
 | 2026-11-17 | CA8: excepción del marco de Google en `/login`; título del login (/analyze A36, A40) | /analyze 023 |
 | 2026-11-17 | Aprobada de nuevo (con diseño, plan y tareas) tras /analyze ronda 2 | usuario |
+| 2026-11-17 | Implementada: CA1–CA10 con sus pruebas; CA1 con `/login` 99 y `/nosotros` 97 aceptados por el usuario | /implement |
