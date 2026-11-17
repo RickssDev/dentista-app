@@ -22,7 +22,7 @@ La clínica se presenta a posibles pacientes y les ofrece vías de contacto. Com
 - [ ] CA3 · Dado un fallo o una lista vacía, entonces la sección muestra un estado vacío con reintento.
 - [ ] CA4 · Dado el formulario de contacto, cuando se envía, entonces abre WhatsApp con el mensaje; no guarda datos.
 - [ ] CA5 · Dada una ruta inexistente, entonces muestra "Página no encontrada" con enlace al inicio.
-- [ ] CA6 · Dada una ruta indexable, entonces tiene título y descripción propios. **HOY NO SE CUMPLE:** todas las rutas comparten el mismo HTML (SE1).
+- [x] CA6 · Dada una ruta indexable, entonces tiene título y descripción propios. resuelto por 022 (v1.3.0)
 
 ## Fuera de alcance
 - Panel y portal del paciente.
@@ -55,3 +55,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-17 | Comportamiento modificado por 022 en v1.3.0 | /release |
