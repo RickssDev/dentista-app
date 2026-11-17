@@ -19,7 +19,8 @@ beforeAll(() => {
   // Vitest corre desde frontend/; en jsdom import.meta.url no es una URL file://
   const carpeta = process.cwd()
   const ayudante = join(carpeta, 'tests', 'support', 'prerenderizar.mjs')
-  paginas = JSON.parse(execFileSync(process.execPath, [ayudante, ...RUTAS], { cwd: carpeta, encoding: 'utf8' }))
+  // Spec 023: el login también llega prerenderizado
+  paginas = JSON.parse(execFileSync(process.execPath, [ayudante, ...RUTAS, '/login'], { cwd: carpeta, encoding: 'utf8' }))
 }, 60_000)
 
 afterEach(() => {
@@ -63,5 +64,21 @@ describe('022 CA13 · hidratación de las páginas públicas', () => {
 
   test('la portada se hidrata sin errores aunque el año del navegador sea otro', async () => {
     expect(await hidratar('/', { otroAnio: true })).toEqual([])
+  })
+})
+
+describe('023 CA5, CA9 · hidratación del login prerenderizado', () => {
+  test('/login llega con el formulario y se hidrata sin errores', async () => {
+    expect(paginas['/login']).toMatch(/id="login-correo"/)
+    let errores
+    let fallo
+    try {
+      errores = await hidratar('/login')
+    } catch (e) {
+      fallo = e
+    }
+    expect(fallo, String(fallo?.message)).toBeUndefined()
+    expect(errores).toEqual([])
+    expect(document.getElementById('login-correo')).not.toBeNull()
   })
 })
