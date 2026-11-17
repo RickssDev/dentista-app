@@ -1,7 +1,7 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: draft
+status: approved
 created: 2026-11-17
 extends: [017, 022]
 ---
@@ -170,3 +170,4 @@ Pistas observadas, no requisitos:
 | 2026-11-17 | Aprobada | usuario |
 | 2026-11-17 | Correcciones de /analyze A7, A12, A22, A23 (foto de contacto, extends 022, supuestos confirmados, nombres del mapa); vuelve a draft | /analyze 023 |
 | 2026-11-17 | CA8: excepción del marco de Google en `/login`; título del login (/analyze A36, A40) | /analyze 023 |
+| 2026-11-17 | Aprobada de nuevo (con diseño, plan y tareas) tras /analyze ronda 2 | usuario |

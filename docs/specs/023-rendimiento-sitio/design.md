@@ -1,6 +1,6 @@
 ---
 spec: 023-rendimiento-sitio
-status: draft            # draft | approved (solo el usuario aprueba)
+status: approved         # draft | approved (solo el usuario aprueba)
 exploration: none
 threshold: 80
 floor: 3
