@@ -1,7 +1,7 @@
 ---
 id: 023
 slug: rendimiento-sitio
-status: draft
+status: approved
 created: 2026-11-17
 extends: [017]
 ---
@@ -159,3 +159,5 @@ Pistas observadas, no requisitos:
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-17 | Spec creada en borrador | /specify, decisión del usuario tras v1.3.0 |
+| 2026-11-17 | Metas por página en CA1 (100 / ≥ 95) | usuario |
+| 2026-11-17 | Aprobada | usuario |
