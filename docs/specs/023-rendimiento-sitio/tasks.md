@@ -56,7 +56,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
 
 ## Implementación
 - [ ] T020 Cargar bajo demanda el login, el panel, el portal y restablecer contraseña — `frontend/src/App.jsx` — hecho cuando: la parte de módulos privados de la guarda (T016) pasa; los tests del panel, el portal y el login siguen en verde — cubre: CA4 — depende: T016
-- [ ] T021 Montar el inicio de sesión con Google solo en el login — `frontend/src/main.jsx`, `frontend/src/pages/admin/login.jsx` — hecho cuando: T012 pasa (dos ejecuciones); los tests del login siguen en verde · verificación manual: entrar con Google en el contenedor local (usuario) — cubre: CA5 — depende: T012, T020
+- [ ] T021 Montar el inicio de sesión con Google solo en el login — `frontend/src/main.jsx`, `frontend/src/pages/admin/login.jsx` — hecho cuando: T012 pasa (dos ejecuciones); los tests del login siguen en verde · verificación manual: con la build local construida con el client ID de `frontend/.env` y Chrome sin cabeza, `/login` pide `accounts.google.com/gsi/client` y muestra el contenedor del botón, y `/`, `/nosotros` y `/contacto` no lo piden (Claude) — cubre: CA5 — depende: T012, T020
+  - nota: entrar con Google de verdad requiere la cuenta del usuario y un origen autorizado en Google Cloud; se comprueba en producción en T097 (decisión del usuario, 2026-11-17)
 - [ ] T022 Pintar la foto principal sin esperar a JavaScript — `frontend/src/components/home/SmartImage.jsx`, `frontend/src/styles/home/global.css` — hecho cuando: el caso de la portada de T013 pasa; T014 y la prueba de hidratación de 022 siguen en verde · verificación manual: la portada sin JavaScript muestra la foto — cubre: CA3 — depende: T013
 - [ ] T023 Servir Plus Jakarta Sans desde el sitio y quitar los recursos externos de la plantilla — `frontend/index.html`, `frontend/src/main.jsx`, `frontend/src/styles/home/global.css` — hecho cuando: la parte de fuentes e `index.html` de T010 pasa; la guarda de hosts pasa en el build — cubre: CA8 — depende: T001, T010, T016, T021, T022
 - [ ] T024 Alojar las fotos de nosotros y contacto en WebP — `frontend/public/images/*.webp (generado por descarga de Unsplash con fm=webp&w=N&q=70)`, `frontend/src/data/site.js`, `frontend/src/pages/About.jsx` — hecho cuando: la parte de fotos de T010 y el caso de nosotros de T013 pasan — cubre: CA2, CA7 — depende: T010, T013
@@ -77,7 +78,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen con el contenedor local (T060)
 - [ ] T096 Aprobación humana para producción
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-  - Lighthouse en producción en las siete rutas (usuario); login con Google; panel y portal al recargar
+  - Lighthouse en producción en las siete rutas (usuario); entrar con Google de verdad (usuario, CA5); panel y portal al recargar
 - [ ] T098 Marcar spec como `released`
 
 ## Cobertura
