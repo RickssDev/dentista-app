@@ -64,6 +64,11 @@ const fotoPrincipal = (cuerpo) => {
 };
 const precargaDeFuente = (html, precargas) =>
   precargas.every(({ href }) => html.includes(`<link rel="preload" href="${href}" as="font"`));
+// Rutas cuyo elemento más grande es una foto: si pierden su precarga, el LCP empeora sin aviso (review R16)
+const RUTAS_CON_FOTO = ["/", "/nosotros"];
+const precargaDeFoto = (html) => /<link rel="preload" href="[^"]+" as="image" fetchpriority="high"/.test(html);
+// Solo el tipo de dato en el error del build: el dato encontrado no debe acabar en los logs del CI (review R22)
+const tipoDeDato = (dato) => (dato.startsWith("eyJ") ? "JWT" : dato.includes("@") ? "correo" : "token");
 
 for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   const todos = modulo ? estilosDeRuta(manifiesto, modulo) : [];
@@ -71,6 +76,7 @@ for (const { ruta, titulo, descripcion, modulo } of RUTAS_PUBLICAS) {
   const cuerpo = await render(ruta);
   const html = construirPagina(plantilla, { cuerpo, ruta, css, precargas: [...FUENTE_SITIO, ...fotoPrincipal(cuerpo)] });
   exigir(FUENTE_SITIO.length > 0 && precargaDeFuente(html, FUENTE_SITIO), `${ruta}: sin la precarga de la fuente`);
+  exigir(!RUTAS_CON_FOTO.includes(ruta) || precargaDeFoto(html), `${ruta}: sin la precarga de su foto principal`);
 
   exigir(/<h1[\s>]/.test(html), `${ruta}: sin h1`);
   exigir(contenidoDe(html, /<title>([^<]*)<\/title>/) === titulo, `${ruta}: título distinto del de la tabla`);
@@ -112,7 +118,11 @@ exigir(FUENTE_LOGIN.length > 0 && precargaDeFuente(login, FUENTE_LOGIN), "login.
 exigir(/id="login-correo"/.test(login), "login.html: sin el formulario de acceso");
 exigir(/<meta name="robots" content="noindex"/.test(login), "login.html: sin noindex");
 exigir(!/rel="canonical"/.test(login), "login.html: no puede llevar canónica");
-for (const dato of datosDeSesion(login)) exigir(false, `login.html: contiene datos de sesión (${dato.slice(0, 12)}…)`);
+// Fuera de los buscadores también al compartir: sin tarjeta Open Graph (review R17)
+exigir(!/property="og:/.test(login), "login.html: no puede llevar etiquetas Open Graph");
+for (const tipo of new Set(datosDeSesion(login).map(tipoDeDato))) {
+  exigir(false, `login.html: contiene datos de sesión (${tipo})`);
+}
 for (const host of hostsProhibidos(login)) exigir(false, `login.html: referencia ${host}`);
 escribir("login.html", login);
 
