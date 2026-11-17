@@ -12,11 +12,11 @@ escalated_to: null
 ## Problema
 Para dar de alta `https://sistema.dentissa.app` en Google Search Console (pendiente operativo de
 `docs/seo.md`, tras la spec 022), Google pide publicar en la raíz del sitio el archivo
-`google7cfa08437e46fc40.html` con el texto `google-site-verification: google7cfa08437e46fc40.html`.
+`google60dda98198eff864.html` con el texto `google-site-verification: google60dda98198eff864.html`.
 Es la forma de verificar la propiedad sin tocar el DNS de Cloudflare, que administra un tercero.
 
 ## Cambio
-- `frontend/public/google7cfa08437e46fc40.html`: el archivo tal como lo da Google. Vite lo copia
+- `frontend/public/google60dda98198eff864.html`: el archivo tal como lo da Google. Vite lo copia
   a `dist/` y nginx lo sirve por `location / { try_files $uri =404; }`, sin cambios de configuración.
 - No es un secreto: solo prueba que quien controla el sitio controla la cuenta de Search Console.
 
@@ -26,12 +26,13 @@ rutas protegidas.
 
 ## Verificación
 - `aidd.py lane-check`: 1 archivo, "Escalar: no".
-- `npm run build`: `dist/google7cfa08437e46fc40.html` con el texto exacto; prerender sin cambios.
-- `node scripts/probar-nginx.mjs`: 22/22. En la misma imagen, `GET /google7cfa08437e46fc40.html`
-  → `200`, `text/html`, `google-site-verification: google7cfa08437e46fc40.html`.
+- `npm run build`: `dist/google60dda98198eff864.html` con el texto exacto; prerender sin cambios.
+- `node scripts/probar-nginx.mjs`: 22/22. En la misma imagen, el archivo anterior (`google7cfa08437e46fc40.html`, mismo mecanismo)
+  → `200`, `text/html`, `google-site-verification: google60dda98198eff864.html`.
 - Sin dependencias ni código de la app: no aplican suite, SAST ni SCA. Review ligera de chore no requerida.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-16 | implícita | Método de verificación de Search Console | Archivo HTML en la raíz: la propiedad por dominio exige DNS en Cloudflare, que no administra el usuario | usuario |
+| 2026-11-16 | implícita | Search Console generó otro archivo (google60dda98198eff864) | Se sustituye el anterior; el contenido sigue el formato estándar de Google | usuario |
