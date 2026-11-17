@@ -1,6 +1,6 @@
 ---
 id: 0010
-status: proposed
+status: accepted
 date: 2026-11-17
 ---
 
