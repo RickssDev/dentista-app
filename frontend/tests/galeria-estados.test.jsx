@@ -53,13 +53,42 @@ describe('023 · la galería reserva el alto del esqueleto', () => {
     expect(grid.parentElement.textContent).toMatch(/Galería en preparación/)
   })
 
-  // Review R6: el aviso se anuncia y, al reintentar, el foco no cae al body
-  test('error y vacía: el aviso está en una región role="status"', () => {
+  // Review R6 y R37: el aviso se anuncia desde una sola región de estado, montada ya mientras carga
+  // (una región que nace con su texto dentro no la anuncian NVDA ni JAWS) y, al reintentar, el
+  // foco no cae al body
+  test('una sola región de estado, montada al cargar, que recibe el texto del error y de vacía', () => {
+    const vista = (actual) => {
+      estado.actual = { data: [], loading: false, error: null, retry: () => {}, ...actual }
+      return (
+        <MemoryRouter>
+          <Gallery />
+        </MemoryRouter>
+      )
+    }
+    const regiones = () => document.querySelectorAll('section.section--flush-top [role="status"]')
+
+    const { rerender } = render(vista({ loading: true }))
+    expect(regiones()).toHaveLength(1)
+    const region = regiones()[0]
+    expect(region.textContent.trim()).toBe('')
+
+    rerender(vista({ error: new Error('red') }))
+    expect(regiones()).toHaveLength(1)
+    expect(regiones()[0]).toBe(region)
+    expect(region.textContent).toMatch(/No pudimos cargar la galería/)
+
+    rerender(vista({ data: [] }))
+    expect(regiones()[0]).toBe(region)
+    expect(region.textContent).toMatch(/Galería en preparación/)
+
+    rerender(vista({ data: [{ id: 1, url: '/images/foto.webp', titulo: 'Consultorio' }] }))
+    expect(regiones()[0]).toBe(region)
+    expect(region.textContent.trim()).toBe('')
+  })
+
+  test('el aviso visible no es una región de estado (no se anuncia dos veces)', () => {
     montar({ error: new Error('red') })
-    expect(screen.getByText(/No pudimos cargar la galería/).closest('[role="status"]')).not.toBeNull()
-    cleanup()
-    montar({ data: [] })
-    expect(screen.getByText(/Galería en preparación/).closest('[role="status"]')).not.toBeNull()
+    expect(document.querySelector('.gallery-estado__aviso').getAttribute('role')).toBeNull()
   })
 
   test('al pulsar "Reintentar", el foco pasa a la sección de la galería (enfocable con tabIndex -1)', () => {
