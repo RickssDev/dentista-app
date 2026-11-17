@@ -234,3 +234,33 @@ describe('023 CA5, TM1 · el login prerenderizado', () => {
     expect(datosDeSesion(await login())).toEqual([])
   })
 })
+
+describe('023 CA1, CA2 · precargas de la fuente y la foto principal', () => {
+  const FUENTE = { href: '/assets/plus-jakarta-sans-latin-wght-normal-x.woff2', as: 'font', type: 'font/woff2' }
+  const FOTO = { href: '/images/nosotros-900.webp', as: 'image', srcset: '/images/nosotros-600.webp 600w, /images/nosotros-900.webp 900w', sizes: '100vw' }
+  const posicion = (html, patron) => html.search(patron)
+
+  test('construirPagina precarga la fuente (crossorigin) y la foto (fetchpriority alta), antes de las hojas de estilo', () => {
+    const html = construirPagina(PLANTILLA, {
+      cuerpo: '<h1>x</h1>',
+      ruta: '/nosotros',
+      css: ['/assets/About-x.css'],
+      precargas: [FUENTE, FOTO],
+    })
+    const fuente = /<link rel="preload" href="\/assets\/plus-jakarta-sans-latin-wght-normal-x\.woff2" as="font" type="font\/woff2" crossorigin>/
+    const foto = /<link rel="preload" href="\/images\/nosotros-900\.webp" as="image" fetchpriority="high" imagesrcset="\/images\/nosotros-600\.webp 600w, \/images\/nosotros-900\.webp 900w" imagesizes="100vw">/
+    expect(html).toMatch(fuente)
+    expect(html).toMatch(foto)
+    expect(posicion(html, fuente)).toBeLessThan(posicion(html, /<link rel="stylesheet" href="\/assets\/About-x\.css">/))
+  })
+
+  test('paginaLogin también escribe sus precargas', () => {
+    const html = paginaLogin(PLANTILLA, { cuerpo: '<form id="login-correo"></form>', precargas: [{ ...FUENTE, href: '/assets/jost-latin-wght-normal-x.woff2' }] })
+    expect(html).toMatch(/<link rel="preload" href="\/assets\/jost-latin-wght-normal-x\.woff2" as="font" type="font\/woff2" crossorigin>/)
+  })
+
+  test('los atributos de las precargas salen escapados', () => {
+    const html = construirPagina(PLANTILLA, { cuerpo: '<h1>x</h1>', ruta: '/', precargas: [{ href: '/a"b.webp', as: 'image' }] })
+    expect(html).toContain('href="/a&quot;b.webp"')
+  })
+})
