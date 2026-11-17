@@ -200,8 +200,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0).
   - nota: `architecture.md` (resumen: `login.html`, carga bajo demanda, guardas, compresión y caché; fila "SEO y prerender"; Google Sign-In solo en el login; Google Maps bajo demanda en lugar de "Google Fonts e imágenes de Unsplash") y `seo.md` (regla de Renderizado y fila `/login`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas
   - nota: sin cambios: el frontend se reconstruye como siempre; `VITE_GOOGLE_CLIENT_ID` ya llega al build por el `/fix` del Dockerfile (PR #78), sin variables, logs ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
   - nota: desmarcada por /review ronda 2 (2026-11-17): tareas T048–T050
+  - nota: re-marcada tras T048–T050, 2026-11-17: backend 24/24 suites, frontend 189/189, build con todas las guardas, lint sin cambios (7 errores previos en archivos ajenos)
   - nota: re-marcada tras las correcciones de la review r1 (T036–T047), 2026-11-17: backend 24/24 suites, frontend 188/188, build con todas las guardas, lint sin errores en archivos de la spec (7 + 4 previos, bajo la línea base)
 
 ## Despliegue (lo ejecuta `/release`)

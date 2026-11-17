@@ -29,6 +29,6 @@ En una spec inferida, `[x]` significa "un test existente cubre este criterio" y 
 | [018](018-base-tests-autenticacion/spec.md) | Base de tests, integración continua y autenticación | Calidad | released | — |
 | [021](021-proteccion-cuentas-admin/spec.md) | Protección de las cuentas del personal | Usuarios y permisos | released | — |
 | [022](022-sitio-indexable/spec.md) | Sitio indexable | Contenido y sitio público | released (v1.3.0) | — |
-| [023](023-rendimiento-sitio/spec.md) | Rendimiento del sitio público y el login | Contenido y sitio público | approved | — |
+| [023](023-rendimiento-sitio/spec.md) | Rendimiento del sitio público y el login | Contenido y sitio público | implemented | — |
 
 Las pantallas de cada feature están en el inventario de vistas de [docs/design/system.md](../design/system.md).
