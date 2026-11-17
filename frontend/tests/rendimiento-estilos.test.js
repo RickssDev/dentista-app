@@ -83,4 +83,41 @@ describe('023 P20 · el bloque del mapa usa solo tokens', () => {
       expect(cuerpo, selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/)
     }
   })
+
+  // Review R2, R10: P20 también prohíbe literales de espaciado y tipografía (los tamaños de
+  // contenedor, como min-height o max-height, y los bordes de 1px no son espaciado)
+  test('ninguna regla de .map lleva literales de espaciado, tamaño de icono o de texto', () => {
+    const PROPIEDADES = /^(margin|padding|gap|row-gap|column-gap|top|right|bottom|left|inset|font-size|width|height)(-[a-z]+)?$/
+    const delMapa = reglas(CONTACT).filter((r) => /(^|[\s,])\.map(\b|__|\.)/.test(r.selector))
+    for (const { selector, cuerpo } of delMapa) {
+      for (const declaracion of cuerpo.split(';')) {
+        const [propiedad, valor = ''] = declaracion.split(':').map((s) => s.trim())
+        if (!PROPIEDADES.test(propiedad)) continue
+        expect(valor, `${selector} { ${propiedad} }`).not.toMatch(/(^|[\s(])[1-9][\d.]*(px|rem|em)\b/)
+      }
+    }
+  })
+})
+
+describe('023 · review r1: foco, "Cómo llegar" y tamaño del bloque', () => {
+  test('R1 · el anillo de foco del mapa se dibuja hacia dentro (no lo recorta overflow: hidden)', () => {
+    const foco = regla(CONTACT, '.map iframe:focus-visible')
+    expect(foco, '.map iframe:focus-visible').toBeDefined()
+    const desplazamiento = Number((foco.cuerpo.match(/outline-offset:\s*(-?\d+)px/) || [])[1])
+    expect(desplazamiento).toBeLessThanOrEqual(-2)
+  })
+
+  test('R5 · "Cómo llegar" al pasar el ratón usa --primary-700 (≥ 4,5:1 sobre blanco)', () => {
+    const encima = regla(CONTACT, '.map__llegar:hover')
+    expect(encima, '.map__llegar:hover').toBeDefined()
+    expect(encima.cuerpo).toMatch(/(^|;|\s)color:\s*var\(--primary-700\)/)
+    expect(contraste('primary-700', 'blanco')).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test('R31 · cargar el mapa no cambia el tamaño del bloque', () => {
+    const activas = reglas(CONTACT).filter((r) => /\.map\.is-activo/.test(r.selector))
+    for (const { selector, cuerpo } of activas) {
+      expect(cuerpo, selector).not.toMatch(/(^|;|\s)(aspect-ratio|height|min-height|max-height|padding)\s*:/)
+    }
+  })
 })

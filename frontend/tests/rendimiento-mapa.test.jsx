@@ -51,6 +51,12 @@ describe('023 CA6 · mapa bajo demanda en contacto', () => {
     expect(comoLlegar().length).toBeGreaterThan(0)
   })
 
+  test('R4 · con el mapa cargado, "Cómo llegar" mantiene el tamaño normal (sin dt-btn--sm)', () => {
+    montar()
+    fireEvent.click(verMapa())
+    for (const enlace of comoLlegar()) expect(enlace.classList.contains('dt-btn--sm')).toBe(false)
+  })
+
   test('con el teclado (foco en "Ver mapa" y Enter) también aparece el mapa con el foco', async () => {
     montar()
     const usuario = userEvent.setup()
