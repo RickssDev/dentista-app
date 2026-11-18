@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-11-18
+### Changed
+- La clínica aparece en Lázaro Cárdenas, Michoacán, en contacto, el pie de página, el aviso de privacidad, el mapa y los datos que leen los buscadores; se retiró la dirección de ejemplo de Ciudad de México (chore 2026-11-18-chore-ubicacion-y-titulo).
+- La portada se presenta en buscadores y al compartir como "Dentissa | Odontología Integral", con una descripción nueva (chore 2026-11-18-chore-ubicacion-y-titulo).
+
 ## [1.4.0] - 2026-11-17
 ### Changed
 - Las páginas públicas y el inicio de sesión se muestran antes en el celular: la foto y el texto principales aparecen sin esperar a que cargue toda la aplicación, y la página no salta mientras termina de cargar (spec 023).
