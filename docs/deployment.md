@@ -43,7 +43,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 - Comando: no hay herramienta de migraciones. El esquema vigente está en `backend/db/schema.sql` y se regenera tras cada cambio; ver RD1.
 
 ## Respaldos
-`backend/scripts/respaldo.sh` guarda MySQL y `uploads/` en `backend/backups/` y borra los de más de 14 días. Para programarlo, en el servidor: `crontab -e` con `0 3 * * * bash /ruta/al/repo/backend/scripts/respaldo.sh >> /var/log/dentissa-respaldo.log 2>&1`. Copiar los respaldos fuera del servidor sigue pendiente (RD2.b).
+`backend/scripts/respaldo.sh` guarda MySQL y `uploads/` en `backend/backups/` y borra los de más de 14 días. Programado en el servidor desde el 2026-11-18 (crontab del usuario `ricardo`): `0 3 * * * bash $HOME/dentista-app/backend/scripts/respaldo.sh >> $HOME/dentista-respaldo.log 2>&1`. Para revisarlo: `tail ~/dentista-respaldo.log` y `ls -lh ~/dentista-app/backend/backups`. Las copias siguen en el mismo disco que la base de datos: no protegen contra la pérdida del servidor (RD2.b, pospuesta).
 
 ## Rollback
 1. En el servidor, volver al commit anterior con `git checkout <commit>` o `git revert` (confirmado por el usuario, 2026-11-08).
@@ -98,9 +98,9 @@ Correcciones:
 Hay respaldos, pero se hacen a mano (confirmado por el usuario, 2026-11-08). Un olvido significa
 perder expedientes clínicos.
 Correcciones:
-- RD2.a Programar `mysqldump` diario y copia de `uploads/` — estado: en curso: script liberado en v1.1.0; falta programarlo en el servidor
-- RD2.b Guardar las copias cifradas fuera del servidor — estado: pendiente
-- RD2.c Probar periódicamente la restauración y documentar el resultado — estado: pendiente
+- RD2.a Programar `mysqldump` diario y copia de `uploads/` — estado: mitigada (2026-11-18): script de v1.1.0 programado con cron a las 3:00; primera ejecución manual correcta (volcado legible, 12 tablas)
+- RD2.b Guardar las copias cifradas fuera del servidor — estado: pendiente, pospuesta por decisión del usuario (2026-11-18)
+- RD2.c Probar periódicamente la restauración y documentar el resultado — estado: pendiente, pospuesta por decisión del usuario (2026-11-18)
 
 ### RD3 · Media — Rollback sin versiones identificables
 Las imágenes se construyen en el servidor, sin tags ni imágenes versionadas; el rollback depende
