@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Roadmap
@@ -23,7 +23,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 
 **Datos y operación** (propuesto y no elegido como objetivo, 2026-11-08)
 - RD1 Esquema sin versionar: RD1.a mitigada en v1.1.0; pendientes RD1.b, RD1.c
-- RD2 Respaldos manuales: RD2.a con script liberado en v1.1.0, falta programarlo; pendientes RD2.b, RD2.c
+- RD2 Respaldos: RD2.a mitigada (cron diario desde 2026-11-18); RD2.b (copias cifradas fuera del servidor) y RD2.c (prueba de restauración) pospuestas por decisión del usuario (2026-11-18)
 - RS4 Limitadores detrás de varios proxies: RS4.a y RS4.b mitigadas en v1.1.0; pendiente RS4.c
 - RD3 Rollback: RD3.a, RD3.b · RD4 Staging: RD4.a · RD5 Health check: RD5.a · RD6 Cron: RD6.a · RD7 Variables: RD7.a
 
