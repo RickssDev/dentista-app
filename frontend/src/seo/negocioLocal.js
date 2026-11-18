@@ -53,14 +53,17 @@ export const generarNegocioLocal = (clinica = CLINIC, horas = HOURS) => ({
   image: `${SITIO}/og-dentissa.jpg`,
   telephone: clinica.phone,
   email: clinica.email,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: clinica.direccion.calle,
-    addressLocality: clinica.direccion.ciudad,
-    addressRegion: clinica.direccion.estado,
-    postalCode: clinica.direccion.codigoPostal,
-    addressCountry: clinica.direccion.pais,
-  },
+  // Sin calle o código postal confirmados, esos campos no se publican (no se inventa una dirección)
+  address: Object.fromEntries(
+    Object.entries({
+      "@type": "PostalAddress",
+      streetAddress: clinica.direccion.calle,
+      addressLocality: clinica.direccion.ciudad,
+      addressRegion: clinica.direccion.estado,
+      postalCode: clinica.direccion.codigoPostal,
+      addressCountry: clinica.direccion.pais,
+    }).filter(([, valor]) => Boolean(valor)),
+  ),
   openingHoursSpecification: horarioDeApertura(horas),
   sameAs: Object.values(clinica.social || {}),
 });

@@ -1,25 +1,30 @@
 // Información fija de la clínica. Edita aquí y se actualiza en todo el sitio.
 
-// Dirección por partes, para los buscadores (spec 022). Valores provisionales: confirmar los reales.
+// Dirección por partes, para los buscadores (spec 022). Ciudad y estado confirmados por el usuario
+// (2026-11-18); calle y código postal pendientes: vacíos, no se muestran ni se publican
 const DIRECCION = {
-  calle: "Av. Universidad 1200, Colonia Centro",
-  ciudad: "Ciudad de México",
-  estado: "CDMX",
-  codigoPostal: "03100",
+  calle: "",
+  ciudad: "Lázaro Cárdenas",
+  estado: "Michoacán",
+  codigoPostal: "",
   pais: "MX",
 };
+
+// "Calle, Ciudad, Estado, CP 00000" con las partes que existan
+const direccionCompleta = ({ calle, ciudad, estado, codigoPostal }) =>
+  [calle, ciudad, estado, codigoPostal && `CP ${codigoPostal}`].filter(Boolean).join(", ");
 
 export const CLINIC = {
   name: "Dentissa",
   tagline:
     "Cuidando de tu sonrisa con tecnología avanzada, especialistas dedicados y un ambiente cómodo para toda la familia.",
   direccion: DIRECCION,
-  address: `${DIRECCION.calle}, ${DIRECCION.ciudad}, CP ${DIRECCION.codigoPostal}`,
+  address: direccionCompleta(DIRECCION),
   phone: "+52 55 1234 5678",
   phoneHref: "tel:+525512345678",
   whatsapp: "525512345678", // solo dígitos, con lada de país
   email: "contacto@dentissa.com",
-  mapQuery: "Av. Universidad 1200, Ciudad de México, CP 03100",
+  mapQuery: direccionCompleta(DIRECCION),
   social: {
     facebook: "https://facebook.com/dentissa",
     instagram: "https://instagram.com/dentissa",

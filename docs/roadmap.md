@@ -72,7 +72,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - Deuda DS1 a DS12 en `docs/design/system.md`; prioritarias: DS1 (dos rosas de marca) y DS4 (contraste del botón principal).
 
 **Funcional, por confirmar con el usuario**
-- Teléfono y dirección de `frontend/src/data/site.js` parecen de ejemplo (spec 017).
+- Datos de la clínica en `frontend/src/data/site.js`: ciudad y estado reales desde 2026-11-18 (Lázaro Cárdenas, Michoacán); faltan calle, código postal, teléfono y horario (spec 017). El teléfono provisional usa la lada 55 de Ciudad de México.
 
 **Hallado al liberar v1.1.0**
 - La API aún acepta citas fuera de horario si se llama directamente: resuelto en v1.1.1 (nadie agenda fuera de horario).

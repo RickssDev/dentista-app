@@ -20,15 +20,18 @@ describe('022 CA7 · negocio local', () => {
     expect(datos.telephone).toBe(CLINIC.phone)
   })
 
-  test('dirección PostalAddress con los campos separados de site.js', () => {
+  test('dirección PostalAddress con los campos de site.js que existen', () => {
     expect(datos.address).toEqual({
       '@type': 'PostalAddress',
-      streetAddress: CLINIC.direccion.calle,
-      addressLocality: CLINIC.direccion.ciudad,
-      addressRegion: CLINIC.direccion.estado,
-      postalCode: CLINIC.direccion.codigoPostal,
-      addressCountry: CLINIC.direccion.pais,
+      addressLocality: 'Lázaro Cárdenas',
+      addressRegion: 'Michoacán',
+      addressCountry: 'MX',
     })
+  })
+
+  test('con calle y código postal, se publican también', () => {
+    const conCalle = { ...CLINIC, direccion: { ...CLINIC.direccion, calle: 'Calle 1', codigoPostal: '60950' } }
+    expect(generarNegocioLocal(conCalle).address).toMatchObject({ streetAddress: 'Calle 1', postalCode: '60950' })
   })
 
   test('horario: lunes a viernes 08:00–16:00, sábado 08:00–14:00 y domingo sin horario', () => {
