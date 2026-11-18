@@ -1,6 +1,7 @@
 ---
 lane: chore
-status: done
+status: released
+released: v1.4.1 (2026-11-18)
 base: d2efd91
 relates: []
 covers: []
