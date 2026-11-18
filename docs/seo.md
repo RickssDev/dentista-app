@@ -1,6 +1,6 @@
 ---
 status: inferred
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # SEO técnico de Dentissa
@@ -110,7 +110,7 @@ Correcciones:
 ## Pendientes operativos
 - ~~Alta del sitio en Google Search Console y envío del sitemap~~ — hecho por el usuario el 2026-11-17 (verificación por archivo HTML, indexación solicitada).
 - Perfil de Google Business de la clínica con el mismo nombre, dirección, teléfono y horario que el sitio — lo hace el usuario; es lo que más pesa al buscar "dentissa".
-- Confirmar la dirección y el teléfono reales de la clínica (hoy `frontend/src/data/site.js` tiene valores provisionales).
+- Datos de la clínica en `frontend/src/data/site.js`: ciudad y estado confirmados (Lázaro Cárdenas, Michoacán; usuario, 2026-11-18). Faltan calle, código postal, teléfono y horario reales: la calle y el CP no se publican mientras estén vacíos; el teléfono y el horario siguen siendo los provisionales.
 - Dominio: el sitio público sigue en `sistema.dentissa.app` (decisión del usuario, 2026-11-12).
 
 ## Historial

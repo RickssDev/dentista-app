@@ -7,9 +7,9 @@ export const SITIO = "https://sistema.dentissa.app";
 export const RUTAS_PUBLICAS = [
   {
     ruta: "/",
-    titulo: "Dentissa | Clínica dental en Ciudad de México",
+    titulo: "Dentissa | Odontología Integral",
     descripcion:
-      "Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.",
+      "Odontología integral en Lázaro Cárdenas: odontología general, ortodoncia y estética dental en un solo lugar, con tecnología avanzada y trato cálido.",
   },
   {
     ruta: "/nosotros",
@@ -29,7 +29,7 @@ export const RUTAS_PUBLICAS = [
     ruta: "/contacto",
     titulo: "Contacto y ubicación | Dentissa Clínica Dental",
     descripcion:
-      "Agenda tu cita en Dentissa: escríbenos por WhatsApp, llámanos o visítanos. Atendemos de lunes a sábado en Ciudad de México.",
+      "Agenda tu cita en Dentissa: escríbenos por WhatsApp, llámanos o visítanos. Atendemos de lunes a sábado en Lázaro Cárdenas, Michoacán.",
     modulo: "src/pages/Contact.jsx",
   },
   {
@@ -66,7 +66,7 @@ export const MODULOS_PRIVADOS = [
 // prerender y la navegación en el cliente
 export const TITULO_GENERAL = "Dentissa | Clínica Dental";
 export const DESCRIPCION_GENERAL =
-  "Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.";
+  "Odontología integral en Lázaro Cárdenas: odontología general, ortodoncia y estética dental en un solo lugar, con tecnología avanzada y trato cálido.";
 export const TITULO_404 = "Página no encontrada | Dentissa";
 // Título del login, al cargar (login.html) y al llegar navegando (spec 023)
 export const TITULO_LOGIN = "Iniciar sesión | Dentissa";

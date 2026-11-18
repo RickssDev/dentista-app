@@ -30,7 +30,7 @@ describe('022 · metadatos al navegar', () => {
 
   // R1: fuera de la tabla no puede quedar el título de la página anterior (WCAG 2.4.2)
   const DESCRIPCION_INDEX =
-    'Dentissa Clínica Dental: odontología general, ortodoncia y estética dental con tecnología avanzada y trato cálido en Ciudad de México.'
+    'Odontología integral en Lázaro Cárdenas: odontología general, ortodoncia y estética dental en un solo lugar, con tecnología avanzada y trato cálido.'
 
   const montar = (inicio) =>
     render(
