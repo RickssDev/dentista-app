@@ -1,6 +1,7 @@
 ---
 lane: chore
-status: done
+status: released
+released: v1.4.1 (2026-11-18)
 base: d2efd91
 relates: [017, 022]
 covers: []
@@ -44,6 +45,8 @@ permisos ni dependencias.
   "Lázaro Cárdenas, Michoacán".
 - En producción, tras desplegar: Google tarda días en volver a leer la portada (se puede pedir
   "Solicitar indexación" en Search Console); WhatsApp guarda la vista previa de cada enlace.
+
+- Producción (usuario, 2026-11-18): la portada muestra "Dentissa | Odontología Integral" y la ubicación nueva; al compartir el enlace sale la vista previa con imagen. Google aún muestra el resultado anterior hasta volver a leer la portada (indexación solicitada).
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
