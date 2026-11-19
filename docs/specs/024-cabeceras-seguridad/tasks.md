@@ -1,7 +1,8 @@
 ---
 spec: 024-cabeceras-seguridad
 plan: plan.md
-status: draft
+impl_base: a608beb
+status: approved
 ---
 
 # Tareas · 024 Protecciones del navegador en todo el sitio
