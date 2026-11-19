@@ -98,6 +98,35 @@ const comprobaciones = [
     const cc = (await pedir(await assetDe('js'))).headers.get('cache-control') || ''
     return /max-age=31536000/.test(cc) && /immutable/.test(cc)
   }],
+  // Spec 024 · CA1–CA3, CA8: las cabeceras de seguridad en cada tipo de respuesta que sirve nginx
+  ...[
+    ...PUBLICAS,
+    '/login',
+    '/admin/usuarios',
+    '/restablecer-contrasena?token=x',
+    '/no-existe',
+    '/nosotros/',
+    'un /assets/*.js',
+    '/images/hero-dentissa.webp',
+  ].map((cual) => [`${cual} → cabeceras de seguridad`, async () => {
+    const ruta = cual.startsWith('/') ? cual : await assetDe('js')
+    const h = (await pedir(ruta)).headers
+    const csp = h.get('content-security-policy') || ''
+    return (
+      /frame-ancestors 'none'/.test(csp) &&
+      /script-src 'self' https:\/\/accounts\.google\.com\/gsi\/client(;|$)/.test(csp) &&
+      h.get('x-frame-options') === 'DENY' &&
+      h.get('x-content-type-options') === 'nosniff' &&
+      h.get('referrer-policy') === 'strict-origin-when-cross-origin' &&
+      h.get('permissions-policy') === 'camera=(), microphone=(), geolocation=()' &&
+      h.get('strict-transport-security') === 'max-age=31536000'
+    )
+  }]),
+  // CA8: la 404 conserva su noindex en el HTML (nunca tuvo la cabecera; /analyze A3)
+  ['/no-existe → <meta name="robots" content="noindex"> con las cabeceras', async () => {
+    const r = await pedir('/no-existe')
+    return r.status === 404 && /<meta name="robots" content="noindex"/.test(await r.text()) && Boolean(r.headers.get('content-security-policy'))
+  }],
 ]
 
 let fallos = 0
