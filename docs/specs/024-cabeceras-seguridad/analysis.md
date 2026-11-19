@@ -1,54 +1,56 @@
 ---
-result: fail
-round: 1
-mode: full
+result: pass
+round: 2
+mode: delta
 constitution_version: 1.0.0
 date: 2026-11-19
-spec_sha: 1a8a15c86f3f
-plan_sha: 2e2ec807bd88
-tasks_sha: 528a7240c832
+spec_sha: 4aec545c3fae
+plan_sha: 1ffa038d95ed
+tasks_sha: a62e82e80da1
 ---
 
 # Análisis · 024 Protecciones del navegador en todo el sitio
 
 ## Resumen
-El análisis independiente lo hizo un subagente de solo lectura sin contexto previo. Después verifiqué
-cada hallazgo en el código. Resultado: `fail` por A1. La CSP del plan bloquea las vistas previas
-`blob:` de cuatro formularios del panel, lo que contradice CA7, y T010 fijaría ese valor. A2 y A3
-también producirían código o pruebas incorrectos.
+Ronda 2 en modo delta sobre el diff de `aidd.py changes` (30 KB, sin cambio estructural). La hice
+sin subagente, releyendo las secciones afectadas. Los doce hallazgos de la ronda 1 quedan resueltos.
+Hay dos nuevos de severidad baja, aceptados como notas de T013 y T025. Resultado: `pass`.
 
-Todo se corrige con `/plan 024 --fix` y `/tasks 024 --fix`. Las dos decisiones del usuario (A4 y A6)
-ya están tomadas.
-
-Conteo: CRÍTICA 1 · ALTA 2 · MEDIA 4 · BAJA 5
+Conteo (nuevos): CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 2
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
 | Criterios con tarea de test e implementación | 9 / 9 |
-| Amenazas con control y test | 6 / 7 (TM6 sin test real: A5) |
-| Principios de la constitución evaluados | 20 / 20 |
+| Amenazas con control y test | 7 / 7 |
+| Principios de la constitución evaluados | 20 / 20 (P2 con la decisión del usuario sobre los paneles, A6) |
+
+## Seguimiento de rondas anteriores
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | CRÍTICA | resuelto | plan, Contratos: `img-src 'self' data: blob:` con su motivo; T010 lo exige; T023 sube una imagen en los cuatro formularios |
+| A2 | ALTA | resuelto | plan: marcador propio (`api.js`, `sin-imagen.svg`) e inventario de orígenes de imágenes; T013 (test) y T025 (cambio) |
+| A3 | ALTA | resuelto | plan (Estrategia, P19, CA8) y T011: la 404 conserva su `<meta>` `noindex`, sin exigir cabecera |
+| A4 | MEDIA | resuelto | HSTS de 1 año en Contratos, TM4, CA2, Rollout y Riesgos; decisión en la spec; `curl -sI` a `/` y a `/api/` en T097 (Trazabilidad) |
+| A5 | MEDIA | resuelto | TM6 acotado a lo que sirve nginx; `/uploads/` con helmet, fuera de alcance |
+| A6 | MEDIA | resuelto | `seguridad-recursos.test.js` en CI; recorrido de los paneles manual por decisión del usuario (P2 del plan y de las tareas) |
+| A7 | MEDIA | resuelto | tabla de módulos: `security.md` en `/release` (Paso 7, T098), fuera de T090 |
+| A8 | BAJA | resuelto | "seis cabeceras" |
+| A9 | BAJA | resuelto | P12 cita TM1–TM7 |
+| A10 | BAJA | resuelto | T010: `max-age=31536000` exacto |
+| A11 | BAJA | resuelto | filas de TM7 y del RNF separadas |
+| A12 | BAJA | resuelto | plan: `VITE_ASSETS_URL` sin definir en `Dockerfile` ni compose; cambiarlo exige tocar `img-src` |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Seguridad / Inconsistencia | CRÍTICA | plan.md, Contratos (`img-src 'self' data:`); T010; `Admingaleria.jsx:99`, `AdminPromociones.jsx:115`, `AdminServicios.jsx:76`, `AdminUsuarios.jsx:103` | Las vistas previas de imagen usan `URL.createObjectURL` en un `<img>` (`blob:`); la CSP no permite `blob:` en `img-src`, y T010 fijaría ese valor | La CSP permite las vistas previas locales sin abrir orígenes externos. Test: `seguridad-cabeceras.test.js` (`img-src` admite `blob:`) y T023 subiendo una imagen en los 4 formularios, con la consola sin bloqueos → `/plan --fix`, `/tasks --fix` |
-| A2 | Seguridad / Cobertura | ALTA | `frontend/src/services/api.js:132` (`getImageUrl`, `https://via.placeholder.com/60`) | Sin imagen, se pide un marcador a un servicio externo (que además ya no funciona); `img-src` lo bloquea. El plan no inventaría los orígenes de imágenes de los paneles | Ninguna imagen del código sale de un origen fuera de la CSP. Test automático sobre `frontend/src` (A6) y T023 con un registro sin foto → `/plan --fix`, `/tasks --fix` |
-| A3 | Inconsistencia | ALTA | plan.md (Estrategia, P19); T011; `nginx.conf:73-76` | La 404 nunca tuvo `X-Robots-Tag`; su `noindex` es el `<meta>` del HTML (022). T011 exige la cabecera y fallaría siempre | La 404 conserva su `noindex` como lo tenía (`<meta>`); `probar-nginx.mjs` lo comprueba en el cuerpo → `/plan --fix`, `/tasks --fix` |
-| A4 | Seguridad / Ambigüedad | MEDIA | plan.md (Contratos, Rollout, Riesgos); `backend/src/config/app.js:26` | `/api/` ya manda HSTS de 1 año con `includeSubDomains` desde el mismo host: el plazo efectivo alterna entre 180 y 365 días | Decisión del usuario: 1 año también en las páginas. Plazo real escrito en Rollout y Riesgos. Test: valor exacto en T010; `curl -sI` a `/` y a `/api/…` en T097 → `/plan --fix`, `/tasks --fix` |
-| A5 | Cobertura (TM) | MEDIA | plan.md TM6; tasks.md Cobertura | TM6 habla de archivos subidos (`/uploads/`, helmet), que `probar-nginx.mjs` no puede probar sin backend | TM6 se acota a lo que sirve nginx; `/uploads/` queda con helmet (fuera de alcance) → `/plan --fix` |
-| A6 | Constitución (P2) / Cobertura | MEDIA | plan.md (Estrategia); T012, T023 | CA5–CA7 solo se comprueban fuera de CI; ahí estaban A1 y A2 | Decisión del usuario: CI cubre lo detectable en el código (la CSP admite `blob:`; las URLs absolutas de `frontend/src` están en una lista conocida o en la CSP); el recorrido de los paneles queda manual (T023) → `/plan --fix`, `/tasks --fix` |
-| A7 | Cobertura de riesgos | MEDIA | tasks.md, tabla de módulos (T090 ↔ `security.md`) | Se asigna `security.md` a T090, pero su criterio no lo menciona | RS6.a y RS6.b se marcan mitigadas en `/release` (Paso 7), sin T090 → `/tasks --fix` |
-| A8 | Inconsistencia | BAJA | plan.md, Cambios por módulo | "Siete cabeceras"; el contrato tiene seis | Seis → `/plan --fix` |
-| A9 | Inconsistencia | BAJA | plan.md, Constitution Check P12 | "TM1–TM6"; el modelo tiene TM1–TM7 | TM1–TM7 → `/plan --fix` |
-| A10 | Inconsistencia | BAJA | T010 | HSTS con "valor exacto" y a la vez "`max-age` ≥" | Valor exacto (A4) → `/tasks --fix` |
-| A11 | Formato | BAJA | plan.md, Trazabilidad | Las filas de TM7 y del RNF de rendimiento están en la misma línea | Separarlas → `/plan --fix` |
-| A12 | Ambigüedad | BAJA | spec.md, Notas para /plan; plan.md | No se responde si `VITE_ASSETS_URL` puede apuntar a otro origen | Fijar que no se define en el `Dockerfile` ni en el compose (las imágenes son del mismo origen) y que cambiarlo exige actualizar la CSP → `/plan --fix` |
+| A13 | Constitución (P20) | BAJA | T025 | El SVG del marcador no dice de dónde salen sus colores | Usar los valores de los tokens `--tint` (fondo) y `--muted` (figura) de `docs/design/system.md`; se revisa en `/review` → nota de T025 |
+| A14 | Ambigüedad | BAJA | plan, Estrategia ("lista conocida de enlaces y datos"); T013 | El plan da ejemplos, no la lista cerrada | La prueba fija la lista con un motivo por entrada (p. ej. `localhost` como respaldo de desarrollo y `w3.org` como espacio de nombres de SVG); una URL nueva fuera de ella falla → nota de T013 |
 
 ## Decisiones pendientes del usuario
-Resueltas el 2026-11-19:
-- **A4:** HSTS de 1 año también en las páginas, igual que la API, sin subdominios de `dentissa.app`.
-- **A6:** CI cubre lo detectable en el código; el recorrido de los paneles queda manual en T023.
+Ninguna.
 
 ## Aceptados
-Ninguno: todos se corrigen en el plan y las tareas.
+Aceptados por el usuario el 2026-11-19 (corrección "más pequeña" en `/implement`):
+- **A13** → nota de T025: colores del SVG con los valores de `--tint` y `--muted`
+- **A14** → nota de T013: lista cerrada de URLs con un motivo por entrada
