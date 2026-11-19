@@ -1,7 +1,7 @@
 ---
 id: 024
 slug: cabeceras-seguridad
-status: draft
+status: approved
 created: 2026-11-19
 extends: []
 ---
@@ -134,3 +134,4 @@ al navegador que aplique protecciones.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-19 | Spec creada en borrador | /specify, riesgo RS6 (reviews 022/R22 y 023/R24) |
+| 2026-11-19 | Aprobada | usuario |

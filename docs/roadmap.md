@@ -29,7 +29,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 
 **Seguridad**
 - RS3 Dependencias vulnerables: mitigado en v1.1.0 (RS3.a, RS3.b)
-- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · RS6 Cabeceras: RS6.a, RS6.b → [024](specs/024-cabeceras-seguridad/spec.md) (borrador)
+- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · RS6 Cabeceras: RS6.a, RS6.b → [024](specs/024-cabeceras-seguridad/spec.md) (aprobada)
 - RS7 Límite general: RS7.a · RS8 Enumeración: RS8.a · RS9 Guarda con rol: RS9.a
 
 **Observabilidad**
