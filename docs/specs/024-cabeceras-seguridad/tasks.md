@@ -68,8 +68,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [ ] T024 Medir el resultado y correr la suite — `.ai/inspect/024-despues/ (generado por scripts/medir-rendimiento.mjs)` — hecho cuando: mediana de 5 con `benchmarkIndex` ≥ 2000: Rendimiento ≥ T001 − 2 en cada ruta, Prácticas recomendadas ≥ T001 y SEO 100; `npm test`, lint de los archivos tocados y `npm audit --omit=dev` sin altas — cubre: CA7 — depende: T022, T023
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: la sección del frontend y nginx describe `nginx-seguridad.conf`, qué respuestas lo llevan (no `/api/` ni `/uploads/`) y la regla "un servicio externo nuevo exige actualizar la CSP y `seguridad-cabeceras.test.js`"
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Verificación post-deploy" incluye `curl -sI` a la portada, `/login` y `/no-existe` con las seis cabeceras, y la consola sin bloqueos en el login con Google y en contacto; `observability.md` sin cambios (no hay logs ni métricas)
+- [x] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: la sección del frontend y nginx describe `nginx-seguridad.conf`, qué respuestas lo llevan (no `/api/` ni `/uploads/`) y la regla "un servicio externo nuevo exige actualizar la CSP y `seguridad-cabeceras.test.js`"
+  - nota: sección "Frontend" de `docs/architecture.md`: cabeceras, el archivo único, qué respuestas lo llevan, la CSP única y la regla para añadir un servicio externo (incluido el origen de `VITE_ASSETS_URL`)
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Verificación post-deploy" incluye `curl -sI` a la portada, `/login` y `/no-existe` con las seis cabeceras, y la consola sin bloqueos en el login con Google y en contacto; `observability.md` sin cambios (no hay logs ni métricas)
+  - nota: `docs/deployment.md` → "Verificación post-deploy": `curl -sI` a `/`, `/login` y `/no-existe` con las seis cabeceras y la consola sin bloqueos en el login con Google y en contacto (`probar-csp.mjs` en local). `observability.md` sin cambios: no hay logs, eventos ni métricas nuevos
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
