@@ -1,6 +1,6 @@
 ---
 spec: 024-cabeceras-seguridad
-status: draft
+status: approved
 constitution_version: 1.0.0
 created: 2026-11-19
 ---
