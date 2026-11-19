@@ -42,8 +42,9 @@ atiende RS6 por completo.
   entonces el navegador se niega a mostrar el sitio dentro del marco.
 - [ ] CA4 (abuso) · Dada una página del sitio en la que un atacante consigue insertar un script, un
   marco o un recurso de un dominio que el sitio no usa, cuando el navegador la carga, entonces no lo
-  ejecuta ni lo carga. Solo se permiten el propio sitio y los servicios que el sitio necesita: el
-  inicio de sesión con Google (solo en el inicio de sesión) y el mapa de Google (solo en contacto).
+  ejecuta ni lo carga. Solo se permiten el propio sitio y los dos servicios que el sitio necesita: el
+  inicio de sesión con Google y el mapa de Google. Las páginas solo los cargan donde se usan (Google en
+  el inicio de sesión; el mapa en contacto, al pulsar "Ver mapa"), como ya exige la spec 023.
 - [ ] CA5 · Dado el inicio de sesión, cuando un paciente usa "Iniciar sesión con Google" o, en el
   panel de registro, "Registrarse con Google", entonces el botón aparece y el flujo de Google termina
   igual que antes, y la consola del navegador no muestra bloqueos.
@@ -114,6 +115,7 @@ al navegador que aplique protecciones.
 | 2026-11-19 | implícita | Servicios externos que el sitio necesita | Inicio de sesión con Google (solo `/login`) y mapa de Google (solo `/contacto`); fuentes e imágenes propias desde v1.4.0; WhatsApp y redes sociales son enlaces, no recursos que se carguen | docs/specs/023-rendimiento-sitio/spec.md (CA7, CA8) |
 | 2026-11-19 | supuesto | Información que se comunica al ir a otro sitio | Solo el dominio; nada al bajar a una conexión sin cifrar | práctica habitual; sin requisito en contra |
 | 2026-11-19 | supuesto | Capacidades del navegador | El sitio no usa cámara, micrófono ni ubicación: se declaran desactivadas (el QR de la cita se muestra, no se escanea en la web) | `maqueta-iot/` usa la cámara en la app, no en la web |
+| 2026-11-19 | brecha | El sitio cambia de página sin recargar: una política por página bloquearía el mapa o Google al llegar navegando (comprobado con una prueba de concepto en /plan) | Una sola política para todo el sitio que permite los dos servicios; el código solo los carga en el login y en contacto (spec 023, CA7 y CA8). Se corrige el texto de CA4 | usuario |
 | 2026-11-19 | implícita | Las respuestas de datos del sistema | Ya tienen sus protecciones (spec 018); fuera de alcance | `backend/src/config/app.js` |
 
 ## Notas para /plan
@@ -135,3 +137,4 @@ al navegador que aplique protecciones.
 |---|---|---|
 | 2026-11-19 | Spec creada en borrador | /specify, riesgo RS6 (reviews 022/R22 y 023/R24) |
 | 2026-11-19 | Aprobada | usuario |
+| 2026-11-19 | CA4: los dos servicios se permiten en todo el sitio y solo se cargan donde se usan; aprobada de nuevo | /plan 024 (prueba de concepto), decisión del usuario |
