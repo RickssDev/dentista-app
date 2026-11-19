@@ -47,7 +47,7 @@ Constitución 1.0.0, todavía en `draft`: el check se hace contra una constituci
 | P19 Noindex fuera de lo público | ✅ | El `X-Robots-Tag` de login, rutas privadas y 404 se conserva junto a las cabeceras nuevas | test: `probar-nginx.mjs` (CA8) |
 | P20 Sistema de diseño | ➖ | Sin estilos nuevos | — |
 
-Conteo: ✅ 11 · ➖ 9 · ❌ 0.
+Conteo: 11 cumplen, 9 no aplican, ninguno viola.
 
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
