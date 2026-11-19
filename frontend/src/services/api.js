@@ -129,7 +129,8 @@ export const apiDescargar = async (ruta) => {
   return res.blob();
 };
 
-export const getImageUrl = (img, placeholder = "https://via.placeholder.com/60") => {
+// Marcador propio de "sin imagen": la CSP solo permite imágenes del sitio (spec 024)
+export const getImageUrl = (img, placeholder = "/images/sin-imagen.svg") => {
   if (!img) return placeholder;
   if (img.startsWith("http")) return img;
   return `${BASE_ORIGIN}/${img.replace(/^\/+/, "")}`;
