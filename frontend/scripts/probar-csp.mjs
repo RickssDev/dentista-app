@@ -10,6 +10,7 @@
 // Uso: node scripts/probar-csp.mjs [--sin-build]   (desde frontend/; necesita Docker y Chrome)
 import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -21,6 +22,7 @@ const CONTENEDOR = 'dentissa-probar-csp'
 const PUERTO = Number(process.env.PUERTO_PROBAR_CSP || 8093)
 const PUERTO_CDP = Number(process.env.PUERTO_CDP_CSP || 9343)
 const BASE = `http://localhost:${PUERTO}`
+const PUERTO_ATACANTE = Number(process.env.PUERTO_ATACANTE_CSP || 8092)
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const SIN_BUILD = process.argv.includes('--sin-build')
 
@@ -78,13 +80,14 @@ try {
   let alCargar = null
   // Marcos de otro origen: Chrome los mueve a otro proceso y salen del árbol de la pestaña; se
   // siguen como objetivos "iframe" (Target.setAutoAttach) con su URL final
-  const marcos = new Map()
+  const marcos = new Map() // sessionId → URL
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data)
     if (m.id && pendientes.has(m.id)) { pendientes.get(m.id)(m.result); pendientes.delete(m.id) }
+    if (m.sessionId) return // mensajes de los marcos de otro origen: solo interesan sus respuestas
     if (m.method === 'Page.loadEventFired' && alCargar) { alCargar(); alCargar = null }
-    if (/^Target\.(attachedToTarget|targetInfoChanged)$/.test(m.method) && m.params.targetInfo.type === 'iframe') {
-      marcos.set(m.params.targetInfo.targetId, m.params.targetInfo.url)
+    if (m.method === 'Target.attachedToTarget' && m.params.targetInfo.type === 'iframe') {
+      marcos.set(m.params.sessionId, m.params.targetInfo.url)
     }
     if (m.method === 'Runtime.consoleAPICalled') {
       const texto = String(m.params.args[0]?.value ?? '')
@@ -93,12 +96,12 @@ try {
     if (m.method === 'Log.entryAdded') registro.push(m.params.entry.text)
   }
   // Cada llamada tiene un límite: un paso que no responde falla con su nombre en lugar de colgarse
-  const cdp = (method, params = {}, limite = 45000) => new Promise((resolver, rechazar) => {
+  const cdp = (method, params = {}, limite = 45000, sessionId) => new Promise((resolver, rechazar) => {
     id += 1
     const propio = id
     const reloj = setTimeout(() => { pendientes.delete(propio); rechazar(new Error(`${method} no respondió en ${limite / 1000} s`)) }, limite)
     pendientes.set(propio, (resultado) => { clearTimeout(reloj); resolver(resultado) })
-    ws.send(JSON.stringify({ id: propio, method, params }))
+    ws.send(JSON.stringify({ id: propio, method, params, ...(sessionId ? { sessionId } : {}) }))
   })
   const evaluar = async (expr) => (await cdp('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true }))?.result?.value
   await cdp('Page.enable'); await cdp('Runtime.enable'); await cdp('Log.enable')
@@ -170,20 +173,25 @@ try {
   console.log(`${script ? '✔' : '✘'} abuso: <script src> de otro origen → ${script ? 'bloqueado' : 'NO bloqueado'}`)
   if (!script) fallar('abuso: el script de otro origen no se bloqueó')
 
-  // CA3 (abuso): una página de otro origen que incrusta el sitio en un iframe. 127.0.0.1 y localhost
-  // son orígenes distintos: la página "ajena" se sirve desde 127.0.0.1 e incrusta http://localhost
-  await abrir(`http://127.0.0.1:${PUERTO}/no-existe`, 1000)
-  registro = []
+  // CA3 (abuso): una página de otro origen que incrusta el sitio en un iframe. La sirve un servidor
+  // propio sin CSP (si la sirviera el sitio, su frame-src bloquearía el marco y la prueba pasaría por
+  // la razón equivocada). Bloqueado = el documento del marco es la página de error de Chrome
+  const atacante = createServer((_, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+    res.end(`<!doctype html><title>ajena</title><iframe src="${BASE}/login" width="800" height="600"></iframe>`)
+  })
+  await new Promise((r) => atacante.listen(PUERTO_ATACANTE, '127.0.0.1', r))
   marcos.clear()
-  await evaluar(`new Promise((r) => {
-    const f = document.createElement('iframe'); f.src = '${BASE}/login'; f.width = 800; f.height = 600
-    f.addEventListener('load', () => setTimeout(r, 1000), { once: true }); setTimeout(r, 8000)
-    document.body.appendChild(f)
-  })`)
-  const urls = [...marcos.values()]
-  if (!urls.length) fallar('abuso del iframe: la página de prueba no creó el marco (la prueba no prueba nada)')
-  // Bloqueado: el marco existe y no terminó mostrando el sitio (Chrome lo deja en chrome-error://)
-  const marcoBloqueado = urls.length > 0 && urls.every((u) => !u.startsWith(BASE))
+  await abrir(`http://127.0.0.1:${PUERTO_ATACANTE}/`, 3000)
+  atacante.close()
+  const documentos = []
+  for (const sesion of marcos.keys()) {
+    const r = await cdp('Runtime.evaluate', { expression: 'location.href', returnByValue: true }, 10000, sesion).catch(() => null)
+    documentos.push(r?.result?.value ?? '(sin respuesta)')
+  }
+  if (!documentos.length) fallar('abuso del iframe: la página ajena no creó el marco (la prueba no prueba nada)')
+  const marcoBloqueado = documentos.length > 0 && documentos.every((u) => u.startsWith('chrome-error:'))
+  const urls = documentos
   console.log(`${marcoBloqueado ? '✔' : '✘'} abuso: el sitio dentro de un iframe ajeno → ${marcoBloqueado ? 'bloqueado' : 'se muestra'} (${urls.join(', ') || 'sin marco'})`)
   if (!marcoBloqueado) fallar('abuso: el sitio se muestra dentro de un iframe ajeno')
 
