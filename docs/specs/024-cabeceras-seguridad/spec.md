@@ -110,6 +110,7 @@ al navegador que aplique protecciones.
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-19 | brecha | ¿Obligar a usar siempre la conexión segura? | Sí, solo `sistema.dentissa.app`, 6 meses, sin subdominios ni precarga | usuario |
+| 2026-11-19 | brecha | Las respuestas de datos del sistema ya obligaban a la conexión segura 1 año desde el mismo dominio (`/analyze` A4) | Las páginas también mandan 1 año: un solo plazo; cumple CA2 ("al menos 6 meses"), sin otros subdominios de `dentissa.app` | usuario |
 | 2026-11-19 | brecha | ¿Política de contenido en modo aviso primero o activa? | Activa desde la primera versión, tras probar en local cada pantalla pública, el inicio de sesión con Google, el mapa y los paneles de cada rol | usuario |
 | 2026-11-19 | brecha | ¿Alguna página necesita incrustar el sitio? | No: se prohíbe en todas las páginas | usuario |
 | 2026-11-19 | implícita | Servicios externos que el sitio necesita | Inicio de sesión con Google (solo `/login`) y mapa de Google (solo `/contacto`); fuentes e imágenes propias desde v1.4.0; WhatsApp y redes sociales son enlaces, no recursos que se carguen | docs/specs/023-rendimiento-sitio/spec.md (CA7, CA8) |
@@ -138,3 +139,4 @@ al navegador que aplique protecciones.
 | 2026-11-19 | Spec creada en borrador | /specify, riesgo RS6 (reviews 022/R22 y 023/R24) |
 | 2026-11-19 | Aprobada | usuario |
 | 2026-11-19 | CA4: los dos servicios se permiten en todo el sitio y solo se cargan donde se usan; aprobada de nuevo | /plan 024 (prueba de concepto), decisión del usuario |
+| 2026-11-19 | Decisión del plazo de la conexión segura (1 año) | /analyze 024 A4, decisión del usuario |

@@ -1,6 +1,6 @@
 ---
 spec: 024-cabeceras-seguridad
-status: approved
+status: draft
 constitution_version: 1.0.0
 created: 2026-11-19
 ---
@@ -27,7 +27,7 @@ Constitución 1.0.0, todavía en `draft`: el check se hace contra una constituci
 | Principio | Resultado | Justificación / ajuste | Cómo se verifica |
 |---|---|---|---|
 | P1 Spec antes de implementar | ✅ | Spec 024 aprobada (CA4 corregido y aprobado de nuevo el 2026-11-19) | manual: `aidd.py status` |
-| P2 Tests por feature | ✅ | Prueba de la configuración y ampliación de `probar-nginx.mjs` (CI) antes de cambiar nginx | test: `seguridad-cabeceras.test.js`, `probar-nginx.mjs` |
+| P2 Tests por feature | ✅ | Prueba de la configuración, prueba de los recursos del código y ampliación de `probar-nginx.mjs` (CI) antes de cambiar nginx. El recorrido de los paneles con sesión queda manual (T023), sin backend ni cuentas en CI (decisión del usuario, 2026-11-19, `/analyze` A6) | test: `seguridad-cabeceras.test.js`, `seguridad-recursos.test.js`, `probar-nginx.mjs` |
 | P3 Dependencias con ADR | ➖ | Sin dependencias nuevas | — |
 | P4 Arquitectura con ADR | ✅ | No contradice `architecture.md`; se documenta la regla "un servicio externo nuevo exige tocar la CSP" en T090 | manual: T090 |
 | P5 Producción con aprobación humana | ✅ | `/release` | manual: T096 |
@@ -37,14 +37,14 @@ Constitución 1.0.0, todavía en `draft`: el check se hace contra una constituci
 | P9 Entrada validada | ➖ | Sin entradas nuevas | — |
 | P10 Secretos fuera del repo | ✅ | Sin secretos: las cabeceras y los orígenes de Google son públicos | test: gitleaks en CI |
 | P11 Sin vulnerabilidades altas | ✅ | Sin dependencias nuevas; picomatch (desarrollo) con excepción vigente hasta 2027-01-31 | test: `npm audit` en CI y en `/release` |
-| P12 Modelo de amenazas | ✅ | TM1–TM6 con control y test | test: los de Trazabilidad |
+| P12 Modelo de amenazas | ✅ | TM1–TM7 con control y test | test: los de Trazabilidad |
 | P13 Auditoría de datos sensibles | ➖ | No cambia el acceso a datos ni la autenticación (spec, Auditoría) | — |
 | P14 Correlación por petición | ➖ | Sin logs ni peticiones nuevas | — |
 | P15 Logs sin datos sensibles | ➖ | Sin logs nuevos | — |
 | P16 WCAG 2.1 AA | ✅ | Sin cambios visibles; el recorrido de CA7 confirma que nada deja de verse | manual: recorrido de CA7 |
 | P17 Sin lógica en las vistas | ➖ | Sin cambios en vistas | — |
 | P18 Metadatos por ruta indexable | ✅ | Sin cambios; las pruebas de la 022 siguen en verde | test: `seo-prerender.test.jsx` |
-| P19 Noindex fuera de lo público | ✅ | El `X-Robots-Tag` de login, rutas privadas y 404 se conserva junto a las cabeceras nuevas | test: `probar-nginx.mjs` (CA8) |
+| P19 Noindex fuera de lo público | ✅ | Se conservan el `X-Robots-Tag` de login y rutas privadas y el `<meta name="robots" content="noindex">` de la 404 (que nunca tuvo la cabecera) | test: `probar-nginx.mjs` (CA8) |
 | P20 Sistema de diseño | ➖ | Sin estilos nuevos | — |
 
 Conteo: 11 cumplen, 9 no aplican, ninguno viola.
@@ -52,13 +52,17 @@ Conteo: 11 cumplen, 9 no aplican, ninguno viola.
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
 |---|---|---|
-| `frontend/nginx-seguridad.conf` (nuevo) | Las siete cabeceras (ver Contratos), cada una con `always` | medio: una CSP incompleta rompe una parte del sitio |
+| `frontend/nginx-seguridad.conf` (nuevo) | Las seis cabeceras (ver Contratos), cada una con `always` | medio: una CSP incompleta rompe una parte del sitio |
 | `frontend/nginx.conf` | `include /etc/nginx/snippets/seguridad.conf;` en cada `location` que sirve contenido propio: las seis públicas, la redirección sin barra final, `/assets/`, `/login`, rutas privadas, `/` y `/404.html`. No en `/api/` ni `/uploads/` | medio: una `location` nueva sin el `include` quedaría desprotegida (lo detecta la prueba) |
 | `frontend/Dockerfile` | `COPY nginx-seguridad.conf /etc/nginx/snippets/seguridad.conf` | bajo |
 | `frontend/tests/seguridad-cabeceras.test.js` (nuevo) | Prueba de la configuración (ver Estrategia) | bajo |
 | `frontend/scripts/probar-nginx.mjs` | Comprobaciones de las cabeceras en cada tipo de respuesta | bajo |
+| `frontend/tests/seguridad-recursos.test.js` (nuevo) | Recorre `frontend/src` y exige que toda URL absoluta esté en una lista conocida de enlaces y datos (WhatsApp, redes, Google Maps como enlace, schema.org…) o en los orígenes de la CSP: un recurso externo nuevo falla aquí antes de romperse en el navegador | bajo |
+| `frontend/src/services/api.js` | `getImageUrl`: el marcador de "sin imagen" pasa de `https://via.placeholder.com/60` (servicio externo, ya caído) a una imagen propia del sitio | bajo |
+| `frontend/public/images/sin-imagen.svg` (nuevo) | Marcador neutro de "sin imagen", 60×60, sin texto | bajo |
 | `frontend/scripts/probar-csp.mjs` (nuevo) | Recorrido con Chrome sin cabeza: páginas públicas, "Ver mapa", login con los dos botones de Google y navegación sin recargar, con el registro de bloqueos de la CSP. Herramienta de verificación, fuera de CI (necesita Chrome y red hacia Google) | bajo |
-| `docs/architecture.md`, `docs/security.md` | T090: la CSP y cómo añadir un servicio externo; RS6 en `/release` | bajo |
+| `docs/architecture.md` | T090: la CSP y cómo añadir un servicio externo | bajo |
+| `docs/security.md` | RS6.a y RS6.b mitigadas en `/release` (Paso 7) | bajo |
 
 Rutas protegidas tocadas (`nginx.conf`, `Dockerfile`): solo mediante las tareas aprobadas de esta spec.
 
@@ -68,13 +72,16 @@ nginx:
 
 | Cabecera | Valor | CA |
 |---|---|---|
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/ https://maps.google.com https://www.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'` | CA3, CA4 |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/ https://maps.google.com https://www.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'` | CA3, CA4 |
 | `X-Frame-Options` | `DENY` (navegadores sin `frame-ancestors`) | CA3 |
 | `X-Content-Type-Options` | `nosniff` | CA1 |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | CA1 |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | CA1 |
-| `Strict-Transport-Security` | `max-age=15552000` (180 días, sin `includeSubDomains` ni `preload`) | CA2 |
+| `Strict-Transport-Security` | `max-age=31536000` (1 año, sin `includeSubDomains` ni `preload`) | CA2 |
 
+- `img-src blob:`: las vistas previas de imagen de los formularios de galería, promociones,
+  servicios y usuarios usan `URL.createObjectURL` (`/analyze` A1). `blob:` solo contiene datos que
+  el propio navegador creó; no abre ningún origen externo.
 - `font-src data:`: el build mete en el CSS una fuente diminuta en `data:` (comprobado en la prueba
   de concepto). Permitirla no da ejecución de código.
 - `style-src 'unsafe-inline'` (decisión del usuario): lo piden los atributos `style` del HTML
@@ -84,9 +91,17 @@ nginx:
 - `upgrade-insecure-requests` no se usa: todos los recursos son del mismo origen o `https`, y en
   local (`http`) rompería las pruebas.
 - HSTS solo tiene efecto por HTTPS (Cloudflare). En local se comprueba la cabecera, no su efecto.
-- Las respuestas de `/api/` y `/uploads/` conservan las cabeceras de helmet. Su HSTS (1 año con
-  `includeSubDomains`) solo abarca subdominios de `sistema.dentissa.app`, no otros de
-  `dentissa.app`, así que CA2 se cumple.
+- Las respuestas de `/api/` y `/uploads/` conservan las cabeceras de helmet. Su HSTS es de 1 año con
+  `includeSubDomains`, que solo abarca subdominios de `sistema.dentissa.app`, no otros de
+  `dentissa.app`. Las páginas mandan también 1 año, así que el plazo efectivo del host es uno solo:
+  1 año (decisión del usuario, 2026-11-19, `/analyze` A4). CA2 se cumple ("al menos 6 meses").
+- Orígenes de las imágenes (`/analyze` A2, A12):
+  - las imágenes del sitio y las que sube el personal salen del mismo origen (`/images/`,
+    `/uploads/`);
+  - `VITE_ASSETS_URL` no se define ni en el `Dockerfile` ni en `docker-compose.prod.yml`
+    (comprobado el 2026-11-19), así que `ASSETS_URL` es el propio origen; definirlo hacia otro
+    origen exige añadirlo a `img-src`;
+  - el único recurso externo del código era el marcador `via.placeholder.com`, que se sustituye.
 
 ## Estrategia de pruebas
 - **Configuración** (`frontend/tests/seguridad-cabeceras.test.js`, Vitest en entorno node, CI):
@@ -98,10 +113,18 @@ nginx:
   - comprueba que cada `location` de `nginx.conf`, salvo `/api/` y `/uploads/`, incluye el archivo;
   - comprueba que el `Dockerfile` lo copia a la ruta del `include`.
   - Cada caso se comprueba rompiendo la protección que vigila.
+- **Recursos del código** (`frontend/tests/seguridad-recursos.test.js`, Vitest en entorno node, CI;
+  `/analyze` A2, A6):
+  - toda URL absoluta (`http://` o `https://`) de `frontend/src` debe estar en una lista conocida de
+    enlaces y datos (navegación o identificadores, no recursos que se carguen) o en los orígenes de
+    la CSP;
+  - el marcador de `getImageUrl` es una ruta del propio sitio;
+  - la CSP permite `blob:` en `img-src` mientras el código use `URL.createObjectURL` en una imagen.
 - **Contenedor** (`scripts/probar-nginx.mjs`, CI "Prueba de nginx"): las seis cabeceras con su valor
   en `/`, cada página pública, `/login`, `/admin/usuarios`, `/restablecer-contrasena?token=x`,
-  `/no-existe` (404), `/nosotros/` (301), un `/assets/*.js` e `/images/hero-dentissa.webp`; el
-  `X-Robots-Tag` de las privadas y la 404 sigue (CA8).
+  `/no-existe` (404), `/nosotros/` (301), un `/assets/*.js` e `/images/hero-dentissa.webp`. Las
+  privadas conservan su `X-Robots-Tag` y la 404 su `<meta name="robots" content="noindex">` (CA8,
+  `/analyze` A3).
 - **Navegador** (`scripts/probar-csp.mjs`, verificación en `/implement`):
   - las páginas públicas, la 404, "Ver mapa", el login con los dos botones de Google, y la
     navegación sin recargar de la portada a contacto y al login;
@@ -111,7 +134,8 @@ nginx:
 - **Paneles con sesión** (CA7): recorrido con la build local conectada al backend y la BD locales,
   con una cuenta de cada rol: Administrador, Asistente y Paciente. Incluye inicio, citas, historial,
   usuarios, servicios, promociones, galería, reportes y exportación, más el portal del paciente con
-  su QR. Consola sin bloqueos.
+  su QR. Se sube una imagen en los cuatro formularios con vista previa y se abre un registro sin foto
+  (marcador propio). Consola sin bloqueos.
 - **Rendimiento y SEO** (RNF): `scripts/medir-rendimiento.mjs`, mediana de 5 frente a v1.4.1.
 
 ## Modelo de amenazas
@@ -123,22 +147,22 @@ que se modela igualmente.
 | TM1 | Manipulación: el sitio dentro de un marco ajeno para inducir clics (clickjacking) en el login o los paneles | A06:2025 Diseño inseguro | nginx, todas las páginas | `frame-ancestors 'none'` y `X-Frame-Options: DENY` | `seguridad-cabeceras.test.js`; `probar-nginx.mjs`; `probar-csp.mjs` (marco ajeno bloqueado) |
 | TM2 | Elevación / divulgación: un script inyectado (XSS) roba el token de `localStorage` o datos de pacientes | A05:2025 Inyección | nginx (CSP), páginas | `script-src` solo `'self'` y `gsi/client`, sin código en línea ni `eval`; `object-src 'none'`; `base-uri 'self'` | `seguridad-cabeceras.test.js` (directivas); `probar-csp.mjs` (script ajeno bloqueado) |
 | TM3 | Divulgación: un script inyectado envía datos a un dominio del atacante o abre un formulario falso hacia fuera | A05:2025 Inyección | CSP | `default-src`/`connect-src` solo `'self'` y `gsi/`; `form-action 'self'` | `seguridad-cabeceras.test.js` |
-| TM4 | Manipulación / divulgación: degradar a HTTP en una red pública | A04:2025 Fallos criptográficos | nginx | HSTS de 180 días | `seguridad-cabeceras.test.js`; `probar-nginx.mjs` |
+| TM4 | Manipulación / divulgación: degradar a HTTP en una red pública | A04:2025 Fallos criptográficos | nginx | HSTS de 1 año (igual que helmet en `/api/`) | `seguridad-cabeceras.test.js`; `probar-nginx.mjs` |
 | TM5 | Divulgación: la URL de restablecer contraseña (`?token=…`) viaja como `Referer` a otro sitio | A04:2025 Fallos criptográficos | nginx | `Referrer-Policy: strict-origin-when-cross-origin` | `probar-nginx.mjs` sobre `/restablecer-contrasena?token=x` |
-| TM6 | Manipulación: un archivo subido interpretado como otro tipo (MIME sniffing) | A02:2025 Configuración incorrecta | nginx; `/uploads/` (helmet) | `X-Content-Type-Options: nosniff` | `probar-nginx.mjs` |
+| TM6 | Manipulación: un archivo que sirve nginx (imágenes, scripts, estilos) interpretado como otro tipo (MIME sniffing). Los archivos subidos (`/uploads/`) ya llevan `nosniff` de helmet y quedan fuera de alcance (`/analyze` A5) | A02:2025 Configuración incorrecta | nginx | `X-Content-Type-Options: nosniff` | `probar-nginx.mjs` (un `/assets/*.js` e `/images/hero-dentissa.webp`) |
 | TM7 | Regresión: una versión futura quita o debilita una cabecera, o añade una `location` sin ellas | A02:2025 Configuración incorrecta | `nginx.conf` | Archivo único incluido en cada `location`; prueba de configuración y de contenedor en CI | `seguridad-cabeceras.test.js` (rompiendo cada regla) |
 
 ## Trazabilidad
 | Criterio de aceptación | Cambio(s) | Test(s) |
 |---|---|---|
 | CA1: nosniff, referencia y permisos en toda respuesta | `nginx-seguridad.conf`, `nginx.conf` | `seguridad-cabeceras.test.js`; `probar-nginx.mjs` (todas las respuestas de la lista) |
-| CA2: HSTS 6 meses sin subdominios | `nginx-seguridad.conf` | `seguridad-cabeceras.test.js` (valor exacto, sin `includeSubDomains` ni `preload`); `probar-nginx.mjs` · verificación manual: `curl -sI https://sistema.dentissa.app/` tras el despliegue (usuario, T097) |
+| CA2: HSTS de al menos 6 meses sin otros subdominios | `nginx-seguridad.conf` | `seguridad-cabeceras.test.js` (`max-age=31536000` exacto, sin `includeSubDomains` ni `preload`); `probar-nginx.mjs` · verificación manual: `curl -sI` a `https://sistema.dentissa.app/` y a una ruta de `/api/` tras el despliegue (usuario, T097) |
 | CA3 (abuso): sin marcos ajenos | `nginx-seguridad.conf` | `seguridad-cabeceras.test.js`; `probar-csp.mjs` (página ajena con un `iframe` del sitio → bloqueado) |
 | CA4 (abuso): solo el sitio, Google Sign-In y el mapa | `nginx-seguridad.conf` | `seguridad-cabeceras.test.js` (orígenes exactos); `probar-csp.mjs` (script de otro origen → bloqueado); guardas de la 023 (`rendimiento-recursos`, hosts prohibidos) para "solo donde se usan" |
 | CA5: Google Sign-In igual | — | `probar-csp.mjs` (los dos botones, sin bloqueos) · verificación manual: entrar con Google en producción (usuario, T097) |
 | CA6: mapa igual | — | `probar-csp.mjs` ("Ver mapa" carga el marco, también llegando sin recargar) |
-| CA7: todas las pantallas igual, sin bloqueos | — | `probar-csp.mjs` (públicas y login) · verificación manual: recorrido de los paneles con una cuenta de cada rol en local (Claude con cuentas de prueba o usuario), consola sin bloqueos |
-| CA8: 404 y privadas con las mismas protecciones y su noindex | `nginx.conf` | `probar-nginx.mjs` |
+| CA7: todas las pantallas igual, sin bloqueos | `nginx-seguridad.conf` (`img-src blob:`), `api.js`, `sin-imagen.svg` | `seguridad-recursos.test.js`; `seguridad-cabeceras.test.js` (`blob:`); `probar-csp.mjs` (públicas y login) · verificación manual: recorrido de los paneles con una cuenta de cada rol en local, con subida de imagen en los cuatro formularios y un registro sin foto (Claude con cuentas de prueba o usuario), consola sin bloqueos |
+| CA8: 404 y privadas con las mismas protecciones y su noindex | `nginx.conf` | `probar-nginx.mjs` (cabeceras; `X-Robots-Tag` en las privadas; `<meta>` `noindex` en la 404) |
 | CA9: la comprobación automática falla si se quita o debilita | pruebas | `seguridad-cabeceras.test.js` (comprobado rompiendo cada regla); `probar-nginx.mjs` en CI |
 | TM1: clickjacking | `nginx-seguridad.conf` | `seguridad-cabeceras.test.js`; `probar-nginx.mjs`; `probar-csp.mjs` (marco ajeno bloqueado) |
 | TM2: script inyectado | CSP `script-src` | `seguridad-cabeceras.test.js`; `probar-csp.mjs` (script ajeno bloqueado) |
@@ -146,7 +170,8 @@ que se modela igualmente.
 | TM4: degradar a HTTP | HSTS | `seguridad-cabeceras.test.js`; `probar-nginx.mjs` |
 | TM5: token de restablecimiento en el `Referer` | `Referrer-Policy` | `probar-nginx.mjs` (`/restablecer-contrasena?token=x`) |
 | TM6: MIME sniffing | `X-Content-Type-Options` | `probar-nginx.mjs` |
-| TM7: regresión de la configuración | archivo único e `include` | `seguridad-cabeceras.test.js` (rompiendo cada regla); `probar-nginx.mjs` en CI || RNF: rendimiento −2 como máximo, Prácticas recomendadas sin bajar, SEO 100 | — | `medir-rendimiento.mjs` (mediana de 5) frente a v1.4.1 |
+| TM7: regresión de la configuración | archivo único e `include` | `seguridad-cabeceras.test.js` (rompiendo cada regla); `probar-nginx.mjs` en CI |
+| RNF: rendimiento −2 como máximo, Prácticas recomendadas sin bajar, SEO 100 | — | `medir-rendimiento.mjs` (mediana de 5) frente a v1.4.1 |
 | RNF: sin cambios visibles (P16) | — | verificación manual: capturas 390/1440 px de portada, contacto y login antes y después |
 
 ## Observabilidad
@@ -157,7 +182,7 @@ No aplica: no hay logs, eventos ni métricas nuevos. La CSP no envía informes (
 
 ## Descubribilidad
 No aplica: no se crean ni cambian rutas, títulos, descripciones, canónicas ni sitemap. Las cabeceras
-nuevas no afectan a la indexación, y el `X-Robots-Tag` existente se conserva (CA8, P19).
+nuevas no afectan a la indexación; se conservan el `X-Robots-Tag` de las privadas y el `noindex` de la 404 (CA8, P19).
 Comprobación: Lighthouse SEO 100 (RNF).
 
 ## Rollout
@@ -166,7 +191,8 @@ Comprobación: Lighthouse SEO 100 (RNF).
   no cambia.
 - Compatibilidad: sin estado compartido; la versión anterior y la nueva sirven el mismo contenido.
 - Rollback: `git checkout <commit anterior>` en el servidor y reconstruir el frontend, en unos
-  minutos. **HSTS no se revierte:** los navegadores que lo recibieron exigen HTTPS durante 180 días.
+  minutos. **HSTS no se revierte:** los navegadores que lo recibieron exigen HTTPS durante 1 año (la API ya lo
+  mandaba así).
   Es inocuo mientras el sitio siga en HTTPS detrás de Cloudflare.
 - Métricas a vigilar tras el despliegue: la consola del navegador en el login con Google, en
   contacto y en un panel; el inicio de sesión con Google del usuario.
@@ -184,6 +210,10 @@ Comprobación: Lighthouse SEO 100 (RNF).
   cabeceras de la API, fuera de alcance), es el único modo de cubrir todas las respuestas propias sin
   tocar las de Express. El riesgo de olvidar el `include` en una `location` nueva lo cubre la prueba
   de configuración.
+- **HSTS de 1 año en las páginas** (decisión del usuario, 2026-11-19, `/analyze` A4): igual que la
+  API, para que el plazo del host sea uno solo.
+- **Marcador de imagen propio** (`/analyze` A2): `via.placeholder.com` es externo y ya no responde;
+  una imagen del propio sitio evita abrir `img-src` a un tercero.
 - **Lo que nginx sirve y lo que no:** las cabeceras van en lo que sirve nginx; `/api/` y `/uploads/`
   quedan con helmet (spec, Fuera de alcance).
 - **Prueba de concepto (2026-11-19):**
@@ -206,11 +236,15 @@ Comprobación: Lighthouse SEO 100 (RNF).
 - **Google cambia los orígenes de Sign-In:** el botón dejaría de cargar. Mitigación: los orígenes
   son los que Google documenta para CSP (`gsi/client`, `gsi/style`, `gsi/`); la verificación tras
   el despliegue incluye entrar con Google.
-- **HSTS no se puede retirar** durante 180 días. Mitigación: sin `includeSubDomains` ni `preload`
-  (decisión del usuario); el sitio ya solo funciona por HTTPS.
+- **HSTS no se puede retirar** durante 1 año. Era así desde antes por la API (helmet); las páginas se
+  alinean (decisión del usuario, 2026-11-19). Mitigación: sin `includeSubDomains` ni `preload` en
+  las páginas; el sitio ya solo funciona por HTTPS.
 - **Una `location` nueva sin el `include`.** Mitigación: la prueba de configuración falla (TM7).
+- **Un recurso externo nuevo en el código** (otra imagen, otro marco): la CSP lo bloquearía en
+  producción. Mitigación: `seguridad-recursos.test.js` falla con cualquier URL absoluta nueva que
+  no esté en la lista ni en la CSP.
 
 ## Impacto en arquitectura
 - `docs/architecture.md`: en la sección del frontend y nginx, las cabeceras de seguridad, el archivo
   `nginx-seguridad.conf` y la regla "un servicio externo nuevo exige actualizar la CSP y su prueba".
-- `docs/security.md`: RS6 pasa a mitigado en `/release`.
+- `docs/security.md`: RS6.a y RS6.b pasan a mitigadas en `/release` (Paso 7), no en T090.

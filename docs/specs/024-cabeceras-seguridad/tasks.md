@@ -17,6 +17,7 @@ Formato:
 - La comprobación a mano va en la tarea que construye la pieza.
 - `probar-nginx.mjs` (CI) queda en rojo desde T011 hasta T021: el PR se abre al final.
 - `nginx.conf` y `Dockerfile` son rutas protegidas: solo los tocan T021.
+- Corregidas por `/analyze` ronda 1: T010, T011, T023 y las tablas de Cobertura; nuevas T013 y T025.
 
 ## Constitution Check
 Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
@@ -24,7 +25,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | Principio | Resultado | Justificación / ajuste | Cómo se verifica |
 |---|---|---|---|
 | P1 Spec antes de implementar | ✅ | Spec y plan aprobados antes de T001 | manual: `aidd.py validate` |
-| P2 Tests por feature | ✅ | T020 y T021 dependen de T010 y T011, escritas antes; T012 antes de la verificación en navegador | test: T010, T011, T012 |
+| P2 Tests por feature | ✅ | T020, T021 y T025 dependen de T010, T011 y T013, escritas antes; T012 antes de la verificación en navegador. Recorrido de los paneles manual (T023, decisión del usuario, `/analyze` A6) | test: T010, T011, T012, T013 |
 | P3 Dependencias con ADR | ➖ | Ninguna tarea instala dependencias | — |
 | P4 Arquitectura con ADR | ✅ | Sin cambio de arquitectura; T090 documenta la regla de la CSP | manual: T090 |
 | P5 Producción con aprobación humana | ✅ | T096 | manual: T096 |
@@ -44,15 +45,19 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [ ] T001 Medir la línea base y capturar el estado actual — `.ai/inspect/024-antes/ (generado por scripts/medir-rendimiento.mjs y scripts/capturas.mjs)` — hecho cuando: hay mediana de 5 de Rendimiento, Prácticas recomendadas y SEO en las siete rutas sobre `main` (v1.4.1), con `benchmarkIndex` ≥ 2000 en cada corrida, y capturas de portada, contacto (con el mapa cargado) y login a 390 y 1440 px; tabla anotada como nota de esta tarea
 
 ## Tests (antes de implementar)
-- [ ] T010 [P] Escribir la prueba de la configuración de cabeceras — `frontend/tests/seguridad-cabeceras.test.js` — hecho cuando: falla por la razón esperada (no existe `nginx-seguridad.conf`, las `location` no lo incluyen, el `Dockerfile` no lo copia) y comprueba: cada cabecera de la tabla de Contratos del plan con su valor exacto y `always`; la CSP por directivas (`script-src` sin `'unsafe-inline'`, `'unsafe-eval'`, `*`, `data:` ni `http:`; `frame-ancestors 'none'`; `object-src 'none'`; `base-uri 'self'`; `form-action 'self'`; los orígenes externos de todas las directivas son exactamente los del plan); HSTS sin `includeSubDomains` ni `preload` y con `max-age` ≥ 15552000; cada `location` de `nginx.conf` salvo `^~ /api/` y `^~ /uploads/` incluye `/etc/nginx/snippets/seguridad.conf`; el `Dockerfile` copia `nginx-seguridad.conf` a esa ruta — cubre: CA1, CA2, CA3, CA4, CA9
-- [ ] T011 [P] Comprobar las cabeceras en el contenedor — `frontend/scripts/probar-nginx.mjs` — hecho cuando: con la imagen actual falla por la razón esperada (faltan las cabeceras) y comprueba las seis cabeceras con su valor en `/`, cada ruta de `RUTAS_PUBLICAS`, `/login`, `/admin/usuarios`, `/restablecer-contrasena?token=x`, `/no-existe` (404), `/nosotros/` (301), un `/assets/*.js` e `/images/hero-dentissa.webp`, y que `/login`, las privadas y la 404 conservan `X-Robots-Tag: noindex` — cubre: CA1, CA2, CA3, CA8, CA9
+- [ ] T010 [P] Escribir la prueba de la configuración de cabeceras — `frontend/tests/seguridad-cabeceras.test.js` — hecho cuando: falla por la razón esperada (no existe `nginx-seguridad.conf`, las `location` no lo incluyen, el `Dockerfile` no lo copia) y comprueba: cada cabecera de la tabla de Contratos del plan con su valor exacto y `always`; la CSP por directivas (`script-src` sin `'unsafe-inline'`, `'unsafe-eval'`, `*`, `data:` ni `http:`; `frame-ancestors 'none'`; `object-src 'none'`; `base-uri 'self'`; `form-action 'self'`; los orígenes externos de todas las directivas son exactamente los del plan); HSTS exactamente `max-age=31536000`, sin `includeSubDomains` ni `preload`; `img-src` incluye `blob:` (vistas previas, `/analyze` A1); cada `location` de `nginx.conf` salvo `^~ /api/` y `^~ /uploads/` incluye `/etc/nginx/snippets/seguridad.conf`; el `Dockerfile` copia `nginx-seguridad.conf` a esa ruta — cubre: CA1, CA2, CA3, CA4, CA9
+- [ ] T011 [P] Comprobar las cabeceras en el contenedor — `frontend/scripts/probar-nginx.mjs` — hecho cuando: con la imagen actual falla por la razón esperada (faltan las cabeceras) y comprueba las seis cabeceras con su valor en `/`, cada ruta de `RUTAS_PUBLICAS`, `/login`, `/admin/usuarios`, `/restablecer-contrasena?token=x`, `/no-existe` (404), `/nosotros/` (301), un `/assets/*.js` e `/images/hero-dentissa.webp`, y que `/login` y las privadas conservan `X-Robots-Tag: noindex` y la 404 su `<meta name="robots" content="noindex">` en el cuerpo (`/analyze` A3) — cubre: CA1, CA2, CA3, CA8, CA9
+- [ ] T013 [P] Escribir la prueba de los recursos del código — `frontend/tests/seguridad-recursos.test.js` — hecho cuando: falla por la razón esperada (`via.placeholder.com` en `api.js`) y comprueba: toda URL absoluta de `frontend/src` está en la lista de enlaces y datos del plan o en los orígenes de la CSP (leídos de `nginx-seguridad.conf` si existe; si no, de la tabla del plan copiada en la prueba); el marcador de `getImageUrl` es una ruta del sitio; si el código usa `URL.createObjectURL`, `img-src` permite `blob:` — cubre: CA7
+  - nota: añadida por `/analyze` A2, A6
 - [ ] T012 [P] Crear el recorrido del navegador con la CSP — `frontend/scripts/probar-csp.mjs` — hecho cuando: construye la imagen con el client ID de `frontend/.env` (sin mostrarlo), la levanta y, con Chrome sin cabeza, recorre las seis páginas públicas, la 404, `/restablecer-contrasena`, contacto con "Ver mapa" (también llegando desde la portada sin recargar) y el login con los dos botones de Google; registra los bloqueos de la CSP por página; prueba los dos abusos (una página de otro origen que incrusta el sitio en un `iframe` y un `<script src>` de otro origen añadido a una página del sitio) y termina con error si alguno se carga o si hay bloqueos. Con la imagen actual (sin CSP) falla por la razón esperada: los dos abusos no se bloquean — cubre: CA3, CA4, CA5, CA6, CA7
 
 ## Implementación
 - [ ] T020 Crear el archivo de cabeceras de seguridad — `frontend/nginx-seguridad.conf` — hecho cuando: los casos de T010 sobre el contenido del archivo pasan (dos ejecuciones) — cubre: CA1, CA2, CA3, CA4 — depende: T010
 - [ ] T021 Incluir las cabeceras en cada `location` propia y copiarlas en la imagen — `frontend/nginx.conf`, `frontend/Dockerfile` — hecho cuando: T010 completo y T011 pasan; los demás casos de `probar-nginx.mjs` siguen en verde; comprobado rompiendo (quitar el `include` de una `location` y una cabecera del archivo → T010 y T011 fallan) — cubre: CA1, CA2, CA3, CA8, CA9 — depende: T011, T020
+- [ ] T025 [P] Sustituir el marcador externo de "sin imagen" por uno propio — `frontend/src/services/api.js`, `frontend/public/images/sin-imagen.svg` — hecho cuando: T013 pasa (dos ejecuciones) y los tests de la app siguen en verde; el SVG es neutro, de 60×60 y sin texto · verificación manual: en la lista de usuarios, un registro sin foto muestra el marcador (captura en T023) — cubre: CA7 — depende: T013
+  - nota: añadida por `/analyze` A2
 - [ ] T022 Verificar en el navegador las páginas públicas, el mapa y el login — `frontend/scripts/probar-csp.mjs` (solo ejecución), `.ai/inspect/024-despues/ (generado por scripts/capturas.mjs)` — hecho cuando: T012 pasa contra la imagen de T021 (cero bloqueos; los dos abusos bloqueados; los dos botones de Google y el mapa visibles) en dos ejecuciones · verificación manual: capturas de portada, contacto con el mapa y login a 390 y 1440 px iguales a las de T001 — cubre: CA3, CA4, CA5, CA6, CA7 — depende: T012, T021
-- [ ] T023 Recorrer los paneles con una cuenta de cada rol — `.ai/inspect/024-paneles/` (registro de bloqueos y capturas) — hecho cuando: con la imagen de T021 conectada al backend y la BD locales, sesiones de Administrador, Asistente y Paciente recorren: inicio, citas (crear y reprogramar), historial, usuarios, servicios, promociones, galería, comentarios, preguntas frecuentes, reportes con exportación a Excel, y el portal del paciente con su cita, su QR y su perfil. Cero bloqueos de la CSP en la consola · verificación manual: recorrido de los paneles (Claude con cuentas de prueba locales o el usuario) — cubre: CA7 — depende: T021
+- [ ] T023 Recorrer los paneles con una cuenta de cada rol — `.ai/inspect/024-paneles/` (registro de bloqueos y capturas) — hecho cuando: con la imagen de T021 conectada al backend y la BD locales, sesiones de Administrador, Asistente y Paciente recorren: inicio, citas (crear y reprogramar), historial, usuarios, servicios, promociones, galería, comentarios, preguntas frecuentes, reportes con exportación a Excel, y el portal del paciente con su cita, su QR y su perfil; se sube una imagen con vista previa en galería, promociones, servicios y usuarios y se abre un registro sin foto (marcador propio de T025). Cero bloqueos de la CSP en la consola · verificación manual: recorrido de los paneles (Claude con cuentas de prueba locales o el usuario) — cubre: CA7 — depende: T021, T025
 - [ ] T024 Medir el resultado y correr la suite — `.ai/inspect/024-despues/ (generado por scripts/medir-rendimiento.mjs)` — hecho cuando: mediana de 5 con `benchmarkIndex` ≥ 2000: Rendimiento ≥ T001 − 2 en cada ruta, Prácticas recomendadas ≥ T001 y SEO 100; `npm test`, lint de los archivos tocados y `npm audit --omit=dev` sin altas — cubre: CA7 — depende: T022, T023
 
 ## Integración y documentación
@@ -78,7 +83,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | CA4 | T010, T012 | T020, T022 |
 | CA5 | T012 | T022 |
 | CA6 | T012 | T022 |
-| CA7 | T012 | T022, T023, T024 |
+| CA7 | T012, T013 | T022, T023, T024, T025 |
 | CA8 | T011 | T021 |
 | CA9 | T010, T011 | T021 |
 
@@ -100,7 +105,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | `frontend/tests/seguridad-cabeceras.test.js` | T010 |
 | `frontend/scripts/probar-nginx.mjs` | T011 |
 | `frontend/scripts/probar-csp.mjs` | T012, T022 |
-| `docs/architecture.md`, `docs/security.md` | T090 (`security.md`: RS6.a y RS6.b en `/release`) |
+| `frontend/tests/seguridad-recursos.test.js` | T013 |
+| `frontend/src/services/api.js`, `frontend/public/images/sin-imagen.svg` | T025 |
+| `docs/architecture.md` | T090 |
+| `docs/security.md` | RS6.a y RS6.b mitigadas en `/release` (Paso 7, T098) |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
