@@ -88,8 +88,9 @@ al logger con mensajes que no llevan datos. Una regla de lint `no-console` impid
 - Reemplazo (CA10): recorre `context` hasta 5 niveles; una clave cuyo nombre normalizado (sin
   mayúsculas, guiones ni `_`) contiene `correo`, `email`, `telefono`, `phone`, `password`,
   `contrasena`, `token`, `authorization`, `credential`, `credencial`, `secret`, `cookie`, `nombre`,
-  `name`, `direccion` o `address` → valor `"[oculto]"`. **Excepción:** las claves exactas
-  `error_name` y `type`, que solo produce `resumirError`, se conservan (A6).
+  `name`, `direccion` o `address` → valor `"[oculto]"`. **Excepción:** las claves `error_name` y
+  `type` comparadas tal cual, sin normalizar, se conservan; solo las produce `resumirError` (A6,
+  A25). `type` se lista por claridad: no contiene ningún término. `Error_Name` sigue oculto.
 - `resumirErrorExterno(servicio, error)` → `{ servicio, status, codigo }`. `status` sale de
   `error.response?.status` o `error.status`; `codigo` del código de error del proveedor (Meta:
   `error.response.data.error.code`; Resend: `name`). Nunca `config`, `request`, `data` ni `message`
@@ -108,12 +109,21 @@ Sin migraciones ni endpoints nuevos.
 ## Estrategia de pruebas
 Jest + supertest (ADR 0004), con `createApp()` y la base simulada de `tests/support/fake-db.js`. El
 logger acepta un destino en memoria: `logger.__capturar({ nivel = 'debug' })` fija el nivel durante
-la captura, sin importar `LOG_LEVEL=silent`, devuelve las líneas y restaura stdout y el nivel al
-terminar. Las pruebas leen JSON, no texto.
+la captura, sin importar `LOG_LEVEL=silent` ni el piso de producción, devuelve las líneas y
+restaura stdout y el nivel al terminar. Fuera de una captura, el piso de producción se aplica
+siempre. Las pruebas leen JSON, no texto.
 
 Reglas comunes a `tests/logs/` (A3, A7):
 - Toda prueba que exige que **falte** algo (un centinela, una pila) comprueba primero que **existen**
-  las líneas esperadas de ese flujo, por `message` y con número > 0.
+  las líneas esperadas de ese flujo, por `message` y con número > 0. Si el flujo no escribe nada por
+  diseño (WhatsApp apagado), la misma prueba incluye un control positivo: la acción equivalente con
+  WhatsApp encendido deja su línea en la misma captura (A23).
+- Toda prueba que pone `NODE_ENV=production` corre dentro de `__capturar()`, porque en producción
+  `silent` se ignora y si no escribiría en stdout (A24). La caracterización de `errorHandler`
+  llama al middleware directamente, sin `createApp()`, así que no genera líneas.
+- El resumen que deja `errorHandler` en `res.locals.errorRegistro` se prueba aparte, llamando al
+  middleware con un `res` simulado (`tests/logs/error-registro.test.js`). Así T022 se verifica sin
+  `registroPeticion` (A22).
 - Los estados se obtienen así: rutas de auth con la base simulada; `servicios/publicos`, citas y
   usuarios con `jest.mock` de sus repositorios, como en `tests/services/recordatorios.test.js`; el
   500 y el `ER_DUP_ENTRY` con un repositorio simulado que lanza, de modo que pasan por el
@@ -151,7 +161,8 @@ Reglas comunes a `tests/logs/` (A3, A7):
   `tests/usuarios/rutas-usuarios.test.js` pasan a la captura del logger, con las mismas
   comprobaciones y la regla de «primero que existan» (A2, A16).
 - **RNF**: con `LOG_LEVEL=silent` la suite no escribe en stdout (`tests/logs/silencio.test.js`
-  espía `process.stdout.write` en una petición).
+  espía `process.stdout.write` en una petición). Con `NODE_ENV=production` dentro de
+  `__capturar()` tampoco (A24).
 
 ## Modelo de amenazas
 | ID | Amenaza (STRIDE) | Categoría OWASP | Componente | Control | Test |
