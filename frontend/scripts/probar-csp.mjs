@@ -83,7 +83,7 @@ try {
   const marcos = new Map() // sessionId → URL
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data)
-    if (m.id && pendientes.has(m.id)) { pendientes.get(m.id)(m.result); pendientes.delete(m.id) }
+    if (m.id && pendientes.has(m.id)) { pendientes.get(m.id)(m); pendientes.delete(m.id) }
     if (m.sessionId) return // mensajes de los marcos de otro origen: solo interesan sus respuestas
     if (m.method === 'Page.loadEventFired' && alCargar) { alCargar(); alCargar = null }
     if (m.method === 'Target.attachedToTarget' && m.params.targetInfo.type === 'iframe') {
@@ -95,19 +95,25 @@ try {
     }
     if (m.method === 'Log.entryAdded') registro.push(m.params.entry.text)
   }
-  // Cada llamada tiene un límite: un paso que no responde falla con su nombre en lugar de colgarse
+  // Cada llamada tiene un límite: un paso que no responde falla con su nombre en lugar de colgarse.
+  // Un error de Chrome rechaza la promesa: nunca se toma como "sin resultado" (review 024, R2)
   const cdp = (method, params = {}, limite = 45000, sessionId) => new Promise((resolver, rechazar) => {
     id += 1
     const propio = id
     const reloj = setTimeout(() => { pendientes.delete(propio); rechazar(new Error(`${method} no respondió en ${limite / 1000} s`)) }, limite)
-    pendientes.set(propio, (resultado) => { clearTimeout(reloj); resolver(resultado) })
+    pendientes.set(propio, (m) => { clearTimeout(reloj); if (m.error) rechazar(new Error(`${method}: ${m.error.message}`)); else resolver(m.result) })
     ws.send(JSON.stringify({ id: propio, method, params, ...(sessionId ? { sessionId } : {}) }))
   })
-  const evaluar = async (expr) => (await cdp('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true }))?.result?.value
+  const evaluar = async (expr) => {
+    const r = await cdp('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })
+    if (r.exceptionDetails) throw new Error(`la página lanzó: ${r.exceptionDetails.exception?.description?.split('\n')[0] ?? r.exceptionDetails.text}`)
+    return r.result.value
+  }
   await cdp('Page.enable'); await cdp('Runtime.enable'); await cdp('Log.enable')
   await cdp('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: true })
   await cdp('Page.addScriptToEvaluateOnNewDocument', {
-    source: "document.addEventListener('securitypolicyviolation', (e) => console.log('CSP|' + e.effectiveDirective + ' ← ' + (e.blockedURI || '(en línea)')))",
+    // La marca deja comprobar en cada página que el detector está instalado antes de dar "sin bloqueos"
+    source: "window.__detectorCSP = true; document.addEventListener('securitypolicyviolation', (e) => console.log('CSP|' + e.effectiveDirective + ' ← ' + (e.blockedURI || '(en línea)')))",
   })
   await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
 
@@ -119,6 +125,8 @@ try {
     await cdp('Page.navigate', { url })
     await cargada
     await pausa(espera)
+    // Sin el detector, "sin bloqueos" no significaría nada: se detiene la prueba
+    if (await evaluar('window.__detectorCSP === true') !== true) throw new Error(`${url}: el detector de violaciones de la CSP no está instalado`)
   }
   const revisar = (nombre, extra = '') => {
     const unicos = [...new Set(bloqueos)]
@@ -196,6 +204,10 @@ try {
   if (!marcoBloqueado) fallar('abuso: el sitio se muestra dentro de un iframe ajeno')
 
   ws.close()
+} catch (e) {
+  // Un paso que no pudo hacerse (error de Chrome, detector sin instalar, contenedor) es un fallo con nombre
+  console.log(`✘ ${e.message}`)
+  fallar(`la prueba no pudo completarse: ${e.message}`)
 } finally {
   if (chrome) chrome.kill()
   try { docker('stop', CONTENEDOR) } catch { /* ya detenido */ }
