@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-22
 base: de901ff
 head: 2d175c7
-human_signoff: pending
+human_signoff: RickssDev 2026-11-22 (revisó y fusionó el PR #86)
 ---
 
 # Review · 024 Protecciones del navegador en todo el sitio

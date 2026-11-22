@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-22
+### Security
+- El navegador protege a quien visita el sitio: solo ejecuta el código del propio sitio y el inicio de sesión de Google, no deja mostrar el sitio dentro de páginas ajenas (evita que engañen a alguien para pulsar donde no quiere) y siempre usa la conexión segura (spec 024).
+
 ## [1.4.1] - 2026-11-18
 ### Changed
 - La clínica aparece en Lázaro Cárdenas, Michoacán, en contacto, el pie de página, el aviso de privacidad, el mapa y los datos que leen los buscadores; se retiró la dirección de ejemplo de Ciudad de México (chore 2026-11-18-chore-ubicacion-y-titulo).
