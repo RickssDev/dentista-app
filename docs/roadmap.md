@@ -25,11 +25,11 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - RD1 Esquema sin versionar: RD1.a mitigada en v1.1.0; pendientes RD1.b, RD1.c
 - RD2 Respaldos: RD2.a mitigada (cron diario desde 2026-11-18); RD2.b (copias cifradas fuera del servidor) y RD2.c (prueba de restauración) pospuestas por decisión del usuario (2026-11-18)
 - RS4 Limitadores detrás de varios proxies: RS4.a y RS4.b mitigadas en v1.1.0; pendiente RS4.c
-- RD3 Rollback: RD3.a, RD3.b · RD4 Staging: RD4.a · RD5 Health check: RD5.a · RD6 Cron: RD6.a · RD7 Variables: RD7.a
+- RD3 Rollback: RD3.a, RD3.b · RD4 Staging: RD4.a · RD5 Health check: RD5.a (además, `/health` no está publicado en el dominio: nginx no lo enruta y la verificación post-deploy de `deployment.md` lo da por público; detectado en v1.5.0) · RD6 Cron: RD6.a · RD7 Variables: RD7.a
 
 **Seguridad**
 - RS3 Dependencias vulnerables: mitigado en v1.1.0 (RS3.a, RS3.b)
-- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · RS6 Cabeceras: RS6.a, RS6.b → [024](specs/024-cabeceras-seguridad/spec.md) (aprobada)
+- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · ~~RS6 Cabeceras~~: mitigado por [024](specs/024-cabeceras-seguridad/spec.md) en v1.5.0 (RS6.a, RS6.b); excepción AVD-DS-0002 (contenedor del frontend como root) hasta 2026-12-31: `/chore` con imagen no root y versiones fijas de `nginx` y `node`
 - RS7 Límite general: RS7.a · RS8 Enumeración: RS8.a · RS9 Guarda con rol: RS9.a
 
 **Observabilidad**
@@ -41,6 +41,22 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
 - ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
 
+**Deuda de la spec 024** (aceptada en /review, rondas 1 y 2)
+- 024/R3 Extraer a `frontend/scripts/lib/` el cliente CDP y los helpers repetidos de los scripts de medición y comprobación.
+- 024/R4 Unificar la ruta de Chrome (`CHROME_PATH` y búsqueda) en `probar-csp.mjs`.
+- 024/R5 `probar-csp.mjs`: un solo fallo si no se crea el marco y limpieza de servidor, `ws` y perfil en `finally`.
+- 024/R6 Cabeceras de seguridad en las 502/503/504 que genera nginx en `/api/` y `/uploads/`.
+- 024/R7 Restringir `frame-src https://www.google.com` a la ruta del mapa.
+- 024/R8 Guarda de recursos por directiva y por `origin` en `seguridad-recursos.test.js`.
+- 024/R10 `seguridad-recursos.test.js` sin respaldo del plan, nombre del test de `blob:` y `getImageUrl` importada.
+- 024/R11 El parser de `location` debe rechazar bloques anidados en `seguridad-cabeceras.test.js`.
+- 024/R12 Abuso de `fetch` o `img` en `probar-csp.mjs`; el script es una verificación manual por versión.
+- 024/R13 Imágenes con URL absoluta de otro dominio: 0 en producción antes de v1.5.0 (comprobado por el usuario); una nueva dejaría de verse con la CSP.
+- 024/R14 Comentario del HSTS frente a helmet (`includeSubDomains` en `/api/`).
+- 024/R15 Fallo intermitente sin reproducir de `probar-csp.mjs` (1 de 12); investigar si se repite.
+- 024/R16 La comprobación del mapa en `probar-csp.mjs` debe mirar el documento del marco, no solo que exista el `iframe`.
+- El marcador `sin-imagen.svg` de `getImageUrl` no se pinta en ninguna pantalla (las listas muestran la inicial o su respaldo); valorar quitarlo con `/refactor`.
+
 **Deuda de la spec 022** (aceptada en /review, ronda 1)
 - 022/R12 `/index.html`, `/<ruta>/index.html` y `/app.html` responden 200 (la canónica evita el duplicado).
 - 022/R13 Las rutas con mayúsculas (`/Nosotros`) dan 404; documentarlo o redirigirlas.
@@ -48,13 +64,13 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 022/R17 Salto a h3 en el footer, logo sin `width`/`height`, `theme-color` fuera de los tokens y `vite.svg` publicado.
 - 022/R18 Lógica de `estilosNuevos` repetida y estilos distintos entre los scripts de `frontend/scripts`.
 - 022/R21 `probar-nginx.mjs` sin mensaje propio con el puerto ocupado.
-- 022/R22 Sin cabeceras de seguridad en nginx; `add_header` en la ubicación privada anula las del server (ver RS6).
+- ~~022/R22~~ resuelto por 024 en v1.5.0. Sin cabeceras de seguridad en nginx; `add_header` en la ubicación privada anula las del server (ver RS6).
 - 022/R23 Accesibilidad previa: foco al navegar en la SPA, texto del loader y `aria-hidden` del skeleton.
 
 **Deuda de la spec 023** (aceptada en /review, rondas 1 y 2)
 - 023/R13 Las páginas públicas `lazy` no pasan por `cargarPagina` (sin recarga ante un chunk viejo).
 - 023/R14 Mover `cargarPagina` de `App.jsx` a `src/utils/` (hoy con `eslint-disable`).
-- 023/R24 Cabeceras de seguridad (CSP, `frame-ancestors`, `X-Content-Type-Options`, `Referrer-Policy`) en nginx; ver RS6 y 022/R22.
+- ~~023/R24~~ resuelto por 024 en v1.5.0. Cabeceras de seguridad (CSP, `frame-ancestors`, `X-Content-Type-Options`, `Referrer-Policy`) en nginx; ver RS6 y 022/R22.
 - 023/R25 `login.html` sin `<main>` y con dos `h1` (registro e inicio).
 - 023/R26 El respaldo de `Suspense` ("Cargando página...") sin `role="status"`.
 - 023/R27 Esqueleto de la galería sin `aria-busy` (ver 022/R23).

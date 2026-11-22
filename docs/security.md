@@ -121,8 +121,8 @@ Las respuestas de producción no incluyen CSP, HSTS, `X-Frame-Options` ni
 `X-Content-Type-Options` (comprobado el 2026-11-08). `helmet` solo cubre la API.
 
 Correcciones:
-- RS6.a Añadir las cabeceras en nginx o Caddy — estado: pendiente
-- RS6.b Definir una CSP compatible con Google Sign-In y las fuentes — estado: pendiente
+- RS6.a Añadir las cabeceras en nginx o Caddy — estado: mitigada (v1.5.0)
+- RS6.b Definir una CSP compatible con Google Sign-In y las fuentes — estado: mitigada (v1.5.0)
 
 ### RS7 · Media — Sin límite de peticiones general (A06 Insecure Design)
 Solo las rutas de autenticación tienen limitador.
