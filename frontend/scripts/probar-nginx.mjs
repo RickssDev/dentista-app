@@ -27,6 +27,15 @@ const directivas = (csp) => new Set((csp || '').split(';').map((d) => d.trim().s
 
 const docker = (...args) => execFileSync('docker', args, { stdio: ['ignore', 'pipe', 'inherit'] }).toString().trim()
 
+// Orden de shell dentro del contenedor en marcha (spec 025); devuelve su código y su salida
+const enContenedor = (orden) => {
+  try {
+    return { codigo: 0, salida: execFileSync('docker', ['exec', CONTENEDOR, 'sh', '-c', orden], { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim() }
+  } catch (e) {
+    return { codigo: e.status ?? 1, salida: `${e.stdout ?? ''}${e.stderr ?? ''}`.trim() }
+  }
+}
+
 const pedir = (ruta) => fetch(`${BASE}${ruta}`, { redirect: 'manual' })
 
 // Petición sin descomprimir: deja ver la cabecera Content-Encoding tal como la manda nginx
@@ -140,6 +149,32 @@ const comprobaciones = [
   ['/no-existe → <meta name="robots" content="noindex"> con las cabeceras', async () => {
     const r = await pedir('/no-existe')
     return r.status === 404 && /<meta name="robots" content="noindex"/.test(await r.text()) && Boolean(r.headers.get('content-security-policy'))
+  }],
+  // Spec 025 · CA1, CA7: dentro del contenedor, con la identidad por defecto de la imagen
+  ['contenedor → ningún proceso como root', async () => {
+    const usuarios = enContenedor('ps -o user').salida.split(/\r?\n/).slice(1).map((u) => u.trim()).filter(Boolean)
+    const deRoot = usuarios.filter((u) => u === 'root' || u === '0')
+    return { ok: usuarios.length > 0 && deRoot.length === 0, detalle: `procesos por usuario: ${usuarios.join(', ') || '(ninguno)'}` }
+  }],
+  ['contenedor → sin permiso para cambiar páginas ni configuración', async () => {
+    const intentos = {
+      'crear un archivo en /usr/share/nginx/html': 'touch /usr/share/nginx/html/.prueba-escritura',
+      'crear un archivo en /etc/nginx/conf.d': 'touch /etc/nginx/conf.d/.prueba-escritura',
+      'escribir en /etc/nginx/snippets/seguridad.conf': ': >> /etc/nginx/snippets/seguridad.conf',
+    }
+    const permitidos = Object.entries(intentos).filter(([, orden]) => enContenedor(orden).codigo === 0).map(([que]) => que)
+    return { ok: permitidos.length === 0, detalle: `se pudo ${permitidos.join('; ')}` }
+  }],
+  // Spec 025 · TM3: solo la capacidad de abrir puertos bajos (cap_net_bind_service = bit 10)
+  ['contenedor → capacidades efectivas solo cap_net_bind_service', async () => {
+    const linea = enContenedor('grep CapEff /proc/1/status').salida
+    const valor = (linea.match(/CapEff:\s*([0-9a-f]+)/i) || [])[1]
+    return { ok: valor !== undefined && BigInt(`0x${valor}`) === 0x400n, detalle: `CapEff del proceso 1: ${valor ?? '(no se pudo leer)'}, se esperaba 0x400` }
+  }],
+  // Spec 025 · TM5: la herramienta que concede capacidades no queda en la imagen
+  ['contenedor → sin setcap en la imagen', async () => {
+    const r = enContenedor('command -v setcap')
+    return { ok: r.codigo !== 0, detalle: `setcap presente en ${r.salida}` }
   }],
 ]
 
