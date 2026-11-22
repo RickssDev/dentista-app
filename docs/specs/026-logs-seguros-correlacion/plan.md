@@ -189,7 +189,7 @@ Reglas comunes a `tests/logs/` (A3, A7):
 | CA5: identificador propio por ejecución del cron | `reminder.service.js`, `contexto.js` | integración `correlacion.test.js` |
 | CA6: línea estructurada con fecha, nivel, texto, identificador y `actor_id` | `logger.js` | unitaria `logger.test.js`; integración `correlacion.test.js` |
 | CA7: sin `debug` en producción, sí en local | `logger.js` | unitaria `logger.test.js` |
-| CA8: línea por petición con nivel por estado | `registroPeticion.js`, `errorHandler.js` | integración `correlacion.test.js` |
+| CA8: línea por petición con nivel por estado | `registroPeticion.js`, `errorHandler.js` | integración `correlacion.test.js`; unitaria `error-registro.test.js` |
 | CA9: (abuso) sin datos personales ni credenciales en los flujos listados | `email.service.js`, `auth.service.js`, `citas.service.js`, `reminder.service.js`, `errorHandler.js` | integración `sin-datos.test.js` |
 | CA10: reemplazo de campos de nombre sensible | `logger.js` | unitaria `logger.test.js` |
 | CA11: errores externos con servicio, estado y código; correo solo con tipo e id | `logger.js`, `email.service.js`, `auth.service.js`, `citas.service.js` | integración `sin-datos.test.js`; unitaria `logger.test.js` |
@@ -198,11 +198,11 @@ Reglas comunes a `tests/logs/` (A3, A7):
 | RNF: la suite no imprime logs | `tests/support/env.js` | `silencio.test.js` |
 | TM1–TM2 | `requestId.js` | `request-id.test.js` |
 | TM3, TM5, TM7 | servicios, `registroPeticion.js` | `sin-datos.test.js`, `correlacion.test.js` |
-| TM4, TM6 | `logger.js`, `errorHandler.js` | `logger.test.js`, `sin-datos.test.js` |
+| TM4, TM6 | `logger.js`, `errorHandler.js` | `logger.test.js`, `sin-datos.test.js`, `error-registro.test.js` |
 | TM8 | `contexto.js` | `correlacion.test.js` |
 | TM9 | `logger.js` | `logger.test.js` |
 | TM10 | `eslint.config.js` | `lint.test.js` |
-| TM11 | `errorHandler.js` | `sin-datos.test.js` |
+| TM11 | `errorHandler.js` | `sin-datos.test.js`, `error-registro.test.js` |
 
 ## Observabilidad
 - Logs nuevos:
