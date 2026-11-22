@@ -103,13 +103,19 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen con el contenedor local (T022, T023)
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: no aplica: sin staging; equivalentes locales en T022 (`probar-csp.mjs`), T023 (paneles de los tres roles), T024 (medición) y `probar-nginx.mjs`
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-22 para v1.5.0: fusionó los PR #86 y #87 y desplegó él mismo
+  - nota: el usuario no escribió la frase literal ("desplegar v1.5.0 a producción"); como en v1.3.0 y v1.4.0, la aprobación se registra al confirmar el resultado. Antes de desplegar, la consulta de R13 dio 0 imágenes con URL `http…` en `usuarios`, `servicio`, `promocion` e `imagenes` (usuario)
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
   - `curl -sI https://sistema.dentissa.app/` con las seis cabeceras, HSTS incluido (usuario, CA2)
   - Entrar con Google de verdad y abrir el mapa de contacto, con la consola sin bloqueos (usuario, CA5, CA6)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-11-22, tras el merge del #87 (`daa7736`): `curl -sI` a `/`, `/login`, `/contacto` y `/no-existe` con las seis cabeceras a través de Cloudflare (HSTS `max-age=31536000`), `/login` con `X-Robots-Tag: noindex`; recorrido en Chrome sin cabeza contra producción sin bloqueos de la CSP en las seis públicas y la 404, mapa de contacto y los dos botones de Google; `/api/v1/servicios/publicos` 200, `robots.txt` con `Allow: /`, portada sin `noindex`
+  - nota: el usuario entró con Google en producción y revisó la consola: sin errores (2026-11-22)
+  - nota: `/health` da 404 en el dominio público: nginx nunca lo publicó (tampoco v1.4.1); la verificación post-deploy de `deployment.md` lo da por público. Anotado en el roadmap
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
