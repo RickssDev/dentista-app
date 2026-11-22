@@ -1,6 +1,7 @@
 ---
 spec: 025-frontend-sin-root
 plan: plan.md
+impl_base: c067951
 status: approved
 ---
 
@@ -42,7 +43,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | P20 | ➖ | Sin estilos | — |
 
 ## Preparación
-- [ ] T001 Medir la línea base sobre v1.5.0 — `.ai/inspect/025-antes/ (generado por scripts/medir-rendimiento.mjs y scripts/capturas.mjs)` — hecho cuando: con la imagen construida desde `main` (v1.5.0): mediana de 5 de Rendimiento, Prácticas recomendadas y SEO en las siete rutas con `benchmarkIndex` ≥ 2000 en cada corrida; capturas de portada, contacto con el mapa y login a 390 y 1440 px; tiempo de `docker build --no-cache` del frontend; todo anotado como nota de esta tarea
+- [x] T001 Medir la línea base sobre v1.5.0 — `.ai/inspect/025-antes/ (generado por scripts/medir-rendimiento.mjs y scripts/capturas.mjs)` — hecho cuando: con la imagen construida desde `main` (v1.5.0): mediana de 5 de Rendimiento, Prácticas recomendadas y SEO en las siete rutas con `benchmarkIndex` ≥ 2000 en cada corrida; capturas de portada, contacto con el mapa y login a 390 y 1440 px; tiempo de `docker build --no-cache` del frontend; todo anotado como nota de esta tarea
+  - nota: imagen construida desde `frontend/` de esta rama, idéntico al de v1.5.0 (`main` 616c507). Mediana de 5, Lighthouse 13.6.0 móvil, `benchmarkIndex` ≥ 2000 en todas las corridas contadas. Rendimiento / Prácticas / SEO / Accesibilidad: `/` 97/96/100/96 · `/nosotros` 98/100/100/96 · `/galeria` 100/96/100/98 · `/contacto` 100/100/100/94 · `/aviso-de-privacidad` 100/100/100/100 · `/terminos-de-servicio` 100/100/100/100 · `/login` 98/96/66/93. `/` y `/nosotros` se repitieron (`025-antes-repeticion`) porque la primera pasada tuvo corridas de 59 y 37 con el equipo ocupado; cuentan las de la repetición
+  - nota: A10 — tiempo de `docker build --no-cache` del frontend, mediana de 3: 67,6 s (99,4 / 67,6 / 45,5 s; varía con la red de `npm ci`). Capturas de portada, contacto con el mapa y login a 390 y 1440 px en `.ai/inspect/025-antes/`
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Escribir la prueba estática de la imagen — `frontend/tests/imagen-contenedor.test.js` — hecho cuando: falla por la razón esperada (los dos `FROM` sin versión exacta ni digest; la etapa final sin `USER`) y comprueba: cada `FROM` con `nombre:X.Y.Z-…@sha256:<64 hex>`, nombrando el que falla; el último `USER` de la etapa final no es `root` ni `0` y no hay `USER root` después; `EXPOSE 80` — cubre: CA1, CA4, CA5, CA6
