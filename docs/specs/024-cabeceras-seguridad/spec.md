@@ -1,7 +1,7 @@
 ---
 id: 024
 slug: cabeceras-seguridad
-status: approved
+status: implemented
 created: 2026-11-19
 extends: []
 ---
