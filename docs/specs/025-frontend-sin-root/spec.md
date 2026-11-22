@@ -42,9 +42,11 @@ versión nueva podría entrar en producción sin revisión.
   procedimiento actual, entonces el servicio atiende en el mismo punto de entrada interno y la
   conexión de entrada al sitio funciona sin cambiar su configuración ni la del despliegue del
   servidor.
-- [ ] CA5 · Dado el escáner de seguridad del proyecto, cuando se ejecuta sobre el repositorio,
-  entonces no reporta que el servicio del sitio corra como administrador ni ningún hallazgo alto o
-  crítico nuevo en su construcción.
+- [ ] CA5 · Dado el escáner de seguridad del proyecto, cuando se ejecuta sobre el repositorio y
+  sobre la imagen construida del servicio (al implementar y antes de cada liberación), entonces no
+  reporta que el servicio corra como administrador, ni hallazgos altos o críticos nuevos en su
+  construcción, ni vulnerabilidades altas o críticas en sus piezas base. Si las hay, la liberación
+  se detiene hasta actualizarlas o aceptarlas como excepción.
 - [ ] CA6 · Dada la receta de construcción del servicio, cuando se revisa, entonces cada pieza base
   indica una versión exacta. Si alguna queda sin versión o con una genérica ("la última"), la
   comprobación automática del proyecto falla y dice cuál.
@@ -76,7 +78,8 @@ versión nueva podría entrar en producción sin revisión.
     quitar las cabeceras de seguridad → se rechaza por falta de permisos (CA7).
   - Como atacante, intento aprovechar una versión base vulnerable que entró sin revisión al
     reconstruir → no ocurre: las versiones son exactas y solo cambian por una actualización
-    revisada (CA6), y el escáner las revisa en cada PR y cada semana (CA5).
+    revisada (CA6), y el escaneo de la imagen construida, al implementar y antes de cada liberación,
+    detiene la liberación si contiene vulnerabilidades altas o críticas (CA5).
 
 ## Cobertura de riesgos
 | Corrección | Alcance | Criterios / motivo y destino |
@@ -105,10 +108,11 @@ Ninguna.
 | 2026-11-22 | brecha | ¿Carril ligero (`/chore`) o spec? | Spec: toca seguridad y una ruta protegida (motivo 4 de escalado) | usuario |
 | 2026-11-22 | brecha | ¿Puede cambiar el punto de entrada interno del servicio? | No: el túnel de entrada apunta a él y el despliegue del servidor tiene cambios locales; se mantiene (CA4) | usuario (opción A en `/chore`) |
 | 2026-11-22 | implícita | Producción solo con aprobación humana y rollback documentado | Se aplican P5 y P6; CA8 | `docs/constitution.md` P5, P6 |
-| 2026-11-22 | implícita | Vulnerabilidades altas o críticas bloquean | El escáner de contenedores corre en CI y en `/release` | `docs/constitution.md` P11, `docs/security.md` |
+| 2026-11-22 | implícita | Vulnerabilidades altas o críticas bloquean | El escáner revisa el repositorio en `/review` y `/release` y, cada semana en CI, de forma informativa. No revisa las piezas base de la imagen construida (ver la fila de A1) | `docs/constitution.md` P11, `docs/security.md`, `.github/workflows/ai-dd.yml` |
 | 2026-11-22 | implícita | La excepción AVD-DS-0002 vence el 2026-12-31 | Liberar antes de esa fecha; al liberar se retira de "Excepciones aceptadas" | `docs/security.md` |
-| 2026-11-22 | supuesto | Política para actualizar las versiones fijas | Se suben con `/chore` cuando el escáner (CI semanal o `/release`) marque un hallazgo alto o crítico, o al revisar el roadmap; sin bot automático | agente, para revisión del usuario |
-| 2026-11-22 | supuesto | Versiones a fijar | Las que se usan hoy, sin subir ninguna | agente, para revisión del usuario |
+| 2026-11-22 | brecha | Política para actualizar las versiones fijas | Se suben con `/chore` cuando el escaneo de la imagen construida (al implementar o en `/release`) marque una vulnerabilidad alta o crítica, o al revisar el roadmap; sin bot automático | usuario (`/analyze` A6) |
+| 2026-11-22 | brecha | Versiones a fijar | Las que se usan hoy, sin subir ninguna; la de la etapa final, con al menos 7 días de publicada | usuario (`/analyze` A5, A6) |
+| 2026-11-22 | brecha | ¿Qué detecta las vulnerabilidades de las piezas base? | Un escaneo de la imagen construida al implementar y en cada `/release`, sin tocar el CI | usuario (`/analyze` A1) |
 
 ## Notas para /plan
 - Mencionado por el usuario: imagen del frontend en `frontend/Dockerfile` (`nginx:alpine`, etapa
@@ -126,3 +130,8 @@ Ninguna.
 - `frontend/Dockerfile` está en `security.agent.protected_paths`: solo lo toca una tarea aprobada.
 - Pruebas existentes reutilizables: `frontend/scripts/probar-nginx.mjs` (CI), `probar-csp.mjs`,
   `medir-rendimiento.mjs` y `tests/seguridad-cabeceras.test.js` (lee el `Dockerfile`).
+
+## Historial
+| Fecha | Cambio | Motivo |
+|---|---|---|
+| 2026-11-22 | CA5 incluye el escaneo de la imagen construida; el caso de abuso deja de decir "en cada PR"; los supuestos pasan a decisiones del usuario | `/analyze` A1, A5, A6 |
