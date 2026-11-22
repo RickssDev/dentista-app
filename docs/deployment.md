@@ -80,6 +80,13 @@ Valores no secretos confirmados por el usuario (2026-11-08): `NODE_ENV=productio
 ## Verificación post-deploy
 - Health check: `GET /health` (no comprueba MySQL; ver RD5).
 - Smoke tests: portada, login, y que `/api/v1/servicios/publicos` responda.
+- Cabeceras de seguridad (spec 024):
+  - `curl -sI https://sistema.dentissa.app/`, `/login` y `/no-existe` deben traer
+    `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+    `Referrer-Policy`, `Permissions-Policy` y `Strict-Transport-Security: max-age=31536000`;
+  - en el navegador, la consola sin bloqueos al entrar con Google (`/login`) y al pulsar "Ver
+    mapa" (`/contacto`). En local, `node scripts/probar-csp.mjs` (desde `frontend/`) hace este
+    recorrido.
 - Logs: `docker compose logs` · Métricas: no hay · Alertas: no hay (ver [observability.md](observability.md)).
 - Trazabilidad: cuando exista `X-Request-Id` (OB3), buscar por `request_id` una petición de los
   smoke tests y confirmar que sus logs y eventos de auditoría llegan al destino esperado.

@@ -3,7 +3,9 @@
 // protocolo de DevTools (WebSocket nativo de Node), captura las siete rutas a 390 y 1440 px con
 // movimiento reducido (los revelados al hacer scroll aparecen completos).
 //
-// Uso (desde frontend/): node scripts/capturas.mjs --etiqueta antes [--rutas /,/contacto] [--sin-imagen]
+// Uso (desde frontend/): node scripts/capturas.mjs --etiqueta antes [--rutas /,/contacto] [--sin-imagen] [--salida 024-antes]
+//   --salida: carpeta bajo .ai/inspect/ (por defecto 023-<etiqueta>).
+//   En /contacto pulsa "Ver mapa" y espera el iframe antes de capturar (spec 024).
 //   --sin-imagen: no levanta el contenedor; usa uno que ya responda en PUERTO_CAPTURAS (8099).
 // Salida: .ai/inspect/023-<etiqueta>/<ruta>-<ancho>.png
 import { execFileSync, spawn } from 'node:child_process'
@@ -28,7 +30,7 @@ const argumento = (nombre, porDefecto) => {
 const ETIQUETA = argumento('etiqueta', 'capturas')
 const RUTAS = argumento('rutas', '/,/nosotros,/galeria,/contacto,/aviso-de-privacidad,/terminos-de-servicio,/login').split(',')
 const SIN_IMAGEN = process.argv.includes('--sin-imagen')
-const SALIDA = join(RAIZ, '.ai', 'inspect', `023-${ETIQUETA}`)
+const SALIDA = join(RAIZ, '.ai', 'inspect', argumento('salida', `023-${ETIQUETA}`))
 
 const CHROME = [
   process.env.CHROME_PATH,
@@ -94,10 +96,36 @@ const capturar = async (pestana, ruta, ancho) => {
   await pestana.enviar('Page.navigate', { url: `${BASE}${ruta}` })
   await cargada
   await pausa(1500) // fuentes, hidratación e imágenes diferidas
+  if (ruta === '/contacto') {
+    // El mapa se carga al pulsar "Ver mapa": se espera por condición el iframe y su carga
+    const { result } = await pestana.enviar('Runtime.evaluate', {
+      awaitPromise: true, returnByValue: true,
+      expression: `(async () => {
+        document.querySelector('.map__ver')?.click()
+        for (let i = 0; i < 60; i++) {
+          const f = document.querySelector('.map iframe')
+          if (f) { await new Promise((r) => { f.addEventListener('load', r, { once: true }); setTimeout(r, 5000) }); return true }
+          await new Promise((r) => setTimeout(r, 250))
+        }
+        return false
+      })()`,
+    })
+    if (!result.value) throw new Error('/contacto: el mapa no apareció')
+    await pausa(1500) // teselas del mapa
+  }
   const { cssContentSize } = await pestana.enviar('Page.getLayoutMetrics')
   const alto = Math.ceil(cssContentSize.height)
+  // Con el mapa (iframe de otro origen), Chrome no lo pinta fuera del viewport: se agranda el
+  // viewport al alto de la página en lugar de capturar más allá de él
+  const conMapa = ruta === '/contacto'
+  if (conMapa) {
+    await pestana.enviar('Emulation.setDeviceMetricsOverride', {
+      width: ancho, height: alto, deviceScaleFactor: 1, mobile: ancho < 768,
+    })
+    await pausa(2000)
+  }
   const { data } = await pestana.enviar('Page.captureScreenshot', {
-    format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width: ancho, height: alto, scale: 1 },
+    format: 'png', captureBeyondViewport: !conMapa, clip: { x: 0, y: 0, width: ancho, height: alto, scale: 1 },
   })
   const nombre = `${ruta === '/' ? 'inicio' : ruta.slice(1).replace(/\//g, '_')}-${ancho}.png`
   writeFileSync(join(SALIDA, nombre), Buffer.from(data, 'base64'))

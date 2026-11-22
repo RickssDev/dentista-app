@@ -94,6 +94,18 @@ Los campos completos son inferidos de las consultas.
 - Routing: `BrowserRouter`, con `React.lazy` en las públicas; guarda `PrivateRoute` en `App.jsx`.
 - Design tokens / sistema de diseño: [design/system.md](design/system.md).
 - Accesibilidad: objetivo WCAG 2.1 AA (constitución P16).
+- Cabeceras de seguridad (spec 024): nginx añade, a todo lo que sirve él mismo, una política de
+  contenido (CSP), protección contra marcos, `nosniff`, política de referencia, permisos y HSTS,
+  desde `frontend/nginx-seguridad.conf`. El archivo se incluye en cada `location` de `nginx.conf`,
+  porque un `add_header` dentro de una `location` anula los del `server`. No se incluye en `/api/`
+  ni en `/uploads/`: Express ya manda las suyas (helmet).
+  - La CSP es una sola para todo el sitio, porque la SPA cambia de página sin recargar. Permite el
+    propio sitio, Google Sign-In (`accounts.google.com/gsi/`) y el mapa de Google.
+  - **Un servicio externo nuevo** (script, marco, imagen u origen de `VITE_ASSETS_URL`) exige
+    añadirlo a `nginx-seguridad.conf` y a `tests/seguridad-cabeceras.test.js`;
+    `tests/seguridad-recursos.test.js` falla si el código usa una URL externa que no esté en su
+    lista ni en la CSP.
+  - Una `location` nueva debe incluir el archivo; lo comprueba `seguridad-cabeceras.test.js`.
 
 ## Backend
 - Contratos de API: TODO(init): no hay OpenAPI; el contrato es implícito en `routes/` y `normalize.js`.

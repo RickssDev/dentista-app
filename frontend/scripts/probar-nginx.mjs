@@ -2,6 +2,7 @@
 // puerto local y comprueba códigos, cabeceras y redirecciones. Termina con error si algo falla.
 // Uso: node scripts/probar-nginx.mjs   (desde frontend/; necesita Docker)
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { RUTAS_NO_INDEXABLES, RUTAS_PUBLICAS } from '../src/seo/rutas.js'
@@ -11,6 +12,18 @@ const IMAGEN = 'dentissa-frontend:prueba-nginx'
 const CONTENEDOR = 'dentissa-prueba-nginx'
 const PUERTO = Number(process.env.PUERTO_PRUEBA_NGINX || 8091)
 const BASE = `http://localhost:${PUERTO}`
+
+// Spec 024 · CA9: las cabeceras esperadas salen del propio nginx-seguridad.conf (valor exacto, CSP
+// completa), así una protección quitada o debilitada en la imagen se nombra al fallar
+const SEGURIDAD = Object.fromEntries(
+  [...readFileSync(resolve(CARPETA, 'nginx-seguridad.conf'), 'utf8').matchAll(/^add_header\s+(\S+)\s+"([^"]*)"\s+always;/gm)]
+    .map(([, nombre, valor]) => [nombre.toLowerCase(), valor]),
+)
+// Los nombres y las directivas obligatorias van fijos aquí: quitar una cabecera o una directiva del
+// archivo no la quita de lo que se exige (los valores exactos los fija seguridad-cabeceras.test.js)
+const CABECERAS = ['content-security-policy', 'x-frame-options', 'x-content-type-options', 'referrer-policy', 'permissions-policy', 'strict-transport-security']
+const DIRECTIVAS = ['default-src', 'script-src', 'style-src', 'img-src', 'font-src', 'connect-src', 'frame-src', 'frame-ancestors', 'base-uri', 'form-action', 'object-src']
+const directivas = (csp) => new Set((csp || '').split(';').map((d) => d.trim().split(/\s+/)[0]).filter(Boolean))
 
 const docker = (...args) => execFileSync('docker', args, { stdio: ['ignore', 'pipe', 'inherit'] }).toString().trim()
 
@@ -98,6 +111,36 @@ const comprobaciones = [
     const cc = (await pedir(await assetDe('js'))).headers.get('cache-control') || ''
     return /max-age=31536000/.test(cc) && /immutable/.test(cc)
   }],
+  // Spec 024 · CA1–CA3, CA8: las cabeceras de seguridad en cada tipo de respuesta que sirve nginx
+  ...[
+    ...PUBLICAS,
+    '/login',
+    '/admin/usuarios',
+    '/restablecer-contrasena?token=x',
+    '/no-existe',
+    '/nosotros/',
+    'un /assets/*.js',
+    '/images/hero-dentissa.webp',
+  ].map((cual) => [`${cual} → cabeceras de seguridad`, async () => {
+    const ruta = cual.startsWith('/') ? cual : await assetDe('js')
+    const h = (await pedir(ruta)).headers
+    // Una cabecera repetida llega unida con ", " y tampoco coincide con el valor esperado
+    const recibido = (nombre) => (h.get(nombre) === null ? '(ausente)' : `"${h.get(nombre)}"`)
+    const malas = CABECERAS
+      .filter((nombre) => SEGURIDAD[nombre] === undefined || h.get(nombre) !== SEGURIDAD[nombre])
+      .map((nombre) => (SEGURIDAD[nombre] === undefined
+        ? `${nombre}: falta en nginx-seguridad.conf, recibido ${recibido(nombre)}`
+        : `${nombre}: esperado "${SEGURIDAD[nombre]}", recibido ${recibido(nombre)}`))
+    const presentes = directivas(h.get('content-security-policy'))
+    const faltan = DIRECTIVAS.filter((d) => !presentes.has(d))
+    if (faltan.length) malas.push(`content-security-policy: faltan las directivas ${faltan.join(', ')}`)
+    return { ok: malas.length === 0, detalle: malas.map((m) => `${ruta} · ${m}`).join('\n    ') }
+  }]),
+  // CA8: la 404 conserva su noindex en el HTML (nunca tuvo la cabecera; /analyze A3)
+  ['/no-existe → <meta name="robots" content="noindex"> con las cabeceras', async () => {
+    const r = await pedir('/no-existe')
+    return r.status === 404 && /<meta name="robots" content="noindex"/.test(await r.text()) && Boolean(r.headers.get('content-security-policy'))
+  }],
 ]
 
 let fallos = 0
@@ -113,8 +156,13 @@ try {
 
   for (const [nombre, comprobar] of comprobaciones) {
     let ok = false
-    try { ok = await comprobar() } catch { ok = false }
-    console.log(`${ok ? '✔' : '✘'} ${nombre}`)
+    let detalle = ''
+    try {
+      const r = await comprobar()
+      ok = typeof r === 'object' ? r.ok : r
+      detalle = typeof r === 'object' ? r.detalle : ''
+    } catch (e) { ok = false; detalle = e.message }
+    console.log(`${ok ? '✔' : '✘'} ${nombre}${!ok && detalle ? `\n    ${detalle}` : ''}`)
     if (!ok) fallos += 1
   }
 } finally {
