@@ -84,12 +84,19 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: mediana de 5 con la imagen de T021, `benchmarkIndex` ≥ 2000 en todas las corridas contadas. Rendimiento / Prácticas / SEO frente a T001: `/` 97/96/100 (= 97/96/100) · `/nosotros` 98/100/100 (=) · `/galeria` 100/96/100 (=) · `/contacto` 100/100/100 (=) · `/aviso-de-privacidad` 100/100/100 (=) · `/terminos-de-servicio` 100/100/100 (=) · `/login` 98/96/66 (99/96/66: dentro de −2; SEO 66 por su `noindex`, igual que T001). `/` se repitió aparte (`024-despues-inicio`) porque la primera pasada tuvo 5 corridas descartadas y otras de 76 y 84 con el equipo ocupado
   - nota: `npm test` en verde (backend 256 + 5 todo, frontend 220); lint de los archivos tocados del frontend limpio (backend sin cambios); `npm audit --omit=dev`: frontend 0, backend 2 moderadas previas en `uuid` (sin altas ni críticas; ajenas a esta spec)
 
+- [ ] T015 Indicar en la comprobación del contenedor qué protección falla y comparar la CSP completa — `frontend/scripts/probar-nginx.mjs` — hecho cuando: cada comprobación de cabeceras imprime, al fallar, la ruta y por cada cabecera que no cumple su nombre, el valor esperado y el recibido; la CSP se compara entera con el valor leído de `nginx-seguridad.conf`; comprobado rompiendo (sin `Permissions-Policy` y con `object-src` quitado de la CSP en el archivo): el mensaje nombra esas dos protecciones y las rutas; restaurado, pasa en dos ejecuciones — cubre: CA1, CA2, CA3, CA9
+  - nota: añadida por /review: R1
+- [ ] T016 Hacer que el recorrido con la CSP no pueda dar "cero bloqueos" sin mirar — `frontend/scripts/probar-csp.mjs` — hecho cuando: el cliente CDP rechaza la promesa si la respuesta trae `error` y el script termina con error si no se instala el detector de violaciones; comprobado rompiendo (`frame-src` sin `https://maps.google.com` en `nginx-seguridad.conf`): `/contacto` con "Ver mapa" informa el bloqueo `frame-src ← https://maps.google.com…` y el script falla; restaurado, pasa en dos ejecuciones — cubre: CA6, CA7 — depende: T015
+  - nota: añadida por /review: R2
+- [ ] T017 Registrar la excepción del contenedor como root — `docs/security.md` — hecho cuando: "Excepciones aceptadas" tiene la fila AVD-DS-0002 (`frontend/Dockerfile` sin `USER`, trivy alta, previa a la 024; workers de nginx sin privilegios), aprobada por el usuario el 2026-11-22 (review 024, R9) y con vencimiento el 2026-12-31 o antes, cuando una ficha `/chore` la corrija (imagen no root y versiones fijas de `nginx` y `node`)
+  - nota: añadida por /review: R9
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: la sección del frontend y nginx describe `nginx-seguridad.conf`, qué respuestas lo llevan (no `/api/` ni `/uploads/`) y la regla "un servicio externo nuevo exige actualizar la CSP y `seguridad-cabeceras.test.js`"
   - nota: sección "Frontend" de `docs/architecture.md`: cabeceras, el archivo único, qué respuestas lo llevan, la CSP única y la regla para añadir un servicio externo (incluido el origen de `VITE_ASSETS_URL`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Verificación post-deploy" incluye `curl -sI` a la portada, `/login` y `/no-existe` con las seis cabeceras, y la consola sin bloqueos en el login con Google y en contacto; `observability.md` sin cambios (no hay logs ni métricas)
   - nota: `docs/deployment.md` → "Verificación post-deploy": `curl -sI` a `/`, `/login` y `/no-existe` con las seis cabeceras y la consola sin bloqueos en el login con Google y en contacto (`probar-csp.mjs` en local). `observability.md` sin cambios: no hay logs, eventos ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -108,10 +115,10 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | CA3 | T010, T011, T012 | T020, T021, T022 |
 | CA4 | T010, T012 | T020, T022 |
 | CA5 | T012 | T022 |
-| CA6 | T012 | T022 |
-| CA7 | T012, T013 | T022, T023, T024, T025 |
+| CA6 | T012, T016 | T022 |
+| CA7 | T012, T013, T016 | T022, T023, T024, T025 |
 | CA8 | T011 | T021 |
-| CA9 | T010, T011 | T021 |
+| CA9 | T010, T011, T015 | T021 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -129,12 +136,12 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | `frontend/nginx.conf` | T021 |
 | `frontend/Dockerfile` | T021 |
 | `frontend/tests/seguridad-cabeceras.test.js` | T010 |
-| `frontend/scripts/probar-nginx.mjs` | T011 |
-| `frontend/scripts/probar-csp.mjs` | T012, T022 |
+| `frontend/scripts/probar-nginx.mjs` | T011, T015 |
+| `frontend/scripts/probar-csp.mjs` | T012, T022, T016 |
 | `frontend/tests/seguridad-recursos.test.js` | T013 |
 | `frontend/src/services/api.js`, `frontend/public/images/sin-imagen.svg` | T025 |
 | `docs/architecture.md` | T090 |
-| `docs/security.md` | RS6.a y RS6.b mitigadas en `/release` (Paso 7, T098) |
+| `docs/security.md` | T017 (excepción AVD-DS-0002); RS6.a y RS6.b mitigadas en `/release` (Paso 7, T098) |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
