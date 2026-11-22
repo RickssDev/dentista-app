@@ -67,6 +67,7 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 | ID | Hallazgo | Severidad | Motivo | Aprobado por | Vence |
 |---|---|---|---|---|---|
 | GHSA-fc5q-39xc-vjpf | `picomatch` ≤ 4.0.7: ReDoS con extglobs repetidos de una sola rama (frontend, vía `fdir` y `tinyglobby` de Vite y ESLint; backend, vía Jest) | alta en origen · real baja | Solo en desarrollo, pruebas y build: los patrones los escribe el propio proyecto, no llegan de usuarios, y no entra en las imágenes de producción (`npm audit --omit=dev`, 2026-11-17: frontend 0 vulnerabilidades; backend sin altas). No hay versión corregida publicada (2026-11-17). El job "Seguridad (solo cambios del PR)" del CI sigue marcándola mientras dure | usuario, 2026-11-17 (review 023, R3) | 2027-01-31, o antes si se publica `picomatch` ≥ 4.0.8: entonces se actualiza con `/chore` |
+| AVD-DS-0002 | `frontend/Dockerfile` sin `USER`: el proceso maestro de nginx corre como root en el contenedor del frontend (trivy, misconfig) | alta en origen · real baja | Anterior a la spec 024, que solo añadió una línea `COPY`. Los workers de nginx ya corren como `nginx`; el contenedor solo sirve archivos estáticos y hace de proxy, sin secretos ni volúmenes escribibles. Se corregirá con una imagen no root (p. ej. `nginx-unprivileged`, que exige ajustar el puerto y el compose de producción) y con versiones fijas de `nginx` y `node` | usuario, 2026-11-22 (review 024, R9) | 2026-12-31, o antes si una ficha `/chore` lo corrige |
 
 ## Riesgos conocidos
 
