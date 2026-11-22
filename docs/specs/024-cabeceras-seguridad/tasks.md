@@ -88,7 +88,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: sección "Frontend" de `docs/architecture.md`: cabeceras, el archivo único, qué respuestas lo llevan, la CSP única y la regla para añadir un servicio externo (incluido el origen de `VITE_ASSETS_URL`)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Verificación post-deploy" incluye `curl -sI` a la portada, `/login` y `/no-existe` con las seis cabeceras, y la consola sin bloqueos en el login con Google y en contacto; `observability.md` sin cambios (no hay logs ni métricas)
   - nota: `docs/deployment.md` → "Verificación post-deploy": `curl -sI` a `/`, `/login` y `/no-existe` con las seis cabeceras y la consola sin bloqueos en el login con Google y en contacto (`probar-csp.mjs` en local). `observability.md` sin cambios: no hay logs, eventos ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

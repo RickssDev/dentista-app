@@ -1,7 +1,7 @@
 ---
 id: 024
 slug: cabeceras-seguridad
-status: approved
+status: implemented
 created: 2026-11-19
 extends: []
 ---
@@ -28,36 +28,36 @@ atiende RS6 por completo.
   que lo note la comprobación automática, para no perderlas sin darme cuenta.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada cualquier respuesta del sitio (páginas públicas, inicio de sesión, paneles, página
+- [x] CA1 · Dada cualquier respuesta del sitio (páginas públicas, inicio de sesión, paneles, página
   "no encontrada" y archivos como imágenes, estilos y scripts), cuando el navegador la recibe,
   entonces se le indica que no adivine el tipo de un archivo distinto al declarado, que al ir a otro
   sitio solo comunique el dominio de origen y nunca la ruta (ni nada al pasar de la conexión segura a
   una que no lo es), y que el sitio no usa cámara, micrófono ni ubicación.
-- [ ] CA2 · Dada cualquier respuesta del sitio por la conexión segura, cuando el navegador la recibe,
+- [x] CA2 · Dada cualquier respuesta del sitio por la conexión segura, cuando el navegador la recibe,
   entonces queda indicado que use solo la conexión segura con `sistema.dentissa.app` durante al menos
   6 meses, sin abarcar otros subdominios de `dentissa.app` ni pedir la lista de precarga de los
   navegadores.
-- [ ] CA3 (abuso) · Dado un atacante que muestra cualquier página del sitio (incluidos el inicio de
+- [x] CA3 (abuso) · Dado un atacante que muestra cualquier página del sitio (incluidos el inicio de
   sesión y los paneles) dentro de un marco en una página suya, cuando un navegador abre esa página,
   entonces el navegador se niega a mostrar el sitio dentro del marco.
-- [ ] CA4 (abuso) · Dada una página del sitio en la que un atacante consigue insertar un script, un
+- [x] CA4 (abuso) · Dada una página del sitio en la que un atacante consigue insertar un script, un
   marco o un recurso de un dominio que el sitio no usa, cuando el navegador la carga, entonces no lo
   ejecuta ni lo carga. Solo se permiten el propio sitio y los dos servicios que el sitio necesita: el
   inicio de sesión con Google y el mapa de Google. Las páginas solo los cargan donde se usan (Google en
   el inicio de sesión; el mapa en contacto, al pulsar "Ver mapa"), como ya exige la spec 023.
-- [ ] CA5 · Dado el inicio de sesión, cuando un paciente usa "Iniciar sesión con Google" o, en el
+- [x] CA5 · Dado el inicio de sesión, cuando un paciente usa "Iniciar sesión con Google" o, en el
   panel de registro, "Registrarse con Google", entonces el botón aparece y el flujo de Google termina
   igual que antes, y la consola del navegador no muestra bloqueos.
-- [ ] CA6 · Dada la página de contacto, cuando alguien pulsa "Ver mapa", entonces el mapa de Google se
+- [x] CA6 · Dada la página de contacto, cuando alguien pulsa "Ver mapa", entonces el mapa de Google se
   muestra dentro del bloque como antes, y "Cómo llegar" sigue abriendo Google Maps.
-- [ ] CA7 · Dadas las páginas públicas, el inicio de sesión, el restablecimiento de contraseña y los
+- [x] CA7 · Dadas las páginas públicas, el inicio de sesión, el restablecimiento de contraseña y los
   paneles del personal y del paciente (con las imágenes que sube el personal, las fotos de la galería
   y los datos de la clínica para buscadores), cuando se recorren con una sesión de cada rol, entonces
   se ven y funcionan igual que antes y la consola del navegador no muestra ningún bloqueo.
-- [ ] CA8 · Dada la página "no encontrada" y las rutas privadas sin sesión, cuando se piden, entonces
+- [x] CA8 · Dada la página "no encontrada" y las rutas privadas sin sesión, cuando se piden, entonces
   llevan las mismas protecciones que el resto y conservan las indicaciones de no indexar que ya
   tenían.
-- [ ] CA9 · Dada una versión futura que quite o debilite cualquiera de las protecciones de CA1 a CA4
+- [x] CA9 · Dada una versión futura que quite o debilite cualquiera de las protecciones de CA1 a CA4
   en alguna respuesta, cuando se ejecuta la comprobación automática del proyecto, entonces falla e
   indica qué protección y en qué respuesta.
 
