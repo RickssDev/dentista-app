@@ -15,7 +15,7 @@ superficie sobre datos de salud (P3). Spec 026.
 
 ## Decisión
 - Un módulo propio, `backend/src/utils/logger.js`, sin dependencias. Escribe una línea JSON por
-  mensaje en stdout (`time`, `level`, `msg`, `request_id` o `job_id`, `user_id`, `context`), con
+  mensaje en stdout (`timestamp`, `level`, `message`, `request_id` o `job_id`, `actor_id`, `context`, los nombres de `docs/observability.md`), con
   niveles `debug`/`info`/`warn`/`error`, piso `info` en producción y reemplazo por nombre de los
   campos sensibles. El mismo formato en todos los entornos.
 - Contexto por petición y por trabajo con `AsyncLocalStorage` de `node:async_hooks`

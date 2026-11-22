@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: logs-seguros-correlacion
-status: approved
+status: draft
 created: 2026-11-22
 extends: []
 ---
@@ -15,8 +15,7 @@ ejemplo, las respuestas completas del proveedor de WhatsApp, que pueden traer el
 destinatario y el cuerpo de los correos con el enlace de recuperación de contraseña. Quien opera
 la clínica no puede reconstruir un incidente, y cualquiera con acceso a los logs ve datos
 personales sin el control de acceso del expediente. Esta spec atiende las brechas OB2, OB3 y OB4
-de `docs/observability.md`, y atiende OB1 y OB5 **parcialmente** (no cubre ninguna de sus
-correcciones; ver "Cobertura de riesgos"). Es la primera de las tres del objetivo 3 del roadmap. El registro de
+de `docs/observability.md`. Dentro del objetivo 3, OB1 y OB5 quedan atendidas parcialmente: esta spec no implementa ninguna de sus correcciones (OB1 → specs 027 y 028; OB5 → Pendientes y deuda; ver "Cobertura de riesgos"). Es la primera de las tres del objetivo 3 del roadmap. El registro de
 auditoría (OB1) queda para las specs 027 y 028.
 
 ## Historias de usuario
@@ -99,9 +98,9 @@ cambia qué se escribe en los logs técnicos. El registro de auditoría es el de
 | 2026-11-22 | implícita | Campos de cada mensaje | Fecha, nivel, identificador de petición, usuario si hay sesión, texto y contexto | docs/observability.md → Logs |
 | 2026-11-22 | implícita | Nivel por entorno | `info` en producción, `debug` en local | docs/observability.md → Logs; constitución P15 |
 | 2026-11-22 | implícita | Qué nunca se registra | Datos personales, de salud, contraseñas, tokens, secretos y cuerpos completos de petición | docs/observability.md → Logs; constitución P15 |
-| 2026-11-22 | supuesto | Formato válido del identificador recibido | De 8 a 64 caracteres, letras, dígitos, guion y guion bajo: cubre UUID y los identificadores de Cloudflare | agente |
-| 2026-11-22 | supuesto | ¿La ruta de salud genera la línea por petición? | Sí, pero como mensaje de depuración, para no llenar el log de producción con las comprobaciones del contenedor | agente |
-| 2026-11-22 | supuesto | ¿Qué se registra del usuario? | Solo su identificador numérico, nunca nombre ni correo | agente |
+| 2026-11-22 | supuesto | Formato válido del identificador recibido | De 8 a 64 caracteres, letras, dígitos, guion y guion bajo: cubre UUID y los identificadores de Cloudflare | usuario (confirmado 2026-11-22, /analyze A20) |
+| 2026-11-22 | supuesto | ¿La ruta de salud genera la línea por petición? | Sí, pero como mensaje de depuración, para no llenar el log de producción con las comprobaciones del contenedor | usuario (confirmado 2026-11-22, /analyze A20) |
+| 2026-11-22 | supuesto | ¿Qué se registra del usuario? | Solo su identificador numérico, nunca nombre ni correo | usuario (confirmado 2026-11-22, /analyze A20) |
 | 2026-11-22 | supuesto | Tamaño de la spec (12 criterios) | Se mantiene junta: los tres riesgos tocan las mismas llamadas de log | agente |
 
 ## Notas para /plan
@@ -114,3 +113,4 @@ cambia qué se escribe en los logs técnicos. El registro de auditoría es el de
 ## Historial
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-11-22 | Redacción del Problema sobre OB1 y OB5; tres supuestos confirmados por el usuario | /analyze A19, A20 |
