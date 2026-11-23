@@ -20,6 +20,7 @@ Formato:
 - Corregidas por `/analyze` ronda 1: T001, T010–T013, T021–T023, T028, T090, T091, T098 y las tablas de Cobertura; nueva T029.
 - Corregidas por `/analyze` ronda 2: T001, T010, T013, T015, T021, T022, T029, T091, T098; nueva T016.
 - Añadidas por `/review` ronda 1: T030–T034 (tests) y T040–T044 (implementación).
+- Añadidas por `/review` ronda 2: T035, T036 (tests) y T045 (implementación).
 
 ## Constitution Check
 Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
@@ -109,6 +110,11 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: añadida por /review: R5, R12
   - nota: el caso de la conexión falla por la razón esperada (salen `message` y `stack` con el host). Carga `src/config/db.js` con la extensión dentro de `jest.isolateModules`, para no recibir la simulación de `jest.config.js`, y le pasa la misma instancia del logger. Los dos casos de `borrarArchivo` pasan desde el principio: comprobado rompiéndolo con la ruta en el log, y falla
 
+- [ ] T035 [P] Probar que el filtro de marcos no se elude y que las claves técnicas se conservan — `tests/logs/logger.test.js` — hecho cuando: falla hoy por la razón esperada y comprueba: (R18) un error con `sqlState` cuyo mensaje lleva `\n    at centinela-de-marco` no deja `centinela-de-marco` en ninguna línea, y los marcos reales siguen en el `stack`; (R20) la lista de claves conservadas incluye todas las que emite `src` hoy: `id_cita`, `plantilla`, `servicio`, `codigo`, `status`, `tipo`, `route`, `method`, `id_proveedor`, `duration_ms`, `revisadas`, `enviadas`, `errno`, `code`, `stack`, `message`, `aborted`, `error`, `port`, y ninguna sale como `[oculto]` — cubre: CA9, CA10
+  - nota: añadida por /review: R18, R20 (ronda 2)
+- [ ] T036 [P] Fijar el corte del cron tras el fallo al marcar y aislar su mock — `tests/services/recordatorios.test.js` — hecho cuando: (R22) el caso de R3 usa `mockRejectedValueOnce`, de modo que el rechazo no pasa a los casos siguientes; (R23) un caso nuevo con dos citas, en el que falla el marcado de la primera, comprueba que la segunda no se envía (`axios.post` una vez), que queda «Recordatorio no marcado» con el `id_cita` de la primera y que «Recordatorios: fin de ejecución» sale con `enviadas: 1`. Pasa, y falla si se quita el `break` de `reminder.service.js` (comprobado rompiéndolo) — cubre: CA11
+  - nota: añadida por /review: R22, R23 (ronda 2)
+
 ## Implementación
 - [x] T020 Implementar el contexto y el logger — `src/utils/contexto.js`, `src/utils/logger.js` — hecho cuando: T010 pasa; sin dependencias nuevas en `package.json` — cubre: CA6, CA7, CA10, CA11, CA12 — depende: T010
   - nota: T010 en verde: 23 pruebas, dos ejecuciones; sin dependencias nuevas en `package.json`
@@ -164,6 +170,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: añadida por /review: R15
   - nota: con `LOG_LEVEL=debug` en el entorno, antes la suite imprimía 102 líneas JSON y fallaba `silencio.test.js`; ahora no imprime ninguna y pasa entera (32 suites, 387 pruebas)
 
+- [ ] T045 Quitar el mensaje exacto de la pila antes de tomar los marcos — `src/utils/logger.js` — hecho cuando: T035 pasa; `resumirError` quita del `stack` de un error de MySQL el prefijo `${name}: ${message}` y solo después conserva las líneas `/^\s+at /`; T010, T013 y T030 siguen en verde — cubre: CA9 — depende: T035
+  - nota: añadida por /review: R18 (ronda 2)
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` y la deuda resuelta — `docs/architecture.md`, `docs/roadmap.md` — hecho cuando: la sección Backend describe el logger JSON propio, el contexto por petición y `X-Request-Id`, con enlace al ADR 0011, y lista los cuatro transversales nuevos. La deuda de la duplicación de `errorHandler.js` sale de «Deuda técnica» de `architecture.md` y de «Pendientes y deuda» del roadmap (A14). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028
   - nota: `origin/main` sin cambios desde `impl_base` (la 025 aún no está fusionada): no hizo falta rebasar (A12)
@@ -171,7 +180,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` — `docs/deployment.md`, `docs/observability.md` — hecho cuando, en `docs/deployment.md`: `LOG_LEVEL` está en «Variables de entorno», con el piso `info` en producción (`silent` y `debug` se ignoran), y «Verificación post-deploy» añade la comprobación del `request_id` del plan. En `docs/observability.md`: el Resumen marca logs y correlación «en uso»; la sección Logs lista los campos reales (`timestamp`, `level`, `request_id`, `job_id`, `actor_id`, `message`, `context`) (A11); Logs y Correlación quitan «Hoy no existe» y «Hoy no se cumple»; OB2.a, OB2.b, OB2.c, OB3.a, OB3.b, OB4.a y OB4.b siguen en «pendiente» hasta T098, con la nota «resuelta por la spec 026, sin liberar», cada una por separado; OB1 y OB5 siguen pendientes (A15, A26). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028
   - nota: `deployment.md`: `LOG_LEVEL` en Variables de entorno, con su piso, y la comprobación del `request_id` en Verificación post-deploy. `observability.md`: Resumen con logs y correlación «en uso», secciones Logs y Correlación con los campos reales, y OB2.a–OB4.b en «pendiente (resuelta por la spec 026, sin liberar)», una por una; OB1 y OB5 siguen pendientes (A11, A15, A26)
   - nota: `origin/main` sin cambios: no hizo falta rebasar sobre la 025 (A12)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: 12 de 12 criterios marcados: cada uno con su test en verde (backend 355 pruebas, frontend 24 archivos)
   - nota: tras las tareas de /review (T030–T044): backend con 32 suites, 387 pruebas y 5 `todo`; frontend con 24 archivos y 220 pruebas. Lint del backend con solo los 2 errores previos, build en verde, `npm audit` sin altas y gitleaks sin hallazgos en `49825d5..HEAD`. Una corrida de `npm test` tuvo un fallo único en el backend que no se pudo identificar ni reproducir en 25 corridas más, con y sin carga en paralelo; queda para `/review --rerun`
 
@@ -193,9 +202,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | CA6 | T010, T012 | T020, T027, T028 |
 | CA7 | T010, T033 | T020 |
 | CA8 | T012, T016, T031, T033 | T021, T022, T041 |
-| CA9 | T013, T016, T029, T030, T034 | T022, T023, T024, T025, T026, T040, T043 |
-| CA10 | T010, T030 | T020, T040 |
-| CA11 | T010, T013, T032 | T020, T023, T024, T025, T026, T042 |
+| CA9 | T013, T016, T029, T030, T034, T035 | T022, T023, T024, T025, T026, T040, T043, T045 |
+| CA10 | T010, T030, T035 | T020, T040 |
+| CA11 | T010, T013, T032, T036 | T020, T023, T024, T025, T026, T042 |
 | CA12 | T010, T011, T030 | T020, T021, T040 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
@@ -205,7 +214,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | TM3 | T023, T024 | T013 |
 | TM4 | T020, T040 | T010, T013, T030 |
 | TM5 | T025 | T013 |
-| TM6 | T020, T022, T040 | T010, T013, T016, T030 |
+| TM6 | T020, T022, T040, T045 | T010, T013, T016, T030, T035 |
 | TM7 | T021 | T012, T013 |
 | TM8 | T020, T021, T023 | T012 |
 | TM9 | T020 | T010 |
@@ -215,7 +224,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | `src/utils/contexto.js` | T020 |
-| `src/utils/logger.js` | T020, T040 |
+| `src/utils/logger.js` | T020, T040, T045 |
 | `src/middlewares/requestId.js` | T021 |
 | `src/middlewares/registroPeticion.js` | T021, T041 |
 | `src/config/app.js` | T021 |
@@ -227,8 +236,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | `src/config/db.js`, `src/utils/borrarArchivo.js`, `server.js` | T027, T043 |
 | `eslint.config.js` | T028 |
 | `tests/support/env.js` | T002, T044 |
-| `tests/logs/` | T001, T010, T011, T012, T013, T014, T015, T016, T030, T031, T033, T034 |
-| `tests/services/recordatorios.test.js`, `tests/usuarios/rutas-usuarios.test.js` | T029, T032 |
+| `tests/logs/` | T001, T010, T011, T012, T013, T014, T015, T016, T030, T031, T033, T034, T035 |
+| `tests/services/recordatorios.test.js`, `tests/usuarios/rutas-usuarios.test.js` | T029, T032, T036 |
 | `docs/deployment.md`, `docs/observability.md`, `docs/architecture.md`, `docs/roadmap.md` | T090, T091, T098 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |

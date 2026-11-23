@@ -1,140 +1,117 @@
 ---
 spec: 026-logs-seguros-correlacion
 verdict: changes_requested
-round: 1
+round: 2
 date: 2026-11-22
-base: 49825d5
-head: 75afdf6
+base: 75afdf6
+head: 59318ce
 human_signoff: pending
 ---
 
 # Review · 026 Logs seguros y correlación por petición
 
 ## Resumen
-No hay bloqueantes: los tests, el lint, el build y el validador pasan, y cada control del modelo de
-amenazas existe con su test. Hay 4 importantes, y el usuario decidió corregirlos antes de liberar:
-R1, cuando un mensaje de MySQL tiene varias líneas, de la segunda en adelante quedan en la pila;
-R2, una petición abortada queda registrada como 200; R3, los fallos de la base de datos se
-atribuyen a WhatsApp; R4, la lista de claves sensibles no incluye variantes en español. También se
-corrigen ahora los menores baratos; R14, R16 y R17 quedan aceptados y van al roadmap.
-Conteo: bloqueante 0 · importante 4 · menor 13
+Ronda 2 (`--rerun`), del `head` de la ronda 1 a `59318ce`. Los 14 hallazgos abiertos (R1–R13 y
+R15) están corregidos y probados. Aparecen 6 menores nuevos, sin bloqueantes ni importantes. El
+usuario decidió corregir R18, R20, R22 y R23 antes de liberar; R19 y R21 quedan aceptados y van al
+roadmap. R14, R16 y R17 siguen aceptados desde la ronda 1.
+Conteo: bloqueante 0 · importante 0 · menor 6
 
-Revisores con contexto limpio: A (spec) y S (seguridad) con `opus`, C+D (constitución y calidad)
-con `sonnet`, sobre `.ai/cache/review/026-logs-seguros-correlacion/` (code.diff de 87 KB). Sin
-revisor de accesibilidad ni de SEO: el diff no toca el frontend.
+Revisor único con contexto limpio (`opus`), con los encargos A, C+D y S sobre
+`.ai/cache/review/026-logs-seguros-correlacion/`: code.diff de 32 KB, rango `75afdf6..59318ce`.
 
 ## Verificación automática
 | Comando | Resultado |
 |---|---|
-| `npm test` | ✅ backend: 32 suites, 355 pruebas y 5 `todo`; frontend: 24 archivos y 220 pruebas (línea base: sin fallos) |
-| `npm run lint --prefix backend` | ✅ solo los 2 errores previos (`faqs.service.js:4`, `images.service.js:20`); la línea base del plan tenía 4 |
-| `npm run lint --prefix frontend` | ➖ 7 errores y 5 avisos, todos previos: el diff no toca el frontend |
+| `npm test` (dos corridas) | ✅ backend: 32 suites, 387 pruebas y 5 `todo`; frontend: 24 archivos y 220 pruebas, en las dos corridas. El fallo único sin identificar que registró T092 no se repitió (27 corridas en total) |
+| `npm run lint --prefix backend` | ✅ solo los 2 errores previos |
 | `npm run build --prefix frontend` | ✅ |
 | `aidd.py validate` | ✅ 0 errores |
-| Tests asíncronos nuevos, dos ejecuciones | ✅ `tests/logs` y las dos suites migradas pasan en las dos ejecuciones (120/120), sin intermitencias |
 
 ## Criterios de aceptación
 | CA | Test | Estado | Nota |
 |---|---|---|---|
-| CA1 | `tests/logs/request-id.test.js` | ✅ | |
-| CA2 | `tests/logs/request-id.test.js` | ✅ | Por diseño se acepta un id válido que llega del cliente (ver Seguridad) |
-| CA3 | `tests/logs/request-id.test.js` | ⚠ | 2 de los 6 casos no detectarían una regresión (R8) |
-| CA4 | `tests/logs/correlacion.test.js` | ⚠ | Solo se prueban los envíos con éxito; las líneas de error del proveedor no (R13) |
-| CA5 | `tests/logs/correlacion.test.js`, `tests/services/recordatorios.test.js` | ✅ | |
-| CA6 | `tests/logs/logger.test.js`, `tests/logs/lint.test.js` | ✅ | |
-| CA7 | `tests/logs/logger.test.js`, `tests/logs/silencio.test.js` | ⚠ | Un caso de `silencio.test.js` pasa por construcción (R9) |
-| CA8 | `tests/logs/correlacion.test.js`, `tests/logs/error-registro.test.js` | ❌ | Una petición abortada queda como 200 `info` (R2). `/health` en `debug` lo decidió el plan (R14) |
-| CA9 | `tests/logs/sin-datos.test.js`, `tests/usuarios/rutas-usuarios.test.js` | ⚠ | El resto de un mensaje de MySQL de varias líneas queda en la pila (R1) |
-| CA10 | `tests/logs/logger.test.js` | ❌ | «y sus variantes»: faltan `clave`, `apellido`, `celular`, `pass`, `apikey`… (R4) |
-| CA11 | `tests/logs/sin-datos.test.js`, `tests/services/recordatorios.test.js` | ❌ | Un fallo de la base de datos se registra como fallo de WhatsApp (R3) |
-| CA12 | `tests/logs/logger.test.js`, `tests/logs/request-id.test.js` | ⚠ | Un error asíncrono de stdout (EPIPE) no se cubre (R6) |
+| CA1, CA2, CA5, CA6 | sin cambios desde la ronda 1 | ✅ | |
+| CA3 | `tests/logs/request-id.test.js` | ✅ | R8 corregido |
+| CA4 | `tests/logs/correlacion.test.js` | ✅ | R13 corregido |
+| CA7 | `tests/logs/silencio.test.js`, `tests/logs/logger.test.js` | ✅ | R9 corregido |
+| CA8 | `tests/logs/correlacion.test.js` | ✅ | R2 corregido; el caso abortado corta cuando la petición ya llegó, no por tiempo |
+| CA9 | `tests/logs/sin-datos.test.js`, `tests/logs/logger.test.js` | ⚠ | R1 y R5 corregidos; el filtro de marcos todavía se puede eludir (R18) |
+| CA10 | `tests/logs/logger.test.js` | ⚠ | R4 corregido; la prueba de claves conservadas no cubre todas las que se usan (R20) |
+| CA11 | `tests/services/recordatorios.test.js` | ⚠ | R3 corregido; falta fijar que el cron se detiene tras el fallo al marcar (R23) |
+| CA12 | `tests/logs/logger.test.js` | ✅ | R6 corregido |
 
 ## Conformidad con el plan
-- Cambios fuera del plan: ninguno. Los 25 archivos de código están citados por alguna tarea (`scope.md`).
-- Partes del plan sin implementar: ninguna. No hay tareas sin diff.
-- Menor fuera de alcance: T025 borró el encabezado «RECUPERACIÓN DE CONTRASEÑA» de `email.service.js` (R11).
+- Cambios fuera del plan: ninguno. Los 14 archivos de código del rango tienen tarea (`scope.md`).
+- Partes del plan sin implementar: ninguna.
 
 ## Constitution Check (sobre el código)
 | Principio | Resultado | Evidencia |
 |---|---|---|
-| P1–P20 | ✅ sin violaciones | Revisor C+D sobre el diff. No hay dependencias nuevas (`deps.stat` vacío) y el ADR 0011 está `accepted` |
-| P2 (código tocado con test) | ⚠ | `borrarArchivo` y el log de `db.js` no tienen prueba (R5, R12) |
-| P14 (correlación) | ✅ | `request-id.test.js` y `correlacion.test.js` |
-| P15 (sin datos sensibles en logs) | ✅ con huecos | `lint.test.js` (`no-console`) falla si se quita la regla; `sin-datos.test.js`. Huecos: R1, R4 |
+| P1–P20 | ✅ sin violaciones | Sin dependencias nuevas (`deps.stat` vacío) |
+| P2 (código tocado con test) | ✅ | R12 corregido: `borrarArchivo` y `db.js` tienen prueba |
+| P15 (sin datos sensibles en logs) | ✅ con un hueco menor | R18 |
 
 ## Seguridad
 | Herramienta | Resultado |
 |---|---|
 | Secretos: gitleaks v8.21.2 sobre `git log -p 49825d5..HEAD` | ✅ 0 hallazgos |
-| SAST | ➖ no aplica (decisión del usuario, 2026-11-08, `docs/security.md`) |
-| SCA: `npm audit --audit-level=high` | ✅ backend crít: 0 · alta: 0 · media: 20 (de desarrollo, previas); frontend 0 |
+| SAST | ➖ no aplica (decisión del usuario, 2026-11-08) |
+| SCA: `npm audit --audit-level=high` | ✅ backend sin críticas ni altas (20 medias, de desarrollo y previas); frontend 0 |
 | Contenedores: trivy | ➖ no se ejecutó en local, porque no está instalado; corre en CI. El diff no toca Dockerfiles ni compose |
 
 | Tema OWASP (Top 10:2025) | Resultado | Evidencia |
 |---|---|---|
-| A01 Control de acceso | ➖ | No cambian rutas ni autorización. `actor_id` sale de `req.user.id`, que fija `verifyToken` tras verificar el JWT |
-| A02 Configuración | ✅ | Ninguna ruta protegida en el diff. En producción el piso es `info` y no se baja con `LOG_LEVEL` (`logger.js:32-43`). El stack no sale en las respuestas de producción |
-| A03 Cadena de suministro | ✅ | Sin cambios en lockfiles; logger propio (ADR 0011) |
-| A04 Criptografía y datos sensibles | ⚠ | Se retiraron los `console.*` con teléfono, cuerpo de Meta, correo y enlace. Huecos: R1 (resto del mensaje de MySQL en la pila) y R4 (variantes de claves) |
-| A05 Inyección | ➖ | Sin SQL nuevo. Inyección en logs: `X-Request-Id` con lista blanca `^[A-Za-z0-9_-]{8,64}$` y `JSON.stringify` en todas las líneas |
-| A06 Diseño inseguro | ✅ | TM1–TM11 con control y test; S comprobó que cada test falla sin su control |
-| A07 Autenticación | ➖ | Solo cambia cómo se registran los fallos de Google y de correo |
-| A08 Integridad | ➖ | |
-| A09 Registro y alertas | ⚠ | JSON de una línea con `request_id`, `job_id` y `actor_id`. Atribución errónea en R3 y petición abortada en R2 |
-| A10 Errores y condiciones excepcionales | ✅ con matices | Un 4xx no operacional solo deja `error_name` y `type` (TM11), y la escritura va dentro de `try/catch`. Matices: R6 y R7 |
-| SSRF | ➖ | |
-
-Aceptado por diseño, sin hallazgo: un `X-Request-Id` válido que llega del cliente se reutiliza
-(CA2). Alguien podría repetir un id visto en otra respuesta, pero solo mezclaría sus propias
-líneas; no ve las ajenas.
+| A02 Configuración | ✅ | Sin cambios en rutas protegidas |
+| A03 Cadena de suministro | ✅ | Sin cambios en lockfiles |
+| A04 Datos sensibles | ⚠ | R1, R4 y R5 corregidos. Quedan R18 (eludir el filtro de marcos) y R19 (host de la base en errores de red, que no es dato personal) |
+| A06 Diseño inseguro | ✅ | Los controles TM1–TM11 siguen con su test |
+| A09 Registro y alertas | ✅ | R2 y R3 corregidos: la petición abortada y el servicio que falló quedan registrados como lo que son |
+| A10 Errores y condiciones excepcionales | ✅ | R6 y R7 corregidos; restos menores en R21 |
+| A01, A05, A07, A08, SSRF | ➖ | Sin cambios respecto de la ronda 1 |
 
 ## Observabilidad
-- Eventos de auditoría de la spec emitidos y probados: no aplica (OB1 queda para las specs 027 y 028).
-- Datos sensibles en logs del código tocado: ninguno en los llamadores actuales; huecos de defensa en R1 y R4.
-- `request_id` presente en los logs nuevos: sí en las peticiones y `job_id` en el cron. Las líneas de error de proveedor dentro de una petición no tienen test de correlación (R13).
+- Eventos de auditoría de la spec: no aplica (OB1 queda para las specs 027 y 028).
+- Datos sensibles en logs del código tocado: ninguno en los llamadores actuales; huecos de defensa en R18 y R19.
+- `request_id` presente en los logs nuevos: sí. «Recordatorio no marcado» lleva `job_id`, y «Aviso de WhatsApp no preparado», el `request_id` de la petición.
+
+## Seguimiento de la ronda 1
+| ID | Estado | Evidencia |
+|---|---|---|
+| R1 | corregido (efecto nuevo → R18) | `logger.js:70` conserva solo `/^\s+at /`; `logger.test.js` con centinela de varias líneas |
+| R2 | corregido | `registroPeticion.js`: `!res.writableFinished` deja `aborted`, `status: null` y `warn`; la prueba falla con el código anterior |
+| R3 | corregido | `citas.service.js:31-39` (`enviarAviso`), `avisoNoPreparado` en las 4 llamadas; `reminder.service.js:52-57` |
+| R4 | corregido (efecto nuevo → R20) | `logger.js:16-21,41`; ninguna clave de contexto actual queda oculta |
+| R5 | corregido (mismo patrón en otros logs → R19) | `config/db.js:20-24` |
+| R6 | corregido | `logger.js:29-33`; sin el oyente, la prueba falla |
+| R7 | corregido (restos → R21) | `logger.js:94-122` |
+| R8, R9, R10, R11, R12, R13, R15 | corregido | Ver `history/review.r1.md` y las notas de T033, T034, T043 y T044 |
 
 ## Hallazgos
 | ID | Severidad | Archivo:línea | Hallazgo | Sugerencia |
 |---|---|---|---|---|
-| R1 | importante | `backend/src/utils/logger.js:56` | En los errores de MySQL, `resumirError` solo descarta la primera línea del `stack`. Si el mensaje tiene varias líneas (un valor citado con `\n` en ER_DUP_ENTRY, ER_TRUNCATED_WRONG_VALUE o ER_PARSE_ERROR), de la segunda en adelante llegan al log del 5xx. Así se elude TM6, y el test solo usa mensajes de una línea | Conservar solo las líneas de marco (`/^\s+at /`) y probarlo con un centinela de varias líneas |
-| R2 | importante | `backend/src/middlewares/registroPeticion.js:27,42` | Si el cliente aborta, `close` registra `status: res.statusCode` (200 por defecto) como `info`, aunque no se envió respuesta. Lo comprobó el revisor A con un script | En `close` sin respuesta terminada, `aborted: true`, `status: null` y `warn`, con un test que aborte |
-| R3 | importante | `backend/src/services/reminder.service.js:26,50-58`; `backend/src/modules/citas/citas.service.js:200-220,517-537` | `citaEnCurso` no se limpia después del envío: un fallo de `marcarRecordatorioEnviado` se registra como «Aviso de WhatsApp no enviado» con `servicio: 'whatsapp'`. En `citas.service`, un fallo de `getPacienteWhatsApp` o `getServicioById` cae en el mismo `catch`. CA11 pide decir qué servicio falló | Separar los fallos de la base de datos con su propio mensaje y `resumirError` |
-| R4 | importante | `backend/src/utils/logger.js:13-16` | A los términos sensibles les faltan variantes de CA10 («y sus variantes»): `clave`, `apellido` (no contiene «name»), `celular`, `movil`, `pass`, `pwd`, `apikey`, `*key`, `jwt`, `bearer`, `session`, `destinatario` | Añadirlas, con su prueba positiva y la de que no hay falsos positivos |
-| R5 | menor | `backend/src/config/db.js:19` | El comentario dice que no se registra el mensaje de MySQL, pero un error de red (`ECONNREFUSED`) no trae `sqlState` y se registra con `message` y `stack` (host y puerto) | Registrar solo `error_name`, `code` y `errno`, con test |
-| R6 | menor | `backend/src/utils/logger.js:115` | El `try/catch` no cubre un `error` asíncrono de `process.stdout` (EPIPE): sin oyente, el proceso cae | Registrar un oyente de `error` vacío al cargar |
-| R7 | menor | `backend/src/utils/logger.js:78-92` | `redactar` no tiene límites de ancho. Un `bigint` hace perder la línea en silencio, `Buffer`, `Date`, `Map` y `Set` salen mal, y un objeto compartido entre ramas sale como `[circular]` | Límites de 50 elementos y 4096 caracteres; tratar `Buffer`, `bigint` y `Date`; marcar solo los ciclos reales |
-| R8 | menor | `backend/tests/logs/request-id.test.js:100-111` | En los casos con `"}` y con tabulador, `not.toContain(valor)` sobre la línea cruda siempre pasa, porque `JSON.stringify` escapa el valor | Buscar sobre las líneas ya parseadas |
-| R9 | menor | `backend/tests/logs/silencio.test.js` (2.º caso) | Dentro de `__capturar()` el logger nunca escribe en stdout: la aserción es verdadera por construcción | Comprobar el nivel efectivo en producción sin captura |
-| R10 | menor | `backend/tests/logs/error-handler-caracterizacion.test.js:6,37` | Comentarios de antes de T022 y un espía de `console.error` que ya no sirve | Quitarlos |
-| R11 | menor | `backend/src/services/email.service.js` | T025 borró el encabezado «RECUPERACIÓN DE CONTRASEÑA», sin relación con la spec | Restaurarlo |
-| R12 | menor | `backend/src/utils/borrarArchivo.js:24` | La línea de log nueva no tiene prueba | Test con `EACCES` y `ENOENT` |
-| R13 | menor | `backend/tests/logs/correlacion.test.js:192` | CA4 incluye «los de error y los de envíos»; solo se prueban los envíos con éxito | Caso con el proveedor fallando y `todas.every(request_id)` |
-| R14 | menor | `backend/src/middlewares/registroPeticion.js:10` | `/health` va en `debug` y en producción no deja línea, aunque CA8 dice «toda petición». Lo decidió el plan (Observabilidad) | Aceptado: reflejarlo en la spec que toque CA8 |
-| R15 | menor | `backend/tests/support/env.js` | `LOG_LEVEL=silent` solo se aplica si la variable no viene del shell | Forzarlo |
-| R16 | menor | `backend/server.js` | No hay `unhandledRejection` ni `uncaughtException`: un error fuera de una petición lo imprime Node con `util.inspect`, incluidos `sql` y `sqlMessage`. Es previo a la spec | Aceptado → roadmap |
-| R17 | menor | `backend/src/middlewares/errorHandler.js:85-86` | Un 4xx operacional registra el `message` de `AppError` tal cual. Hoy son literales, pero nada impide interpolar datos del usuario en uno nuevo | Aceptado → roadmap: regla en `AGENTS.md` o enmascarar valores |
+| R18 | menor | `backend/src/utils/logger.js:70` | Si el valor citado en un mensaje de MySQL lleva `\n    at …`, esa línea pasa el filtro como si fuera un marco. El revisor lo comprobó con un correo en el valor duplicado. TM6 se puede eludir, aunque hace falta un valor del usuario con salto de línea | Quitar del `stack` el prefijo exacto `${name}: ${message}` antes de tomar los marcos; probarlo con `\n    at centinela` |
+| R19 | menor | `backend/src/services/reminder.service.js:55`, `backend/src/modules/citas/citas.service.js:26` | «Recordatorio no marcado» y «Aviso de WhatsApp no preparado» usan `resumirError`: en un error de red de mysql2 sin `sqlState` salen `message` y `stack`, con el host y el puerto de la base. No son datos personales | Aceptado → roadmap |
+| R20 | menor | `backend/tests/logs/logger.test.js:512,521-527` | La lista `conservadas` no incluye claves que se emiten hoy (`id_proveedor`, `duration_ms`, `revisadas`, `enviadas`, `errno`, `stack`, `message`, `aborted`, `code`, `error`, `port`). Un término nuevo demasiado amplio las ocultaría sin que falle nada | Añadir todas las claves de contexto que emite `src` |
+| R21 | menor | `backend/src/utils/logger.js:100,114-117` | `Map` y `Set` salen como `{}`; los objetos no tienen tope de claves; un `Error` anidado no pasa por el recorte de texto | Aceptado → roadmap |
+| R22 | menor | `backend/tests/services/recordatorios.test.js:727` | `marcarRecordatorioEnviado.mockRejectedValue` no se deshace: `restoreAllMocks` no restaura los `jest.fn` del automock y `clearAllMocks` no borra implementaciones, así que el resultado depende del orden | `mockRejectedValueOnce` |
+| R23 | menor | `backend/tests/services/recordatorios.test.js:725-740`; `backend/src/services/reminder.service.js:56` | El `break` conserva el flujo de antes, pero ninguna prueba lo fija: con una sola cita, nada comprueba que la segunda no se envíe ni que «fin de ejecución» siga saliendo | Caso con dos citas |
 
 ## Preparación para release
-- Rollback factible: sí. Solo cambia el backend, sin migraciones ni variables obligatorias (`LOG_LEVEL` es opcional). Basta con desplegar la imagen anterior, según `docs/deployment.md`.
+- Rollback factible: sí. Solo cambia el backend, sin migraciones; basta con la imagen anterior, según `docs/deployment.md`.
 - Migraciones compatibles con la versión anterior: no hay migraciones.
-- Feature flags: el plan no pide ninguno.
-- Docs actualizadas: `architecture.md` (T090) y `deployment.md` y `observability.md` (T091). OB2.a–OB4.b siguen «pendiente (resuelta por la spec 026, sin liberar)», una por una; OB1 y OB5, pendientes. Ninguna figura como mitigada antes de `/release`.
+- Docs actualizadas: sin cambios desde la ronda 1. OB2.a–OB4.b siguen «pendiente (resuelta por la spec 026, sin liberar)».
 - SCA: sin críticas ni altas.
 
 ## Tareas añadidas
-- T030 ← R1, R4, R6, R7 (test)
-- T031 ← R2, R13 (test)
-- T032 ← R3 (test)
-- T033 ← R8, R9, R10
-- T034 ← R5, R12 (test)
-- T040 ← R1, R4, R6, R7
-- T041 ← R2
-- T042 ← R3
-- T043 ← R5, R11, R12
-- T044 ← R15
+- T035 ← R18, R20 (test)
+- T036 ← R22, R23 (test)
+- T045 ← R18
 
 ## Aceptados sin tarea
 Aceptados por el usuario el 2026-11-22:
 - **R14** → roadmap: `/health` se registra en `debug` (decisión del plan); falta alinear el texto de CA8 en la próxima spec que lo toque.
 - **R16** → roadmap: `server.js` sin manejadores de `unhandledRejection` ni `uncaughtException` que pasen por el logger (previo a la spec).
 - **R17** → roadmap: regla de no interpolar datos del usuario en los mensajes de `AppError`, o enmascarar valores en el `message` de los 4xx operacionales.
+- **R19** → roadmap: `resumirError` conserva `message` y `stack` de los errores de red de la base (host y puerto) en «Recordatorio no marcado» y «Aviso de WhatsApp no preparado».
+- **R21** → roadmap: `redactar` sin tratamiento de `Map` y `Set`, sin tope de claves por objeto y sin recorte del `Error` anidado.
