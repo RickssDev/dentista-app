@@ -332,3 +332,103 @@ describe('026 · RNF salida por stdout', () => {
     expect(JSON.parse(escrito[0]).message).toBe('A stdout');
   });
 });
+
+// Spec 026, T030: huecos que encontró /review ronda 1 (R1, R4, R6, R7).
+describe('026 · /review R1 mensaje de MySQL con varias líneas', () => {
+  test('ninguna línea del mensaje queda en la pila; se conservan los marcos', () => {
+    const error = new Error("Duplicate entry 'linea-uno\ncentinela-dos\ncentinela-tres' for key 'x'");
+    error.code = 'ER_DUP_ENTRY';
+    error.errno = 1062;
+    error.sqlState = '23000';
+
+    const captura = logger.__capturar();
+    logger.error('Fallo', { error });
+    captura.terminar();
+
+    const texto = captura.crudas.join('');
+    expect(texto).not.toContain('linea-uno');
+    expect(texto).not.toContain('centinela-dos');
+    expect(texto).not.toContain('centinela-tres');
+    const pila = captura.lineas[0].context.error.stack.split('\n');
+    expect(pila[0]).toBe('Error: [mensaje de MySQL omitido]');
+    expect(pila.length).toBeGreaterThan(1);
+    expect(pila.slice(1).every((l) => /^\s+at /.test(l))).toBe(true);
+  });
+});
+
+describe('026 · /review R4 variantes de claves sensibles', () => {
+  const sensibles = [
+    'clave', 'apellido', 'celular', 'movil', 'pass', 'pwd', 'apikey', 'api_key', 'X-Device-Key',
+    'jwt', 'bearer', 'session', 'destinatario',
+  ];
+  const conservadas = ['id_cita', 'plantilla', 'servicio', 'codigo', 'status', 'tipo', 'route', 'method'];
+
+  test.each(sensibles)('«%s» sale como [oculto]', (clave) => {
+    const captura = logger.__capturar();
+    logger.info('Prueba', { [clave]: 'valor-que-no-debe-salir' });
+    captura.terminar();
+    expect(captura.lineas[0].context[clave]).toBe('[oculto]');
+  });
+
+  test('las claves técnicas se conservan', () => {
+    const datos = Object.fromEntries(conservadas.map((c) => [c, `valor-${c}`]));
+    const captura = logger.__capturar();
+    logger.info('Prueba', datos);
+    captura.terminar();
+    expect(captura.lineas[0].context).toEqual(datos);
+  });
+});
+
+describe('026 · /review R7 valores difíciles en context', () => {
+  const registrar = (context) => {
+    const captura = logger.__capturar();
+    logger.info('Prueba', context);
+    captura.terminar();
+    return captura.lineas;
+  };
+
+  test('un BigInt no hace perder la línea', () => {
+    const lineas = registrar({ total: 10n });
+    expect(lineas).toHaveLength(1);
+    expect(lineas[0].context.total).toBe('10');
+  });
+
+  test('un array de 200 elementos sale con 50 y el marcador del resto', () => {
+    const [linea] = registrar({ lista: Array.from({ length: 200 }, (_, i) => i) });
+    expect(linea.context.lista).toHaveLength(51);
+    expect(linea.context.lista.slice(0, 50)).toEqual(Array.from({ length: 50 }, (_, i) => i));
+    expect(linea.context.lista[50]).toBe('[+150]');
+  });
+
+  test('un texto de 5000 caracteres sale recortado a 4096 con «…»', () => {
+    const [linea] = registrar({ detalle: 'a'.repeat(5000) });
+    expect(linea.context.detalle).toBe(`${'a'.repeat(4096)}…`);
+  });
+
+  test('un Buffer sale resumido y una Date como fecha ISO', () => {
+    const fecha = new Date('2030-01-02T03:04:05.000Z');
+    const [linea] = registrar({ archivo: Buffer.from('contenido'), fecha });
+    expect(linea.context.archivo).toBe('[binario 9 bytes]');
+    expect(linea.context.fecha).toBe('2030-01-02T03:04:05.000Z');
+  });
+
+  test('un mismo objeto en dos ramas hermanas sale completo en las dos', () => {
+    const compartido = { id_cita: 3 };
+    const [linea] = registrar({ a: compartido, b: compartido });
+    expect(linea.context).toEqual({ a: { id_cita: 3 }, b: { id_cita: 3 } });
+  });
+
+  test('un ciclo real sigue marcado como [circular]', () => {
+    const ciclo = { id_cita: 4 };
+    ciclo.yo = ciclo;
+    const [linea] = registrar({ ciclo });
+    expect(linea.context.ciclo).toEqual({ id_cita: 4, yo: '[circular]' });
+  });
+});
+
+describe('026 · /review R6 error asíncrono de stdout', () => {
+  test('un error emitido por process.stdout no lanza', () => {
+    expect(process.stdout.listenerCount('error')).toBeGreaterThan(0);
+    expect(() => process.stdout.emit('error', new Error('EPIPE de prueba'))).not.toThrow();
+  });
+});
