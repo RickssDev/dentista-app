@@ -153,6 +153,33 @@ describe('029 · repositorio: crearImagenConLimite', () => {
     expect(conn.release).not.toHaveBeenCalled();
   });
 
+  test('R8: si RELEASE_LOCK falla queda un aviso en el log, con el código y sin SQL ni valores', async () => {
+    const logger = require('../../src/utils/logger');
+    const captura = logger.__capturar();
+    const { conn, pool } = conexionFalsa({ fallaRelease: true });
+    conn.query.mockImplementation(async (sql, params = []) => {
+      conn.llamadas.push({ sql, params });
+      if (/GET_LOCK/i.test(sql)) return [[{ bloqueo: 1 }]];
+      if (/COUNT\(\*\)/i.test(sql)) return [[{ total: 3 }]];
+      if (/INSERT INTO imagenes/i.test(sql)) return [{ insertId: 77 }];
+      throw Object.assign(new Error('Lost connection'), { code: 'PROTOCOL_CONNECTION_LOST' });
+    });
+
+    try {
+      await repo.crearImagenConLimite(MARCAS, 15, pool);
+    } finally {
+      captura.terminar();
+    }
+
+    const avisos = captura.lineas.filter((l) => l.message === 'No se pudo soltar el bloqueo de la galería');
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]).toMatchObject({ level: 'warn', context: { code: 'PROTOCOL_CONNECTION_LOST' } });
+    const texto = captura.crudas.join('');
+    expect(texto).not.toContain(MARCAS.titulo);
+    expect(texto).not.toContain(MARCAS.imagen);
+    expect(texto).not.toMatch(/RELEASE_LOCK|SELECT/);
+  });
+
   test('P9: los valores van solo en los parámetros, nunca en el texto del SQL', async () => {
     const { conn, pool } = conexionFalsa({ total: 3 });
 
