@@ -334,3 +334,70 @@ describe('026 · CA9 errores con cuerpo centinela', () => {
     sinCentinelas(texto);
   });
 });
+
+// Spec 026, T034 (/review R5, R12): conexión a la base y borrado de archivos.
+describe('026 · CA9 conexión a la base de datos', () => {
+  test('ECONNREFUSED deja solo error_name, code y errno, sin host ni pila', async () => {
+    const errorDeRed = Object.assign(new Error('connect ECONNREFUSED 10.9.8.7:3306'), {
+      code: 'ECONNREFUSED',
+      errno: -4078,
+    });
+    jest.spyOn(process, 'exit').mockImplementation(() => {});
+
+    let testConnection;
+    jest.isolateModules(() => {
+      jest.doMock('mysql2/promise', () => ({
+        createPool: () => ({ getConnection: () => Promise.reject(errorDeRed) }),
+      }));
+      // El registro aislado cargaría otra copia del logger, fuera de la captura.
+      jest.doMock('../../src/utils/logger', () => logger);
+      // Con la extensión, para cargar el módulo real y no la simulación de jest.config.js.
+      ({ testConnection } = require('../../src/config/db.js'));
+    });
+
+    const captura = logger.__capturar();
+    try {
+      await testConnection();
+    } finally {
+      captura.terminar();
+      jest.dontMock('mysql2/promise');
+      jest.dontMock('../../src/utils/logger');
+    }
+
+    const lineas = captura.lineas.filter((l) => l.message === 'No se pudo conectar con la base de datos');
+    expect(lineas).toHaveLength(1);
+    expect(lineas[0].context).toEqual({ error_name: 'Error', code: 'ECONNREFUSED', errno: -4078 });
+    expect(captura.crudas.join('')).not.toContain('10.9.8.7');
+    expect(process.exit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('026 · CA9 borrado de archivos', () => {
+  const fs = require('fs/promises');
+  const borrarArchivo = require('../../src/utils/borrarArchivo');
+
+  const borrarCon = async (code) => {
+    jest.spyOn(fs, 'unlink').mockRejectedValue(Object.assign(new Error(`${code}: uploads/archivo-centinela.jpg`), { code }));
+    const captura = logger.__capturar();
+    try {
+      await borrarArchivo('/uploads/archivo-centinela.jpg');
+    } finally {
+      captura.terminar();
+    }
+    return captura;
+  };
+
+  test('un fallo distinto de ENOENT deja solo el código, sin la ruta', async () => {
+    const captura = await borrarCon('EACCES');
+
+    expect(captura.lineas).toHaveLength(1);
+    expect(captura.lineas[0]).toMatchObject({ level: 'error', message: 'No se pudo borrar el archivo' });
+    expect(captura.lineas[0].context).toEqual({ code: 'EACCES' });
+    expect(captura.crudas.join('')).not.toContain('archivo-centinela');
+  });
+
+  test('un archivo que ya no existe no deja línea', async () => {
+    const captura = await borrarCon('ENOENT');
+    expect(captura.lineas).toHaveLength(0);
+  });
+});
