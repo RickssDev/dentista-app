@@ -3,6 +3,20 @@ const AppError = require("../../utils/AppError");
 const { sendTemplateMessage, whatsappActivo } = require("../../services/whatp.service");
 const servicioRepo = require("../servicios/servicios.repository");
 const pacienteRepo = require("../pacientes/pacientes.repository");
+const logger = require("../../utils/logger");
+
+// Avisos de WhatsApp sin datos del paciente: solo la cita y la plantilla (spec 026, CA9, CA11).
+const avisoEnviado = (idCita, plantilla) => {
+  if (whatsappActivo()) logger.info("Aviso de WhatsApp enviado", { id_cita: idCita, plantilla });
+};
+
+const avisoNoEnviado = (idCita, plantilla, error) => {
+  logger.error("Aviso de WhatsApp no enviado", {
+    id_cita: idCita,
+    plantilla,
+    ...logger.resumirErrorExterno("whatsapp", error),
+  });
+};
 
 const CAMPOS_EDITABLES = ["fecha_agendada", "hora", "motivo"];
 
@@ -200,13 +214,10 @@ exports.createCita = async (data) => {
       ],
     );
 
-    if (whatsappActivo()) console.log(`WhatsApp de confirmación enviado para cita ${id}`);
+    avisoEnviado(id, "appointment_confirmation_1");
   }
 } catch (error) {
-  console.error(
-    "ERROR WHATSAPP:",
-    error.response?.data || error.message,
-  );
+  avisoNoEnviado(id, "appointment_confirmation_1", error);
 }
   return { id };
 };
@@ -322,10 +333,10 @@ exports.updateCita = async (id, data) => {
           horaFormateada,
         ]);
 
-        if (whatsappActivo()) console.log(`WhatsApp de reprogramación enviado para cita ${id}`);
+        avisoEnviado(id, "reprogramada_cita");
       }
     } catch (error) {
-      console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+      avisoNoEnviado(id, "reprogramada_cita", error);
     }
   }
 
@@ -385,10 +396,10 @@ exports.cancelarCita = async (id, motivo) => {
         fechaFormateada,
       ]);
 
-      if (whatsappActivo()) console.log(`WhatsApp de cancelación enviado para cita ${id}`);
+      avisoEnviado(id, "cancelada_cita");
     }
   } catch (error) {
-    console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+    avisoNoEnviado(id, "cancelada_cita", error);
   }
 
   return {
@@ -519,9 +530,11 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
           formatearHora(hora),
         ],
       );
+
+      avisoEnviado(id, "appointment_confirmation_1");
     }
   } catch (error) {
-    console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+    avisoNoEnviado(id, "appointment_confirmation_1", error);
   }
   return { id };
 };
