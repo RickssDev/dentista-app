@@ -103,8 +103,9 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - nota: R8: `logger.warn('No se pudo soltar el bloqueo de la galería', { code })` en el `catch` del `RELEASE_LOCK`. `tests/galeria` 36/36, lint limpio
   - nota: archivo extra justificado: el test de T034 hacía `require` del logger dentro del caso, y el bloque anterior del archivo reinicia el registro de módulos, así que capturaba otra instancia. Se carga junto al repositorio
   - nota: comprobado rompiéndolo: sin el `warn` falla; añadiendo el SQL al contexto del log falla; restaurado, pasa
-- [ ] T036 Test: el `:hover` no cambia el botón no disponible — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: falla por la razón esperada: ninguna regla `:hover` de `.encabezado-btn` en `adminpanel.css` se aplica a `[aria-disabled="true"]` (el selector excluye ese estado) — cubre: CA6 — depende: T032
+- [x] T036 Test: el `:hover` no cambia el botón no disponible — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: falla por la razón esperada: ninguna regla `:hover` de `.encabezado-btn` en `adminpanel.css` se aplica a `[aria-disabled="true"]` (el selector excluye ese estado) — cubre: CA6 — depende: T032
   - nota: añadida por /review: R11
+  - nota: R11: falla por la razón esperada (`.encabezado-btn:hover` también afecta al botón no disponible). El test exige además que exista al menos una regla `:hover`, para no pasar en vacío
 - [ ] T037 Limitar el `:hover` de `.encabezado-btn` a los botones disponibles — `frontend/src/styles/adminpanel.css` — hecho cuando: pasa T036 y el resto de `galeria-limite.test.jsx`; el literal previo del `:hover` sigue igual (deuda DS2, fuera de alcance por la decisión A8) — cubre: CA6 — depende: T036
   - nota: añadida por /review: R11
 

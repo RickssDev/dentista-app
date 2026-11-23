@@ -236,6 +236,17 @@ describe('029 · P16, P20 y constante compartida', () => {
     },
   )
 
+  // Review R11: el botón no disponible no se oscurece al pasar el ratón como si se pudiera usar
+  test('ninguna regla :hover de .encabezado-btn se aplica al botón con aria-disabled', () => {
+    const selectores = [...PANEL.matchAll(/(^|\n)([^{}\n]*\.encabezado-btn[^{}\n]*:hover[^{}\n]*)\{/g)]
+      .flatMap((m) => m[2].split(',').map((s) => s.trim()))
+      .filter((s) => /\.encabezado-btn/.test(s) && /:hover/.test(s))
+    expect(selectores.length).toBeGreaterThan(0)
+    for (const selector of selectores) {
+      expect(selector, `${selector} también afecta al botón no disponible`).toMatch(/:not\(\[aria-disabled="true"\]\)/)
+    }
+  })
+
   test('el límite del frontend coincide con el del backend', () => {
     const backend = readFileSync(join(process.cwd(), '../backend/src/modules/images/images.limites.js'), 'utf8')
     const valor = Number((backend.match(/MAX_IMAGENES_GALERIA\s*=\s*(\d+)/) || [])[1])
