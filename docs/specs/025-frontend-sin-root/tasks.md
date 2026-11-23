@@ -87,7 +87,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: sección "Frontend" de `docs/architecture.md`: contenedor como `nginx` con solo `cap_net_bind_service`, pid y caché, archivos de solo lectura, imágenes con etiqueta y digest, cuándo se suben y la actualización de `libxml2` en el build; qué pruebas lo comprueban
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Rollback" describe el procedimiento del plan (solo el frontend: `git checkout <commit> -- ../frontend`, `build --no-cache frontend`, `up -d frontend`); "Verificación post-deploy" incluye `docker compose ... exec frontend ps -o user,args` sin procesos de root; `observability.md` sin cambios (no hay logs ni métricas nuevos)
   - nota: `docs/deployment.md` → "Rollback": se añade la vuelta atrás solo del frontend (`git checkout <commit> -- ../frontend`, `build --no-cache frontend`, `up -d frontend`), comprobada en T024; el procedimiento general se conserva para versiones que cambian el backend. "Verificación post-deploy": `exec frontend ps -o user,args` solo con `nginx`. `observability.md` sin cambios
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

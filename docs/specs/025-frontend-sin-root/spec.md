@@ -1,7 +1,7 @@
 ---
 id: 025
 slug: frontend-sin-root
-status: approved
+status: implemented
 created: 2026-11-22
 extends: []
 ---
@@ -29,31 +29,31 @@ versión nueva podría entrar en producción sin revisión.
   sus piezas base para saber qué se despliega y decidir cuándo actualizarlas.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado el servicio del sitio en marcha, cuando se consulta con qué identidad corre cada
+- [x] CA1 · Dado el servicio del sitio en marcha, cuando se consulta con qué identidad corre cada
   uno de sus procesos, entonces ninguno corre como administrador del sistema.
-- [ ] CA2 · Dado el servicio sin privilegios, cuando la comprobación automática del servidor web
+- [x] CA2 · Dado el servicio sin privilegios, cuando la comprobación automática del servidor web
   recorre sus respuestas (páginas públicas, inicio de sesión, rutas privadas, página no
   encontrada, redirecciones, archivos estáticos y reenvío a la API), entonces códigos de estado,
   contenido y cabeceras de seguridad son los mismos que en v1.5.0.
-- [ ] CA3 · Dado el servicio sin privilegios, cuando se recorren en el navegador las páginas
+- [x] CA3 · Dado el servicio sin privilegios, cuando se recorren en el navegador las páginas
   públicas, el mapa de contacto y el inicio de sesión con Google, entonces todo se muestra igual
   que en v1.5.0 y la consola no registra bloqueos.
-- [ ] CA4 · Dado el despliegue de producción, cuando se publica la nueva versión con el
+- [x] CA4 · Dado el despliegue de producción, cuando se publica la nueva versión con el
   procedimiento actual, entonces el servicio atiende en el mismo punto de entrada interno y la
   conexión de entrada al sitio funciona sin cambiar su configuración ni la del despliegue del
   servidor.
-- [ ] CA5 · Dado el escáner de seguridad del proyecto, cuando se ejecuta sobre el repositorio y
+- [x] CA5 · Dado el escáner de seguridad del proyecto, cuando se ejecuta sobre el repositorio y
   sobre la imagen construida del servicio (al implementar y antes de cada liberación), entonces no
   reporta que el servicio corra como administrador, ni hallazgos altos o críticos nuevos en su
   construcción, ni vulnerabilidades altas o críticas en sus piezas base. Si las hay, la liberación
   se detiene hasta actualizarlas o aceptarlas como excepción.
-- [ ] CA6 · Dada la receta de construcción del servicio, cuando se revisa, entonces cada pieza base
+- [x] CA6 · Dada la receta de construcción del servicio, cuando se revisa, entonces cada pieza base
   indica una versión exacta. Si alguna queda sin versión o con una genérica ("la última"), la
   comprobación automática del proyecto falla y dice cuál.
-- [ ] CA7 (abuso) · Dado un atacante que logra ejecutar órdenes dentro del servicio con la
+- [x] CA7 (abuso) · Dado un atacante que logra ejecutar órdenes dentro del servicio con la
   identidad del propio servicio, cuando intenta modificar las páginas que entrega o la
   configuración de cabeceras de seguridad, entonces no puede hacerlo por falta de permisos.
-- [ ] CA8 · Dado un problema tras desplegar, cuando se aplica el procedimiento de rollback actual
+- [x] CA8 · Dado un problema tras desplegar, cuando se aplica el procedimiento de rollback actual
   (volver al commit anterior y reconstruir solo el servicio del sitio), entonces se recupera la
   versión anterior sin pasos nuevos.
 
