@@ -48,6 +48,13 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ## Rollback
 1. En el servidor, volver al commit anterior con `git checkout <commit>` o `git revert` (confirmado por el usuario, 2026-11-08).
 2. Reconstruir con `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build`.
+- Si la versión solo cambió el frontend (p. ej. las specs 024 y 025), se revierte solo él, sin tocar el
+  compose local del servidor ni el resto del repo. Desde `backend/`:
+  `git checkout <commit desplegado antes> -- ../frontend`,
+  `docker compose --env-file .env.prod -f docker-compose.prod.yml build --no-cache frontend` y
+  `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d frontend` (unos 5 minutos;
+  comprobado en local en la spec 025, T024). Después, `git checkout HEAD -- ../frontend` deja el
+  árbol como estaba cuando se publique la corrección.
 - Tiempo estimado: TODO(init): medirlo; depende del build en el servidor.
 - Si hubo migración: restaurar desde el respaldo manual más reciente; no hay reversión de esquema. Ver RD1 y RD3.
 
@@ -87,6 +94,10 @@ Valores no secretos confirmados por el usuario (2026-11-08): `NODE_ENV=productio
   - en el navegador, la consola sin bloqueos al entrar con Google (`/login`) y al pulsar "Ver
     mapa" (`/contacto`). En local, `node scripts/probar-csp.mjs` (desde `frontend/`) hace este
     recorrido.
+- Contenedor del frontend sin root (spec 025):
+  `docker compose --env-file .env.prod -f docker-compose.prod.yml exec frontend ps -o user,args`
+  solo muestra `nginx`, y `docker compose ... ps` lo da en marcha (sin errores de permisos en
+  `docker compose logs frontend`).
 - Logs: `docker compose logs` · Métricas: no hay · Alertas: no hay (ver [observability.md](observability.md)).
 - Trazabilidad: cuando exista `X-Request-Id` (OB3), buscar por `request_id` una petición de los
   smoke tests y confirmar que sus logs y eventos de auditoría llegan al destino esperado.
