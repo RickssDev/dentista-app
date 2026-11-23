@@ -29,6 +29,7 @@ const db = require('../../src/config/db');
 const JWTFactory = require('../../src/utils/JWTFactory');
 const repo = require('../../src/modules/users/user.repository');
 const { createApp } = require('../../src/config/app');
+const logger = require('../../src/utils/logger');
 const f = require('../support/fixtures');
 
 const app = createApp();
@@ -46,6 +47,7 @@ const alta = (cambios = {}) => ({
 });
 
 let consola;
+let captura;
 
 beforeEach(() => {
   db.reiniciar();
@@ -62,12 +64,22 @@ beforeEach(() => {
   repo.conTransaccion.mockImplementation(async (fn) => fn({}));
   repo.bloquearAdministradoresActivos.mockResolvedValue([{ id_usuario: 1 }, { id_usuario: 2 }]);
   consola = ['log', 'info', 'warn', 'error'].map((m) => jest.spyOn(console, m).mockImplementation(() => {}));
+  // Spec 026: los logs van por el logger; se capturan además de la consola.
+  captura = logger.__capturar();
 });
 
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  captura.terminar();
+  jest.restoreAllMocks();
+});
 
-const textoDeLogs = () => consola.flatMap((espia) => espia.mock.calls).map((args) =>
-  args.map((a) => (a instanceof Error ? `${a.message} ${a.stack}` : JSON.stringify(a))).join(' ')).join('\n');
+const textoDeLogs = () => {
+  // Primero que existan: cada petición deja al menos su línea «Petición atendida» (spec 026, A3).
+  expect(captura.lineas.length).toBeGreaterThan(0);
+  const deConsola = consola.flatMap((espia) => espia.mock.calls).map((args) =>
+    args.map((a) => (a instanceof Error ? `${a.message} ${a.stack}` : JSON.stringify(a))).join(' ')).join('\n');
+  return `${deConsola}\n${captura.crudas.join('')}`;
+};
 
 describe('códigos de error', () => {
   test('POST con un nombre que no es texto → 400 con mensaje', async () => {

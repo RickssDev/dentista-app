@@ -9,6 +9,7 @@ const cron = require('node-cron');
 const repo = require('../../src/modules/citas/citas.repository');
 const servicioRepo = require('../../src/modules/servicios/servicios.repository');
 const citas = require('../../src/modules/citas/citas.service');
+const logger = require('../../src/utils/logger');
 require('../../src/services/reminder.service');
 
 const correrCron = cron.schedule.mock.calls[0][1];
@@ -27,11 +28,12 @@ const encender = () => {
   process.env.WHATSAPP_PHONE_NUMBER_ID = 'id-ficticio';
 };
 
-let log;
+// Spec 026: los avisos se leen de la captura del logger, ya no de console.log.
+let captura;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  log = jest.spyOn(console, 'log').mockImplementation(() => {});
+  captura = logger.__capturar();
   repo.getCitasParaRecordatorio.mockResolvedValue([CITA]);
   repo.findCitaExistente.mockResolvedValue(null);
   repo.createCita.mockResolvedValue(1);
@@ -46,16 +48,24 @@ afterEach(() => {
   process.env.WHATSAPP_ENABLED = 'false';
   delete process.env.WHATSAPP_TOKEN;
   delete process.env.WHATSAPP_PHONE_NUMBER_ID;
+  captura.terminar();
   jest.restoreAllMocks();
 });
 
-const textoDeLog = () => log.mock.calls.flat().join(' ');
+const enviados = (plantilla) =>
+  captura.lineas.filter((l) => l.message === 'Aviso de WhatsApp enviado' && l.context.plantilla === plantilla);
+const textoDeLog = () => captura.crudas.join('');
 
 describe('recordatorios', () => {
   test('007 CA6 · con WhatsApp apagado la cita no queda marcada como enviada', async () => {
     await correrCron();
     expect(repo.marcarRecordatorioEnviado).not.toHaveBeenCalled();
     expect(textoDeLog()).not.toMatch(/enviado/i);
+
+    // Control positivo: en la misma captura, con WhatsApp encendido sí queda la línea (spec 026, A23).
+    encender();
+    await correrCron();
+    expect(enviados('cita_recordatorio')).toHaveLength(1);
   });
 
   test('007 CA1 · con WhatsApp encendido envía y marca la cita', async () => {
@@ -67,18 +77,24 @@ describe('recordatorios', () => {
 });
 
 describe.each([
-  ['crear', () => citas.createCita({ id_paciente: 1, fecha_agendada: '2030-01-02', hora: '10:00', id_servicio: 1 }), /confirmación enviado/],
-  ['reprogramar', () => citas.updateCita(1, { fecha_agendada: '2030-01-02', hora: '10:00', motivo: 'cambio' }), /reprogramación enviado/],
-  ['cancelar', () => citas.cancelarCita(1, 'motivo'), /cancelación enviado/],
-])('aviso al %s una cita', (_nombre, accion, mensaje) => {
+  ['crear', () => citas.createCita({ id_paciente: 1, fecha_agendada: '2030-01-02', hora: '10:00', id_servicio: 1 }), 'appointment_confirmation_1'],
+  ['reprogramar', () => citas.updateCita(1, { fecha_agendada: '2030-01-02', hora: '10:00', motivo: 'cambio' }), 'reprogramada_cita'],
+  ['cancelar', () => citas.cancelarCita(1, 'motivo'), 'cancelada_cita'],
+])('aviso al %s una cita', (_nombre, accion, plantilla) => {
   test('OB6 · con WhatsApp apagado no se registra como enviado', async () => {
     await accion();
-    expect(textoDeLog()).not.toMatch(mensaje);
-  });
+    expect(enviados(plantilla)).toHaveLength(0);
+    expect(textoDeLog()).not.toMatch(/enviado/i);
 
-  test('OB6 · con WhatsApp encendido se registra el envío', async () => {
+    // Control positivo: en la misma captura, con WhatsApp encendido sí queda la línea (spec 026, A23).
     encender();
     await accion();
-    expect(textoDeLog()).toMatch(mensaje);
+    expect(enviados(plantilla)).toHaveLength(1);
+  });
+
+  test('OB6 · con WhatsApp encendido se registra el envío con la cita y la plantilla', async () => {
+    encender();
+    await accion();
+    expect(enviados(plantilla)).toEqual([expect.objectContaining({ context: { id_cita: 1, plantilla } })]);
   });
 });
