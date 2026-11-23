@@ -53,20 +53,29 @@ exports.createImagen = async (data, rutaArchivo) => {
   }
 };
 
+// `data.imagen` solo llega del archivo subido en esta petición (el controller descarta la del
+// cuerpo, spec 029 TM6). Si la edición falla antes de guardarse, se borra para no dejarla huérfana
+// (ficha 2026-11-23-fix-foto-huerfana-edicion-galeria).
 exports.updateImagen = async (id, data) => {
-  const exists = await repo.getImagenById(id);
+  let exists;
+  try {
+    exists = await repo.getImagenById(id);
 
-  if (!exists) {
-    throw new AppError('Imagen no encontrada', 404);
+    if (!exists) {
+      throw new AppError('Imagen no encontrada', 404);
+    }
+
+    if (!data.titulo && !data.imagen && data.visible === undefined) {
+      throw new AppError('No hay campos para actualizar', 400);
+    }
+
+    await repo.updateImagen(id, { ...data });
+  } catch (error) {
+    if (data.imagen) await borrarArchivo(data.imagen);
+    throw error;
   }
 
-  if (!data.titulo && !data.imagen && data.visible === undefined) {
-  throw new AppError('No hay campos para actualizar', 400);
-}
-
-  await repo.updateImagen(id, { ...data });
-  
- if (data.imagen && exists.imagen && data.imagen !== exists.imagen) {
+  if (data.imagen && exists.imagen && data.imagen !== exists.imagen) {
     await borrarArchivo(exists.imagen);
   }
 
