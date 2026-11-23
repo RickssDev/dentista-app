@@ -120,11 +120,16 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - nota: tras las tareas de /review (T030–T037): backend 35 suites, 425 pruebas y 5 `todo`; frontend 28 archivos y 245 pruebas; build en verde; lint con solo los errores previos (backend 1, frontend 7)
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen en local en T021 y T023
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout): backend y frontend en el mismo `up -d --build`; un alta normal con la galería por debajo de 15; sin 503 de `/api/v1/imagenes` fuera de la prueba; si la galería llega a 15, `docker compose logs backend` muestra el 409 con su `request_id`
-- [ ] T098 Marcar spec como `released`
+  - nota: no aplica: sin staging; equivalente local en T021 (MySQL real desechable) y T023 (panel, verificado por el usuario)
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-23 para v1.8.0: fusionó el PR #97 (`24d08fc`, 20:22 UTC) y desplegó él mismo en el servidor
+  - nota: el usuario no escribió la frase literal («desplegar v1.8.0 a producción»); como en v1.3.0–v1.6.0, la aprobación se registra al confirmar el resultado. CI del PR #97 en verde antes del merge
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout): backend y frontend en el mismo `up -d --build`; un alta normal con la galería por debajo de 15; sin 503 de `/api/v1/imagenes` fuera de la prueba; si la galería llega a 15, `docker compose logs backend` muestra el 409 con su `request_id`
+  - nota: 2026-11-23, tras el merge del #97: el usuario desplegó y confirmó «todo bien». Comprobado desde fuera: `curl -sI /api/v1/servicios/publicos` con `X-Request-Id: verificacion-v1-8-0` devuelve 200 y la misma cabecera, y el paquete `AdminPanel` publicado contiene el aviso de galería llena (frontend nuevo en producción). `/health` por el dominio responde 404 porque nginx solo reenvía `/api/` (no es un fallo)
+- [x] T098 Marcar spec como `released`
+  - nota: spec `released: v1.8.0 (2026-11-23)`; historial de la 014 actualizado; deuda 029/R7, R9 y R12 en el roadmap; sin riesgos `RS`/`OB`/`RD`/`SE` dentro de alcance, así que ninguno cambia de estado
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
