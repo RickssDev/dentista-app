@@ -1,7 +1,7 @@
 ---
 spec: 026-logs-seguros-correlacion
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 026 Logs seguros y correlación por petición
