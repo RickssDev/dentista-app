@@ -1,5 +1,6 @@
 const fs = require('fs/promises');
 const path = require('path');
+const logger = require('./logger');
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
@@ -20,7 +21,8 @@ const borrarArchivo = async (ruta) => {
     await fs.unlink(fullPath);
   } catch (error) {
     if (error.code !== 'ENOENT') {
-      console.error('No se pudo borrar el archivo:', error);
+      // Sin la ruta absoluta del servidor (spec 026).
+      logger.error('No se pudo borrar el archivo', { code: error.code });
     }
   }
 };

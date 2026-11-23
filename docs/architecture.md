@@ -58,7 +58,7 @@ flowchart LR
 | images | `backend/src/modules/images` | Galería | utils/upload |
 | comentarios | `backend/src/modules/comentarios` | Reseñas y moderación | citas.repository |
 | faqs | `backend/src/modules/faqs` | Preguntas frecuentes | — |
-| Transversal | `backend/src/{config,middlewares,utils,services}` | Pool, auth, errores, correo, WhatsApp, cron | — |
+| Transversal | `backend/src/{config,middlewares,utils,services}` | Pool, auth, errores, logs y correlación, correo, WhatsApp, cron | — |
 | SPA | `frontend/src` | Sitio público (prerenderizado), panel y portal del paciente | API `/api/v1` |
 | SEO y prerender | `frontend/src/seo`, `frontend/src/entry-prerender.jsx`, `frontend/scripts/prerender.mjs` | Metadatos por ruta, robots, sitemap, JSON-LD, HTML de las páginas públicas y del login, precargas de la fuente y la foto principal, y guardas del build | `src/data/site.js`, `App.jsx` (`AppRoutes`) |
 
@@ -120,7 +120,14 @@ Los campos completos son inferidos de las consultas.
 - Contratos de API: TODO(init): no hay OpenAPI; el contrato es implícito en `routes/` y `normalize.js`.
 - Autenticación y autorización: JWT HS256 en `Authorization: Bearer`; `verifyToken` consulta el
   usuario en cada petición; `authorizeRoles` aplica el rol. Roles: Administrador, Asistente, Paciente.
-- Observabilidad: solo `console.*`; ver [observability.md](observability.md).
+- Observabilidad: logger JSON propio, sin dependencias ([ADR 0011](adr/0011-logger-propio-json.md)), en
+  `utils/logger.js`: una línea por mensaje en stdout, con niveles (piso `info` en producción) y
+  reemplazo de las claves sensibles. `utils/contexto.js` guarda el contexto por petición o por
+  trabajo con `AsyncLocalStorage`. `middlewares/requestId.js` asigna o acepta `X-Request-Id` y lo
+  devuelve. `middlewares/registroPeticion.js` escribe una sola línea «Petición atendida» por
+  petición, con el resumen del error que deja `errorHandler` en `res.locals`. El cron abre un
+  contexto con `job_id` en cada ejecución. ESLint prohíbe `console.*` en `src/` (spec 026). Ver
+  [observability.md](observability.md).
 - Seguridad: ver [security.md](security.md).
 
 ## Contrato entre capas
@@ -146,9 +153,7 @@ staging. Detalle en [deployment.md](deployment.md).
 
 ## Deuda técnica y riesgos observados
 - Módulos que importan el repository de otro (`citas.service` → `servicios.repository`).
-- 5 errores de lint previos en el backend y 15 problemas en el frontend.
-- `backend/src/middlewares/errorHandler.js` tiene funciones duplicadas y anidadas: funciona, pero
-  reasigna `module.exports` al manejar un error.
+- 2 errores de lint previos en el backend (`faqs.service.js`, `images.service.js`) y 15 problemas en el frontend.
 - Validación manual dispersa en services.
 - El cron de recordatorios vive en el proceso web.
 - Volumen `uploads` declarado y sin usar en `docker-compose.prod.yml`.

@@ -3,6 +3,7 @@ const JWTFactory = require('../../utils/JWTFactory');
 const repo = require('./auth.repository');
 const paciente = require('../pacientes/pacientes.repository');
 const AppError = require('../../utils/AppError');
+const logger = require('../../utils/logger');
 const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -52,7 +53,10 @@ exports.solicitarRecuperacion = async ({ correo }) => {
         nombre: usuario.nombre_usuario
       });
     } catch (error) {
-      console.error('Error enviando correo de Google:', error.message);
+      logger.error('Correo no enviado', {
+        tipo: 'cuenta_google',
+        ...logger.resumirErrorExterno('correo', error),
+      });
     }
 
     return mensaje;
@@ -84,10 +88,10 @@ exports.solicitarRecuperacion = async ({ correo }) => {
     // Si el envío falla, el token no debe quedar activo.
     await repo.deletePasswordResetToken(tokenHash);
 
-    console.error(
-      'Error enviando correo de recuperación:',
-      error.message
-    );
+    logger.error('Correo no enviado', {
+      tipo: 'recuperacion',
+      ...logger.resumirErrorExterno('correo', error),
+    });
   }
 
   return mensaje;
@@ -170,10 +174,10 @@ try {
   });
 
 } catch (error) {
-  console.error(
-    '[SEGURIDAD] No se pudo enviar el aviso de contraseña actualizada:',
-    error.message
-  );
+  logger.error('Correo no enviado', {
+    tipo: 'contrasena_actualizada',
+    ...logger.resumirErrorExterno('correo', error),
+  });
 }
 
 return {
@@ -199,12 +203,8 @@ const verifyGoogleToken = async (credential) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
   } catch (error) {
-  if (process.env.NODE_ENV !== "production") {
-    console.error(
-      "[GOOGLE AUTH] Error verificando token:",
-      error.message
-    );
-  }
+  // Sin el mensaje de la librería, que puede citar la credencial (spec 026, CA9).
+  logger.warn("Verificación de Google fallida", logger.resumirErrorExterno("google", error));
 
   throw new AppError(
     "No se pudo verificar tu cuenta de Google",

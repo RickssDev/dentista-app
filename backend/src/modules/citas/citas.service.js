@@ -3,6 +3,40 @@ const AppError = require("../../utils/AppError");
 const { sendTemplateMessage, whatsappActivo } = require("../../services/whatp.service");
 const servicioRepo = require("../servicios/servicios.repository");
 const pacienteRepo = require("../pacientes/pacientes.repository");
+const logger = require("../../utils/logger");
+
+// Avisos de WhatsApp sin datos del paciente: solo la cita y la plantilla (spec 026, CA9, CA11).
+const avisoEnviado = (idCita, plantilla) => {
+  if (whatsappActivo()) logger.info("Aviso de WhatsApp enviado", { id_cita: idCita, plantilla });
+};
+
+const avisoNoEnviado = (idCita, plantilla, error) => {
+  logger.error("Aviso de WhatsApp no enviado", {
+    id_cita: idCita,
+    plantilla,
+    ...logger.resumirErrorExterno("whatsapp", error),
+  });
+};
+
+// Fallo al preparar el aviso (consultas a la base, formato): no es un fallo de WhatsApp (/review R3).
+const avisoNoPreparado = (idCita, plantilla, error) => {
+  logger.error("Aviso de WhatsApp no preparado", {
+    id_cita: idCita,
+    plantilla,
+    ...logger.resumirError(error),
+  });
+};
+
+// Solo el fallo del envío se atribuye a WhatsApp (spec 026, CA11).
+const enviarAviso = async (idCita, plantilla, telefono, parametros) => {
+  try {
+    await sendTemplateMessage(telefono, plantilla, parametros);
+  } catch (error) {
+    avisoNoEnviado(idCita, plantilla, error);
+    return;
+  }
+  avisoEnviado(idCita, plantilla);
+};
 
 const CAMPOS_EDITABLES = ["fecha_agendada", "hora", "motivo"];
 
@@ -188,9 +222,7 @@ exports.createCita = async (data) => {
   const servicio = await servicioRepo.getServicioById(id_servicio);
 
   if (paciente?.telefono) {
-    await sendTemplateMessage(
-      paciente.telefono,
-      "appointment_confirmation_1",
+    await enviarAviso(id, "appointment_confirmation_1", paciente.telefono,
       [
         paciente.nombre_usuario,
         "Clínica Dental Dentissa",
@@ -199,14 +231,9 @@ exports.createCita = async (data) => {
         formatearHora(hora),
       ],
     );
-
-    if (whatsappActivo()) console.log(`WhatsApp de confirmación enviado para cita ${id}`);
   }
 } catch (error) {
-  console.error(
-    "ERROR WHATSAPP:",
-    error.response?.data || error.message,
-  );
+  avisoNoPreparado(id, "appointment_confirmation_1", error);
 }
   return { id };
 };
@@ -315,17 +342,15 @@ exports.updateCita = async (id, data) => {
           hour12: true,
         });
 
-        await sendTemplateMessage(datos.telefono, "reprogramada_cita", [
+        await enviarAviso(id, "reprogramada_cita", datos.telefono, [
           datos.nombre_usuario,
           "Clínica Dental Dentissa",
           fechaFormateada,
           horaFormateada,
         ]);
-
-        if (whatsappActivo()) console.log(`WhatsApp de reprogramación enviado para cita ${id}`);
       }
     } catch (error) {
-      console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+      avisoNoPreparado(id, "reprogramada_cita", error);
     }
   }
 
@@ -380,15 +405,13 @@ exports.cancelarCita = async (id, motivo) => {
         "es-MX",
       );
 
-      await sendTemplateMessage(datos.telefono, "cancelada_cita", [
+      await enviarAviso(id, "cancelada_cita", datos.telefono, [
         datos.nombre_usuario,
         fechaFormateada,
       ]);
-
-      if (whatsappActivo()) console.log(`WhatsApp de cancelación enviado para cita ${id}`);
     }
   } catch (error) {
-    console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+    avisoNoPreparado(id, "cancelada_cita", error);
   }
 
   return {
@@ -508,9 +531,7 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
     const servicio = await servicioRepo.getServicioById(id_servicio);
 
     if (paciente?.telefono) {
-      await sendTemplateMessage(
-        paciente.telefono,
-        "appointment_confirmation_1",
+      await enviarAviso(id, "appointment_confirmation_1", paciente.telefono,
         [
           paciente.nombre_usuario,
           "Clínica Dental Dentissa",
@@ -521,7 +542,7 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
       );
     }
   } catch (error) {
-    console.error("ERROR WHATSAPP:", error.response?.data || error.message);
+    avisoNoPreparado(id, "appointment_confirmation_1", error);
   }
   return { id };
 };

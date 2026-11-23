@@ -32,5 +32,6 @@ En una spec inferida, `[x]` significa "un test existente cubre este criterio" y 
 | [023](023-rendimiento-sitio/spec.md) | Rendimiento del sitio público y el login | Contenido y sitio público | released (v1.4.0) | — |
 | [024](024-cabeceras-seguridad/spec.md) | Protecciones del navegador en todo el sitio | Seguridad | released | — |
 | [025](025-frontend-sin-root/spec.md) | Servicio del sitio sin privilegios de administrador | Seguridad | implemented | — |
+| [026](026-logs-seguros-correlacion/spec.md) | Logs seguros y correlación por petición | Observabilidad | released | v1.6.0 |
 
 Las pantallas de cada feature están en el inventario de vistas de [docs/design/system.md](../design/system.md).

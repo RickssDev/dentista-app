@@ -1,3 +1,5 @@
+const logger = require('../utils/logger');
+
 
 const NOMBRE_CLINICA = 'Melissa López N. Odontología Integral';
 const COLOR_MARCA = '#d75078';
@@ -176,25 +178,19 @@ const plantilla = ({
 // ENVÍO DE CORREOS CON RESEND
 // ==========================================
 
+// Solo se registra el tipo de correo y el id del proveedor: nunca el destinatario, el asunto ni el
+// contenido, que lleva el enlace de recuperación (spec 026, OB2.b; tampoco en desarrollo).
 const enviarCorreo = async ({
+  tipo,
   para,
   asunto,
   html,
   texto
 }) => {
 
-  // En desarrollo mostrar el correo en consola.
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('\n========== CORREO ==========');
-    console.log(`Para: ${para}`);
-    console.log(`Asunto: ${asunto}`);
-    console.log(texto);
-    console.log('============================\n');
-  }
-
   const apiKey = process.env.RESEND_API_KEY;
 
-  // Sin API Key, permitir pruebas locales.
+  // Sin API Key, permitir pruebas locales sin enviar nada.
   if (!apiKey) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
@@ -202,9 +198,7 @@ const enviarCorreo = async ({
       );
     }
 
-    console.log(
-      '[EMAIL] No hay API Key. Correo mostrado solo en consola.'
-    );
+    logger.info('Correo omitido: falta RESEND_API_KEY', { tipo });
 
     return;
   }
@@ -230,21 +224,27 @@ const enviarCorreo = async ({
     }
   );
 
-  // Manejar errores de Resend.
+  // Manejar errores de Resend sin arrastrar el cuerpo de su respuesta, que puede citar al
+  // destinatario: solo el estado y el nombre del error.
   if (!respuesta.ok) {
-    const detalle = await respuesta.text();
+    let codigo = null;
 
-    throw new Error(
-      `Resend respondió ${respuesta.status}: ${detalle}`
-    );
+    try {
+      const cuerpo = JSON.parse(await respuesta.text());
+      codigo = typeof cuerpo?.name === 'string' ? cuerpo.name : null;
+    } catch {
+      codigo = null;
+    }
+
+    const error = new Error(`Resend rechazó el correo (${respuesta.status})`);
+    error.status = respuesta.status;
+    error.codigo = codigo;
+    throw error;
   }
 
   const resultado = await respuesta.json();
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[EMAIL] Correo aceptado por Resend.');
-    console.log(`[EMAIL] ID: ${resultado.id}`);
-  }
+  logger.info('Correo enviado', { tipo, id_proveedor: resultado?.id ?? null });
 
   return resultado;
 };
@@ -272,6 +272,7 @@ exports.enviarCorreoRestablecer = async ({
     : 'Hola,';
 
   await enviarCorreo({
+    tipo: 'recuperacion',
 
     para,
 
@@ -331,6 +332,7 @@ exports.enviarCorreoCuentaGoogle = async ({
     : 'Hola,';
 
   await enviarCorreo({
+    tipo: 'cuenta_google',
 
     para,
 
@@ -391,6 +393,7 @@ exports.enviarCorreoContrasenaActualizada = async ({
     : 'Hola,';
 
   await enviarCorreo({
+    tipo: 'contrasena_actualizada',
     para,
 
     asunto: 'Aviso de seguridad: contraseña actualizada',

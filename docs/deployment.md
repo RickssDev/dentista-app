@@ -74,6 +74,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 | `GOOGLE_CLIENT_ID` | ✓ | ✓ | `.env`, build del frontend |
 | `RESEND_API_KEY`, `EMAIL_REMITENTE` | ✓ | ✓ | `.env`, `.env.prod` |
 | `WHATSAPP_ENABLED`, `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` | ✓ | ✓ | `.env`, `.env.prod` |
+| `LOG_LEVEL` (opcional: `debug`, `info`, `warn`, `error`; `silent` solo en pruebas) | ✓ | ✓ | `.env`, `.env.prod`. Por defecto, `debug` en local e `info` en producción. En producción nunca baja de `info`: `debug` y `silent` se ignoran (spec 026) |
 | `DOMAIN`, `PUBLIC_PORT` | — | ✓ | compose |
 | `VITE_API_URL`, `VITE_ASSETS_URL`, `VITE_GOOGLE_CLIENT_ID` | ✓ | ✓ | build del frontend |
 
@@ -98,9 +99,17 @@ Valores no secretos confirmados por el usuario (2026-11-08): `NODE_ENV=productio
   `docker compose --env-file .env.prod -f docker-compose.prod.yml exec frontend ps -o user,args`
   solo muestra `nginx`, y `docker compose ... ps` lo da en marcha (sin errores de permisos en
   `docker compose logs frontend`).
-- Logs: `docker compose logs` · Métricas: no hay · Alertas: no hay (ver [observability.md](observability.md)).
-- Trazabilidad: cuando exista `X-Request-Id` (OB3), buscar por `request_id` una petición de los
-  smoke tests y confirmar que sus logs y eventos de auditoría llegan al destino esperado.
+- Logs: `docker compose logs` (una línea JSON por mensaje) · Métricas: no hay · Alertas: no hay
+  (ver [observability.md](observability.md)).
+- Trazabilidad (spec 026):
+  - `curl -sI https://sistema.dentissa.app/api/v1/servicios/publicos -H "X-Request-Id: verificacion-<versión>"`
+    devuelve la misma cabecera;
+  - en el servidor, `docker compose logs backend | grep verificacion-<versión>` muestra su línea
+    «Petición atendida» con `status` 200;
+  - `docker compose logs backend --since 10m | grep -E '@|[0-9]{10}'` no muestra correos ni
+    teléfonos;
+  - cuando exista el registro de auditoría (specs 027 y 028), confirmar también que sus eventos
+    llegan con el mismo `request_id`.
 
 ## Riesgos conocidos
 

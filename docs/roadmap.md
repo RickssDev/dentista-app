@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-18
+updated: 2026-11-23
 ---
 
 # Roadmap
@@ -11,7 +11,7 @@ updated: 2026-11-18
 |---|---|---|---|---|
 | 1 | Tests y CI | Framework de tests adoptado con ADR; autenticación, citas, perfil del paciente y portada cubiertos en verde; CI ejecuta validación, lint, build y tests en cada PR. Riesgos: RD8.a, RD8.b, RD8.c | [018](specs/018-base-tests-autenticacion/spec.md), 019 y 020 (previstas) | en curso |
 | 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) (v1.2.0) | cumplido |
-| 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | — | pendiente |
+| 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | [026](specs/026-logs-seguros-correlacion/spec.md) (liberada en v1.6.0), 027 y 028 (previstas) | en curso |
 | 4 | Sitio indexable | Lighthouse SEO 100 en las 6 rutas públicas; cada ruta pública con HTML propio (prerender), título, descripción, canónica y Open Graph únicos; `robots.txt` y `sitemap.xml` válidos; `noindex` en las rutas privadas; 404 real; datos de la clínica para buscadores. Brechas: SE1.a, SE1.b, SE2.a, SE2.b, SE3.a, SE3.b, SE4.a, SE5.a, SE5.b, SE6.a, SE7.a; fuera: SE7.b (sin logo vectorial, pendiente en `docs/seo.md`) | [022](specs/022-sitio-indexable/spec.md) (v1.3.0) | cumplido |
 
 ## Próxima etapa
@@ -33,13 +33,21 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - RS7 Límite general: RS7.a · RS8 Enumeración: RS8.a · RS9 Guarda con rol: RS9.a
 
 **Observabilidad**
-- OB4 Logger: OB4.a, OB4.b · OB5 Alertas: OB5.a, OB5.b · OB6 Avisos apagados: OB6.a mitigada en v1.1.0
+- ~~OB4 Logger~~: mitigado por [026](specs/026-logs-seguros-correlacion/spec.md) en v1.6.0 (OB4.a, OB4.b; también OB2 y OB3) · OB5 Alertas: OB5.a, OB5.b · OB6 Avisos apagados: OB6.a mitigada en v1.1.0
 
 **SEO**
 - SE1 a SE7: promovidas al objetivo 4 (Sitio indexable), decisión del usuario 2026-11-12; mitigadas en v1.3.0 salvo SE7.b (sin logo vectorial).
 - Cloudflare guarda `robots.txt` y `sitemap.xml` 4 h (`max-age=14400`): tras un despliegue sirve la versión anterior. Propuesta: `/fix` con `Cache-Control` corto en nginx para esos archivos (hallado al liberar v1.3.0).
 - ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
 - ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
+
+**Deuda de la spec 026** (aceptada en /review, rondas 1 y 2)
+- 026/R14 `/health` se registra en `debug` (decisión del plan); alinear el texto de CA8 en la próxima spec que lo toque.
+- 026/R16 `server.js` sin manejadores de `unhandledRejection` ni `uncaughtException` que pasen por el logger (previo).
+- 026/R17 Regla de no interpolar datos del usuario en los mensajes de `AppError`, o enmascarar valores en el `message` de los 4xx operacionales.
+- 026/R19 `resumirError` conserva `message` y `stack` de los errores de red de la base (host y puerto) en «Recordatorio no marcado» y «Aviso de WhatsApp no preparado».
+- 026/R21 `redactar` sin tratamiento de `Map` y `Set`, sin tope de claves por objeto y sin recorte del `Error` anidado.
+- `dotenv` imprime al arrancar una línea que no es JSON («injecting env»); se silencia con su opción `quiet` (`/chore`).
 
 **Deuda de la spec 024** (aceptada en /review, rondas 1 y 2)
 - 024/R3 Extraer a `frontend/scripts/lib/` el cliente CDP y los helpers repetidos de los scripts de medición y comprobación.
@@ -130,7 +138,6 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 021/R20 `aria-describedby` solo con mensaje no vacío.
 
 **Calidad**
-- 15 problemas de lint previos en el frontend y 4 errores previos en el backend.
+- 15 problemas de lint previos en el frontend y 2 errores previos en el backend (`faqs.service.js`, `images.service.js`; los de `errorHandler.js` se resolvieron en la spec 026).
 - Lint de estilos que exige el principio P20 de la constitución.
 - Aprobar `docs/constitution.md`, que sigue en `draft`.
-- Limpiar la duplicación de `backend/src/middlewares/errorHandler.js`.
