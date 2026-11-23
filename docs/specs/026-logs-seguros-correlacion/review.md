@@ -5,7 +5,7 @@ round: 3
 date: 2026-11-22
 base: 59318ce
 head: a8b25b9
-human_signoff: pending
+human_signoff: ricardo 2026-11-23
 ---
 
 # Review · 026 Logs seguros y correlación por petición
