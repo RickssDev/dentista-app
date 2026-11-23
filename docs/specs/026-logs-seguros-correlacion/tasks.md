@@ -49,7 +49,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: suite del backend en verde: 25 archivos, 265 pruebas y 5 pendientes
 
 ## Tests (antes de implementar)
-- [ ] T010 [P] Escribir las pruebas unitarias del logger — `tests/logs/logger.test.js` — hecho cuando: falla por la razón esperada (no existe `src/utils/logger.js`) y comprueba:
+- [x] T010 [P] Escribir las pruebas unitarias del logger — `tests/logs/logger.test.js` — hecho cuando: falla por la razón esperada (no existe `src/utils/logger.js`) y comprueba:
   - CA6: una línea JSON con `timestamp` ISO, `level`, `message`, `request_id`/`job_id` y `actor_id` dentro de un contexto, y sin ellos fuera.
   - CA7: `debug` no sale con `NODE_ENV=production`, ni siquiera con `LOG_LEVEL=debug`, y sí sale en local; con `NODE_ENV=production` y `LOG_LEVEL=silent`, `info` sí sale (A21); `LOG_LEVEL=warn` filtra `info`.
   - CA10: `correo`, `Email`, `telefono_paciente`, `PASSWORD`, `access-token`, `authorization`, `credential`, `nombre_usuario`, `name`, `direccion` y una clave sensible a 3 niveles quedan como `"[oculto]"`; `error_name` y `type` se conservan (A6), `Error_Name` queda oculto (A25), y las demás claves se conservan.
@@ -59,6 +59,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - `__capturar()` captura en `debug` aunque `LOG_LEVEL=silent` y aunque `NODE_ENV=production`, y restaura el nivel al terminar (A3, A24); fuera de la captura, con producción, `debug` no sale.
   - RNF: sin captura, escribe en `process.stdout`.
   — cubre: CA6, CA7, CA10, CA11, CA12
+  - nota: falla por la razón esperada: no existe `src/utils/logger`. La captura expone además `crudas` (las líneas tal como se escriben), para comprobar que cada una es JSON de una sola línea. Se añadió un caso de referencia circular: escribirla no debe lanzar (CA12)
 - [ ] T011 [P] Escribir las pruebas de `X-Request-Id` — `tests/logs/request-id.test.js` — hecho cuando: falla por la razón esperada (sin cabecera) y comprueba con `createApp()`, obteniendo cada estado como dice el plan → Estrategia de pruebas (A7):
   - CA1: cabecera en 200 (`/api/v1/servicios/publicos` con el repositorio simulado), 401 (ruta protegida sin token), 404, 429 (once logins fallidos), 500 (repositorio simulado que lanza, a través del `errorHandler` de `createApp()`) y `/health`, distinta en dos peticiones.
   - CA2: eco de `abc12345-XYZ_9`.
