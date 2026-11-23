@@ -16,4 +16,10 @@ module.exports = [
     files: ['tests/**/*.js'],
     languageOptions: { globals: globals.jest },
   },
+  // Spec 026: todo log pasa por el logger, que oculta los datos sensibles (TM10, constitución P15).
+  {
+    files: ['src/**/*.js', 'server.js'],
+    ignores: ['src/utils/logger.js'],
+    rules: { 'no-console': 'error' },
+  },
 ];
