@@ -356,12 +356,35 @@ describe('026 · /review R1 mensaje de MySQL con varias líneas', () => {
   });
 });
 
+describe('026 · /review R18 un valor con forma de marco no pasa el filtro', () => {
+  test('«\n    at …» dentro del mensaje de MySQL no queda en la pila', () => {
+    const error = new Error("Duplicate entry 'x\n    at centinela-de-marco' for key 'correo'");
+    error.code = 'ER_DUP_ENTRY';
+    error.errno = 1062;
+    error.sqlState = '23000';
+
+    const captura = logger.__capturar();
+    logger.error('Fallo', { error });
+    captura.terminar();
+
+    expect(captura.crudas.join('')).not.toContain('centinela-de-marco');
+    const pila = captura.lineas[0].context.error.stack.split('\n');
+    expect(pila[0]).toBe('Error: [mensaje de MySQL omitido]');
+    expect(pila.length).toBeGreaterThan(1);
+    expect(pila.slice(1).every((l) => /^\s+at /.test(l))).toBe(true);
+  });
+});
+
 describe('026 · /review R4 variantes de claves sensibles', () => {
   const sensibles = [
     'clave', 'apellido', 'celular', 'movil', 'pass', 'pwd', 'apikey', 'api_key', 'X-Device-Key',
     'jwt', 'bearer', 'session', 'destinatario',
   ];
-  const conservadas = ['id_cita', 'plantilla', 'servicio', 'codigo', 'status', 'tipo', 'route', 'method'];
+  // Todas las claves de context que emite src hoy (/review R20): ninguna debe ocultarse.
+  const conservadas = [
+    'id_cita', 'plantilla', 'servicio', 'codigo', 'status', 'tipo', 'route', 'method', 'id_proveedor',
+    'duration_ms', 'revisadas', 'enviadas', 'errno', 'code', 'stack', 'message', 'aborted', 'error', 'port',
+  ];
 
   test.each(sensibles)('«%s» sale como [oculto]', (clave) => {
     const captura = logger.__capturar();
