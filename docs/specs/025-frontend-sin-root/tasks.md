@@ -68,7 +68,11 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: `probar-csp.mjs` contra la imagen de T021 (contenedor como `nginx`, uid 101) pasa en dos ejecuciones (una con build, otra `--sin-build`): cero bloqueos, abusos bloqueados, mapa y botones de Google. Una pasada intermedia falló con "no responde http://127.0.0.1:9343/json/version": el Chrome de la pasada anterior aún tenía el puerto. Repetida, pasó. Es probablemente la causa de 024/R15, ajena a esta spec (se propone `/fix` aparte)
   - nota: A8 — comparación por píxeles con T001: inicio y login a 1440 idénticas; contacto solo difiere en el mapa; login a 390 en la franja del botón de Google (aún no pintado a 1,5 s; `probar-csp` comprobó los dos botones); inicio a 390 en el logo del pie (decodificación, sin diferencia visible)
   - nota: verificación manual OK 2026-11-22 (usuario)
-- [ ] T023 Medir el resultado, correr la suite y los escáneres — `.ai/inspect/025-despues/ (generado por scripts/medir-rendimiento.mjs)` — hecho cuando: mediana de 5 con `benchmarkIndex` ≥ 2000: Rendimiento ≥ T001 − 2 en cada ruta, Prácticas recomendadas ≥ T001 y SEO igual a T001; tiempo de `docker build --no-cache` ≤ 1,2 × T001; `npm test`, lint de los archivos tocados y `npm audit --omit=dev` sin altas; `trivy fs --scanners vuln,misconfig` sin AVD-DS-0002 ni hallazgos altos o críticos nuevos; `trivy image --severity HIGH,CRITICAL --exit-code 1` sobre la imagen de T021 termina en 0 (si no, la tarea se detiene: subir la versión o excepción, decisión del usuario) — cubre: CA2, CA5 — depende: T022
+- [ ] T025 Comprobar en el contenedor que `libxml2` lleva la corrección de CVE-2026-86144 — `frontend/scripts/probar-nginx.mjs` — hecho cuando: con la imagen de T021 falla por la razón esperada ("libxml2 2.13.9-r2, se esperaba 2.13.9-r3 o superior"), comparando versiones con `apk version -t` dentro del contenedor; las demás comprobaciones siguen pasando — cubre: CA5
+  - nota: añadida durante /implement: T023 encontró con `trivy image` CVE-2026-86144 (alta) en `libxml2` 2.13.9-r2 de la imagen de nginx; decisión del usuario, 2026-11-22: actualizarla en el build
+- [ ] T026 Actualizar `libxml2` en la etapa final del frontend — `frontend/Dockerfile` — hecho cuando: T025 pasa (dos ejecuciones) con `apk upgrade --no-cache libxml2` antes de `USER nginx`; T010 y el resto de `probar-nginx.mjs` siguen en verde; `trivy image --severity HIGH,CRITICAL` sobre la imagen termina en 0; comprobado rompiendo (sin la línea → T025 nombra la versión vulnerable) — cubre: CA5 — depende: T025
+  - nota: añadida durante /implement: misma decisión que T025
+- [ ] T023 Medir el resultado, correr la suite y los escáneres — `.ai/inspect/025-despues/ (generado por scripts/medir-rendimiento.mjs)` — hecho cuando: mediana de 5 con `benchmarkIndex` ≥ 2000: Rendimiento ≥ T001 − 2 en cada ruta, Prácticas recomendadas ≥ T001 y SEO igual a T001; tiempo de `docker build --no-cache` ≤ 1,2 × T001; `npm test`, lint de los archivos tocados y `npm audit --omit=dev` sin altas; `trivy fs --scanners vuln,misconfig` sin AVD-DS-0002 ni hallazgos altos o críticos nuevos; `trivy image --severity HIGH,CRITICAL --exit-code 1` sobre la imagen de T021 termina en 0 (si no, la tarea se detiene: subir la versión o excepción, decisión del usuario) — cubre: CA2, CA5 — depende: T022, T026
 - [ ] T024 Comprobar el rollback — `.ai/inspect/025-rollback/ (generado por docker build y curl)` — hecho cuando: en una copia temporal del repo con la rama de esta spec, el procedimiento de "Rollback" del plan (el mismo que T091 deja en `docs/deployment.md`: `git checkout <commit de v1.5.0> -- frontend` y reconstruir solo el frontend) da una imagen que arranca en el puerto 80 y responde `/` 200 con las seis cabeceras · verificación manual: registro de los comandos y las respuestas en `.ai/inspect/025-rollback/` — cubre: CA8 — depende: T021, T091
 
 ## Integración y documentación
@@ -84,7 +88,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - el contenedor arranca (`docker compose ps`, logs sin errores de permisos) y `exec frontend ps -o user,args` no muestra root (usuario, CA1)
   - el sitio responde por el túnel sin cambiar su configuración ni el compose (usuario y `curl -sI`, CA4)
 - [ ] T098 Marcar spec como `released`
-  - la fila AVD-DS-0002 ya no está en "Excepciones aceptadas" de `docs/security.md`, y `trivy fs` (T023, `/release`) no la reporta (`/analyze` A7)
+  - la fila AVD-DS-0002 de "Excepciones aceptadas" en `docs/security.md` ya no cubre el frontend: pasa a cubrir solo `backend/Dockerfile` (imagen de desarrollo, no va a producción), con motivo y vencimiento; `trivy fs` ya no la reporta en `frontend/Dockerfile` (`/analyze` A7; decisión del usuario, 2026-11-22)
   - `trivy image --severity HIGH,CRITICAL` sobre la imagen de producción en `/release`, sin altas ni críticas (CA5, TM6)
 
 ## Cobertura
@@ -94,7 +98,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | CA2 | T011 (suite de `probar-nginx.mjs`), T023 | T021 |
 | CA3 | T022 | T021, T022 |
 | CA4 | T010, T097 | T021 |
-| CA5 | T010, T023 | T021, T098 |
+| CA5 | T010, T023, T025 | T021, T026, T098 |
 | CA6 | T010 | T020 |
 | CA7 | T011 | T021 |
 | CA8 | T024 | T024 |
@@ -106,13 +110,13 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | TM3 | T021 | T011 |
 | TM4 | T021 | T011 |
 | TM5 | T021 | T011 |
-| TM6 | T023, T098 | T023 |
+| TM6 | T023, T026, T098 | T023, T025 |
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
-| `frontend/Dockerfile` | T020, T021 |
+| `frontend/Dockerfile` | T020, T021, T026 |
 | `frontend/tests/imagen-contenedor.test.js` | T010 |
-| `frontend/scripts/probar-nginx.mjs` | T011 |
+| `frontend/scripts/probar-nginx.mjs` | T011, T025 |
 | `docs/architecture.md` | T090 |
 | `docs/deployment.md` | T091 |
 | `docs/security.md` | T098 (retirar AVD-DS-0002 en `/release`) |

@@ -47,9 +47,9 @@ Constitución 1.0.0, todavía en `draft`: el check se hace contra una constituci
 ## Cambios por módulo
 | Módulo / archivo | Cambio | Riesgo |
 |---|---|---|
-| `frontend/Dockerfile` (ruta protegida) | Las dos etapas con `imagen:X.Y.Z-alpineA.B@sha256:<digest>`. En la última: `setcap cap_net_bind_service=+ep /usr/sbin/nginx` con `libcap-setcap` instalado y retirado en la misma capa; en `/etc/nginx/nginx.conf`, quitar `user` y llevar `pid` a `/tmp/nginx.pid`; `chown -R nginx:nginx /var/cache/nginx`; `USER nginx` al final | Medio: si nginx no arranca, el sitio cae. Lo cubre `probar-nginx.mjs` en CI |
+| `frontend/Dockerfile` (ruta protegida) | Las dos etapas con `imagen:X.Y.Z-alpineA.B@sha256:<digest>`. En la última: `setcap cap_net_bind_service=+ep /usr/sbin/nginx` con `libcap-setcap` instalado y retirado en la misma capa; en `/etc/nginx/nginx.conf`, quitar `user` y llevar `pid` a `/tmp/nginx.pid`; `chown -R nginx:nginx /var/cache/nginx`; `apk upgrade --no-cache libxml2` (CVE-2026-86144, corregida en 2.13.9-r3; decisión del usuario, 2026-11-22); `USER nginx` al final | Medio: si nginx no arranca, el sitio cae. Lo cubre `probar-nginx.mjs` en CI |
 | `frontend/tests/imagen-contenedor.test.js` (nuevo) | Prueba estática: cada `FROM` con versión exacta y digest (nombra el que falla), la última etapa termina con un `USER` que no es root, `EXPOSE 80` | Bajo |
-| `frontend/scripts/probar-nginx.mjs` | Comprobaciones dentro del contenedor: ningún proceso como root; el usuario del servicio no puede escribir en las páginas, en `conf.d` ni en el archivo de cabeceras; capacidades efectivas solo `cap_net_bind_service`; sin `setcap` en la imagen | Bajo; si `docker exec` no está disponible, la comprobación falla con su nombre |
+| `frontend/scripts/probar-nginx.mjs` | Comprobaciones dentro del contenedor: ningún proceso como root; el usuario del servicio no puede escribir en las páginas, en `conf.d` ni en el archivo de cabeceras; capacidades efectivas solo `cap_net_bind_service`; sin `setcap` en la imagen; `libxml2` en 2.13.9-r3 o superior (`apk version -t`) | Bajo; si `docker exec` no está disponible, la comprobación falla con su nombre |
 | `docs/architecture.md` | T090: el contenedor del frontend corre como `nginx` y las imágenes base van fijas | — |
 | `docs/deployment.md` | T091: "Rollback" con el procedimiento de este plan (solo el frontend) y "Verificación post-deploy" con `ps` sin root | — |
 | `docs/security.md` | `/release`: retirar AVD-DS-0002 de "Excepciones aceptadas" | — |
@@ -107,7 +107,7 @@ páginas y reenvía las peticiones con datos de salud.
 | TM3 | Elevación: la capacidad concedida a nginx es mayor de lo necesario | A02:2025 | binario de nginx | Solo `cap_net_bind_service` por `setcap`; sin `--privileged` ni `cap_add` en el compose | `probar-nginx.mjs` (`CapEff` = `0x400`) |
 | TM4 | Denegación de servicio: nginx no arranca sin root (pid, caché, scripts de arranque) y el sitio cae al desplegar | A02:2025 | arranque del contenedor | pid en `/tmp`, caché de `nginx`; el script de IPv6 solo informa (comprobado en la prueba de concepto) | `probar-nginx.mjs` completo (el contenedor responde); verificación en producción (T097) |
 | TM5 | Elevación: queda en la imagen una herramienta para conceder capacidades | A02:2025 | imagen final | `apk add --virtual` y `apk del` en la misma capa | `probar-nginx.mjs` (`setcap` ausente) |
-| TM6 | Elevación / divulgación: una vulnerabilidad conocida en los paquetes de las piezas base fijadas se queda en producción porque nada la detecta | A03:2025 Cadena de suministro | imagen construida | `trivy image` sobre la imagen en T023 y en cada `/release`; una alta o crítica detiene el release y se sube con `/chore` | `trivy image --severity HIGH,CRITICAL --exit-code 1` en T023 (verificación manual por versión) |
+| TM6 | Elevación / divulgación: una vulnerabilidad conocida en los paquetes de las piezas base fijadas se queda en producción porque nada la detecta | A03:2025 Cadena de suministro | imagen construida | `trivy image` sobre la imagen en T023 y en cada `/release`; una alta o crítica detiene el release y se sube con `/chore` o, si la imagen base aún no la corrige, se actualiza el paquete en el build (CVE-2026-86144 de `libxml2`, encontrada en T023) | `trivy image --severity HIGH,CRITICAL --exit-code 1` en T023 (verificación manual por versión); `probar-nginx.mjs` (`libxml2` ≥ 2.13.9-r3) |
 
 Casos de abuso de la spec: "cambiar páginas o cabeceras" → TM1 (CA7); "versión base vulnerable sin
 revisión" → TM2 (CA6) y TM6 (CA5).
@@ -128,7 +128,7 @@ revisión" → TM2 (CA6) y TM6 (CA5).
 | TM3 | `Dockerfile` | `probar-nginx.mjs` (`CapEff`) |
 | TM4 | `Dockerfile` | `probar-nginx.mjs` |
 | TM5 | `Dockerfile` | `probar-nginx.mjs` |
-| TM6 | — (proceso: escaneo de la imagen) | verificación manual: `trivy image` en T023 y en `/release` |
+| TM6 | `Dockerfile` (`apk upgrade libxml2`); proceso: escaneo de la imagen | `probar-nginx.mjs` (`libxml2` ≥ 2.13.9-r3) · verificación manual: `trivy image` en T023 y en `/release` |
 | RNF: rendimiento, prácticas y SEO como v1.5.0 | — | `medir-rendimiento.mjs` antes y después (mediana de 5, `benchmarkIndex` ≥ 2000) |
 | RNF: descubribilidad sin cambios | — | `probar-nginx.mjs` (`noindex`, 404, redirecciones); suite de la 022 |
 | RNF: build ≤ 20 % más lento | `Dockerfile` | verificación manual: tiempo de `docker build --no-cache` antes y después |
@@ -164,6 +164,8 @@ cuida `probar-nginx.mjs`.
 | Cambios al `nginx.conf` principal de la imagen | archivo `nginx.conf` principal propio en el repo; `sed` en el build | **`sed`** de dos líneas (`user`, `pid`): con el digest fijo, el archivo base no cambia sin revisión, y `probar-nginx.mjs` falla si nginx no arranca |
 | trivy como check obligatorio del PR | sí, en el workflow; no, en `/review` y `/release` | **No**: sin tocar `.github/workflows` (ruta protegida); CI cubre el usuario y las versiones con la prueba estática (decisión del usuario, 2026-11-22) |
 | Escaneo de CVEs de las piezas base | ninguno; `trivy image` en T023 y `/release`; además en el CI semanal | **`trivy image` en T023 y en cada `/release`**, sin tocar el CI (decisión del usuario, 2026-11-22, `/analyze` A1) |
+| CVE-2026-86144 (alta) en `libxml2` 2.13.9-r2 de la imagen de nginx, encontrada en T023 | excepción con vencimiento hasta una imagen nueva; `apk upgrade --no-cache libxml2` en la etapa final | **Actualizar en el build**: `trivy image` queda limpio y se corrige también en producción (hoy v1.5.0 la tiene). Riesgo real bajo: solo la usan los módulos `xslt` y `njs`, que no se cargan. Cuando una imagen fijada la traiga corregida, la línea sobra y se quita con `/chore` (decisión del usuario, 2026-11-22) |
+| AVD-DS-0002 en `backend/Dockerfile` (imagen de desarrollo) | corregirlo aquí; excepción acotada a desarrollo | **Excepción acotada**: no va a producción (producción usa `Dockerfile.prod` con `USER node`) y la spec deja fuera la API y el entorno local. En `/release` (T098), la fila AVD-DS-0002 de `docs/security.md` pasa a cubrir solo ese archivo, con motivo y vencimiento (decisión del usuario, 2026-11-22) |
 | `HEALTHCHECK` en la imagen (trivy AVD-DS-0026, LOW) | añadirlo; dejarlo | **Dejarlo fuera**: no es de la spec; la comprobación de salud del sistema se trata aparte en el roadmap |
 | Antigüedad de la imagen de nginx | fijar el digest más nuevo ya; esperar a que cumpla 7 días | **Excepción, solo esta vez**: se fija hoy el digest del 2026-11-18, que ya es el que resuelve `nginx:alpine` sin fijar (decisión del usuario, 2026-11-22; antes se había elegido esperar, `/analyze` A5) |
 

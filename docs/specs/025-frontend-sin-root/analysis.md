@@ -1,44 +1,49 @@
 ---
 result: pass
-round: 3
+round: 4
 mode: delta
 constitution_version: 1.0.0
 date: 2026-11-22
-spec_sha: 18b7e2042cb5
-plan_sha: c99d936d75aa
-tasks_sha: 13a348e2cc8b
+spec_sha: 2fc85329ee99
+plan_sha: 27e796bd434e
+tasks_sha: 56657869d6b6
 ---
 
 # Análisis · 025 Servicio del sitio sin privilegios de administrador
 
 ## Resumen
-`pass`. El único cambio de diseño es la decisión A5: por excepción del usuario, solo esta vez, la
-imagen de nginx (publicada el 2026-11-18) se fija el 2026-11-22 en lugar de esperar a que cumpla
-los 7 días de `security.agent.min_package_age_days`. El motivo queda escrito: es la imagen que ya
-resuelve `nginx:alpine` sin fijar (comprobado en local). Spec (Decisiones e Historial), plan
-(§Contratos y §Decisiones) y tareas (T020 desbloqueada) dicen lo mismo. El resto del diff son
-tareas marcadas y sus notas, que no invalidan el análisis. Modo delta sin subagente (diff de pocas
-líneas).
+`pass`. Durante `/implement`, T023 encontró dos cosas, y el usuario decidió cada una:
+- `trivy image`: CVE-2026-86144 (alta) en `libxml2` de la imagen de nginx fijada. Se actualiza el
+  paquete al construir: T025 es la prueba y falla primero, T026 hace el cambio.
+- `trivy fs`: AVD-DS-0002 en `backend/Dockerfile`, la imagen de desarrollo. En `/release` la
+  excepción queda acotada a ese archivo (T098).
+
+Spec (Fuera de alcance aclarado, Decisiones e Historial), plan (Cambios, TM6, Trazabilidad,
+Decisiones) y tareas (T025, T026, `depende` de T023, T098 y Cobertura) son coherentes. CA5 ya
+preveía "actualizarlas o aceptarlas como excepción", y las imágenes base siguen siendo las
+fijadas. Modo delta sin subagente: diff pequeño y sin cambios estructurales (sin criterio ni
+módulo nuevos).
 Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 8 / 8 |
-| Amenazas con control y test | 6 / 6 |
-| Principios de la constitución evaluados | 20 / 20 (sin cambios; P3 sigue ✅: la regla de antigüedad es del agente, no de la constitución) |
+| Criterios con tarea de test e implementación | 8 / 8 (CA5: T010, T023, T025 / T021, T026, T098) |
+| Amenazas con control y test | 6 / 6 (TM6: control T026 y escaneo; test T025 y `trivy image`) |
+| Principios de la constitución evaluados | 20 / 20 (P11 se refuerza: la imagen queda sin altas) |
 
 ## Seguimiento de rondas anteriores
 | ID | Severidad | Estado | Evidencia |
 |---|---|---|---|
-| A5 | MEDIA | resuelto (decisión cambiada por el usuario) | spec §Decisiones e Historial; plan §Contratos y §Decisiones; T020 `nota: desbloqueada 2026-11-22` |
-| A1–A4, A6, A7, A13 | — | resueltos en la ronda 2 | `history/analysis.r2.md` |
+| A1–A7, A13 | — | resueltos en rondas 2 y 3 | `history/analysis.r2.md`, `history/analysis.r3.md` |
 
 ## Hallazgos nuevos
-Ninguno.
+Ninguno. Revisado: T025 va antes que T026 y falla con la imagen de T021; T026 solo toca
+`frontend/Dockerfile` (ruta protegida, tarea aprobada); T023 depende de T026, así que se repite
+con la imagen corregida; T098 ya no dice que la fila desaparece, sino que se acota a desarrollo.
 
 ## Decisiones pendientes del usuario
-Ninguna.
+Ninguna (las dos se tomaron el 2026-11-22).
 
 ## Aceptados
 Aceptados por el usuario el 2026-11-22 (ronda 1):

@@ -64,6 +64,8 @@ versión nueva podría entrar en producción sin revisión.
   cambios locales en el servidor.
 - Cambiar el punto de entrada interno o la configuración del túnel de entrada.
 - Actualizar las piezas base a versiones más nuevas que las que se usan hoy: se fijan las vigentes.
+  Sí se actualiza un paquete dentro de la imagen cuando el escaneo de CA5 encuentra una
+  vulnerabilidad alta ya corregida (ver Decisiones).
 - Actualización automática de versiones (bots que proponen subirlas).
 - El entorno de desarrollo local y la maqueta IoT.
 - Cualquier cambio en lo que el sitio sirve: páginas, cabeceras, rutas o rendimiento.
@@ -113,6 +115,7 @@ Ninguna.
 | 2026-11-22 | brecha | Política para actualizar las versiones fijas | Se suben con `/chore` cuando el escaneo de la imagen construida (al implementar o en `/release`) marque una vulnerabilidad alta o crítica, o al revisar el roadmap; sin bot automático | usuario (`/analyze` A6) |
 | 2026-11-22 | brecha | Versiones a fijar | Las que se usan hoy, sin subir ninguna. Excepción, solo esta vez, a la regla de 7 días de antigüedad: la imagen de la etapa final (publicada el 2026-11-18) se fija el 2026-11-22, porque ya es la que usa `nginx:alpine` sin fijar | usuario (`/analyze` A5, A6; excepción del 2026-11-22) |
 | 2026-11-22 | brecha | ¿Qué detecta las vulnerabilidades de las piezas base? | Un escaneo de la imagen construida al implementar y en cada `/release`, sin tocar el CI | usuario (`/analyze` A1) |
+| 2026-11-22 | brecha | El escaneo de la imagen (CA5) encontró CVE-2026-86144 (alta) en `libxml2` de la imagen de nginx fijada | Se actualiza ese paquete al construir; las imágenes base siguen siendo las fijadas | usuario (durante `/implement`, T023) |
 
 ## Notas para /plan
 - Mencionado por el usuario: imagen del frontend en `frontend/Dockerfile` (`nginx:alpine`, etapa
@@ -136,3 +139,4 @@ Ninguna.
 |---|---|---|
 | 2026-11-22 | CA5 incluye el escaneo de la imagen construida; el caso de abuso deja de decir "en cada PR"; los supuestos pasan a decisiones del usuario | `/analyze` A1, A5, A6 |
 | 2026-11-22 | Excepción a la regla de 7 días para la imagen de nginx: se fija hoy en lugar de esperar al 2026-11-25 | Decisión del usuario: la imagen ya está en uso sin fijar |
+| 2026-11-22 | Un paquete con una vulnerabilidad alta ya corregida se actualiza al construir (CVE-2026-86144 en `libxml2`) | Decisión del usuario durante `/implement` |
