@@ -98,3 +98,55 @@ describe.each([
     expect(enviados(plantilla)).toEqual([expect.objectContaining({ context: { id_cita: 1, plantilla } })]);
   });
 });
+
+// Spec 026, T032 (/review R3): un fallo de la base de datos no se atribuye a WhatsApp (CA11).
+const errorDeMySQL = () =>
+  Object.assign(new Error('fallo de la base de prueba'), { code: 'ER_LOCK_DEADLOCK', errno: 1213, sqlState: '40001' });
+const lineasCon = (mensaje) => captura.lineas.filter((l) => l.message === mensaje);
+
+describe('026 · /review R3 fallos de la base de datos en los avisos', () => {
+  test('cron: si falla marcar el recordatorio, queda «Recordatorio no marcado» y no «no enviado»', async () => {
+    encender();
+    repo.marcarRecordatorioEnviado.mockRejectedValue(errorDeMySQL());
+
+    await correrCron();
+
+    expect(enviados('cita_recordatorio')).toHaveLength(1);
+    expect(lineasCon('Aviso de WhatsApp no enviado')).toHaveLength(0);
+    const [linea, ...otras] = lineasCon('Recordatorio no marcado');
+    expect(otras).toHaveLength(0);
+    expect(linea).toMatchObject({
+      level: 'error',
+      context: { id_cita: 1, error_name: 'Error', code: 'ER_LOCK_DEADLOCK' },
+    });
+    expect(linea.context).not.toHaveProperty('servicio');
+  });
+
+  test('crear: si falla la consulta del paciente, queda «Aviso de WhatsApp no preparado» y la cita se crea', async () => {
+    encender();
+    repo.getPacienteWhatsApp.mockRejectedValue(errorDeMySQL());
+
+    const resultado = await citas.createCita({ id_paciente: 1, fecha_agendada: '2030-01-02', hora: '10:00', id_servicio: 1 });
+
+    expect(resultado).toEqual({ id: 1 });
+    expect(lineasCon('Aviso de WhatsApp no enviado')).toHaveLength(0);
+    const [linea] = lineasCon('Aviso de WhatsApp no preparado');
+    expect(linea).toMatchObject({
+      level: 'error',
+      context: { id_cita: 1, plantilla: 'appointment_confirmation_1', error_name: 'Error' },
+    });
+    expect(linea.context).not.toHaveProperty('servicio');
+  });
+
+  test('crear: si falla el envío, sigue quedando «Aviso de WhatsApp no enviado» con el servicio', async () => {
+    encender();
+    axios.post.mockRejectedValueOnce(Object.assign(new Error('fallo de Meta'), { response: { status: 400 } }));
+
+    await citas.createCita({ id_paciente: 1, fecha_agendada: '2030-01-02', hora: '10:00', id_servicio: 1 });
+
+    expect(lineasCon('Aviso de WhatsApp no preparado')).toHaveLength(0);
+    expect(lineasCon('Aviso de WhatsApp no enviado')).toEqual([
+      expect.objectContaining({ context: expect.objectContaining({ id_cita: 1, servicio: 'whatsapp', status: 400 }) }),
+    ]);
+  });
+});
