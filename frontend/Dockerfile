@@ -32,6 +32,17 @@ COPY nginx-seguridad.conf /etc/nginx/snippets/seguridad.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Sin root (spec 025): nginx recibe solo el permiso de abrir el puerto 80 (setcap se instala y se
+# retira en esta misma capa), el pid va a /tmp y la caché pasa a ser de nginx. Las páginas y la
+# configuración siguen siendo de root: el servicio no puede modificarlas.
+RUN apk add --no-cache --virtual .setcap libcap-setcap \
+ && setcap cap_net_bind_service=+ep /usr/sbin/nginx \
+ && apk del --no-cache .setcap \
+ && sed -i -e '/^user /d' -e 's#^pid .*#pid /tmp/nginx.pid;#' /etc/nginx/nginx.conf \
+ && chown -R nginx:nginx /var/cache/nginx
+
+USER nginx
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
