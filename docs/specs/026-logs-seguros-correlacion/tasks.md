@@ -68,12 +68,13 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - CA12: con el destino del logger forzado a lanzar y la captura en `debug`, se comprueba que el destino se invocó al menos una vez y que la respuesta de `/health` y de un 404 es la misma (A3).
   — cubre: CA1, CA2, CA3, CA12
   - nota: falla por la razón esperada: no existe `src/utils/logger`, que la prueba usa para la captura. Los estados salen de un `spyOn` sobre `servicios.repository` (200 y 500) y del limitador real (429)
-- [ ] T012 [P] Escribir las pruebas de correlación — `tests/logs/correlacion.test.js` — hecho cuando: falla por la razón esperada y comprueba, siempre con líneas capturadas > 0 antes de cada ausencia (A3):
+- [x] T012 [P] Escribir las pruebas de correlación — `tests/logs/correlacion.test.js` — hecho cuando: falla por la razón esperada y comprueba, siempre con líneas capturadas > 0 antes de cada ausencia (A3):
   - CA4 y TM8: crear una cita (aviso de confirmación, `createCita`) con WhatsApp activo y `axios.post` simulado deja todas las líneas de la petición, incluida la del aviso, con el mismo `request_id` que la cabecera; lo mismo una solicitud de recuperación de contraseña con `fetch` simulado (A9).
   - CA5: dos ejecuciones del callback capturado de `cron.schedule` en `reminder.service.js` → `job_id` común dentro de cada una y distinto entre ellas.
   - CA8, TM7 y A1: cada petición deja **exactamente una** línea «Petición atendida», con `method`, `route` sin `?busqueda=…`, `status` y `duration_ms`. Su nivel es `info` en 200; `warn` y sin `stack` en 401; `error` con `error.stack` en 500, y en ese 500 ninguna otra línea lleva `stack`. `/health` va en `debug`.
   - CA6: con sesión de prueba se registra `actor_id` numérico y no el correo.
   — cubre: CA4, CA5, CA6, CA8
+  - nota: falla por la razón esperada: no existe `src/utils/logger`. Los repositorios de citas, servicios y pacientes están simulados con `jest.mock` y el callback del cron se captura de `node-cron`
 - [ ] T013 [P] Escribir las pruebas de datos centinela — `tests/logs/sin-datos.test.js` — hecho cuando: falla por la razón esperada (aparecen centinelas: «RESPUESTA META», «Para:», `Resend respondió`…) y recorre con los centinelas del plan, con éxito y con error del proveedor simulado:
   - avisos de WhatsApp de confirmación, por sus dos entradas `createCita` y `createCitaPaciente` (A17), de reprogramación, de cancelación y de recordatorio;
   - correos de recuperación, contraseña actualizada y cuenta de Google, con `RESEND_API_KEY` ficticia y `fetch` simulado, en `NODE_ENV=development` y en `production`;
