@@ -183,10 +183,11 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` — `docs/deployment.md`, `docs/observability.md` — hecho cuando, en `docs/deployment.md`: `LOG_LEVEL` está en «Variables de entorno», con el piso `info` en producción (`silent` y `debug` se ignoran), y «Verificación post-deploy» añade la comprobación del `request_id` del plan. En `docs/observability.md`: el Resumen marca logs y correlación «en uso»; la sección Logs lista los campos reales (`timestamp`, `level`, `request_id`, `job_id`, `actor_id`, `message`, `context`) (A11); Logs y Correlación quitan «Hoy no existe» y «Hoy no se cumple»; OB2.a, OB2.b, OB2.c, OB3.a, OB3.b, OB4.a y OB4.b siguen en «pendiente» hasta T098, con la nota «resuelta por la spec 026, sin liberar», cada una por separado; OB1 y OB5 siguen pendientes (A15, A26). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028
   - nota: `deployment.md`: `LOG_LEVEL` en Variables de entorno, con su piso, y la comprobación del `request_id` en Verificación post-deploy. `observability.md`: Resumen con logs y correlación «en uso», secciones Logs y Correlación con los campos reales, y OB2.a–OB4.b en «pendiente (resuelta por la spec 026, sin liberar)», una por una; OB1 y OB5 siguen pendientes (A11, A15, A26)
   - nota: `origin/main` sin cambios: no hizo falta rebasar sobre la 025 (A12)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
   - nota: 12 de 12 criterios marcados: cada uno con su test en verde (backend 355 pruebas, frontend 24 archivos)
   - nota: tras las tareas de /review (T030–T044): backend con 32 suites, 387 pruebas y 5 `todo`; frontend con 24 archivos y 220 pruebas. Lint del backend con solo los 2 errores previos, build en verde, `npm audit` sin altas y gitleaks sin hallazgos en `49825d5..HEAD`. Una corrida de `npm test` tuvo un fallo único en el backend que no se pudo identificar ni reproducir en 25 corridas más, con y sin carga en paralelo; queda para `/review --rerun`
 
+  - nota: tras las tareas de /review ronda 2 (T035, T036, T045): backend con 32 suites, 389 pruebas y 5 `todo`; frontend con 220 pruebas, en dos corridas. Lint con los 2 errores previos, build en verde, sin altas en `npm audit` y gitleaks sin hallazgos en `49825d5..HEAD`
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen en local en T028
