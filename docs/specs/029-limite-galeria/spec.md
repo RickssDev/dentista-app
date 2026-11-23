@@ -31,7 +31,9 @@ parcialmente: sus correcciones quedan fuera (ver «Cobertura de riesgos»).
   agregar otra, entonces se rechaza con el mensaje «La galería admite como máximo 15 imágenes.
   Elimina una para agregar otra.», la galería sigue con 15 y la foto enviada no queda guardada.
 - [ ] CA3 · Dada una galería con 15 imágenes, cuando el personal cambia el título o la visibilidad
-  de una o reemplaza su foto, entonces el cambio se guarda y la galería sigue con 15.
+  de una o reemplaza su foto, entonces el cambio se guarda y la galería sigue con 15. La foto de una
+  imagen, al darla de alta o al editarla, solo puede ser un archivo subido en esa misma acción:
+  nunca una ruta indicada por quien envía la petición.
 - [ ] CA4 · Dada una galería con 15 imágenes, cuando el personal elimina una, entonces puede
   volver a agregar una.
 - [ ] CA5 · Dado el panel de la galería, cuando el personal lo abre, entonces ve cuántas imágenes
@@ -128,6 +130,8 @@ _(ninguna)_
 | 2026-11-23 | supuesto | ¿El límite aplica igual a Administrador y Asistente? | Sí, a los dos roles | spec 014 (mismos permisos) |
 | 2026-11-23 | implícita | ¿Hace falta auditoría? | No en esta spec. El alta de imágenes es una acción administrativa que `docs/observability.md` manda auditar, pero sigue cubierta por la excepción P13 del usuario hasta el objetivo 3 (specs 027 y 028) | excepción P13 (decisión del usuario, 2026-11-11; `docs/specs/021-proteccion-cuentas-admin/plan.md`) · /analyze A6 |
 | 2026-11-23 | brecha | ¿La foto de un alta rechazada se borra del disco en todos los rechazos o solo en el del límite? | En todo rechazo del alta (galería llena, galería ocupada y datos faltantes). Solo se borra el archivo subido en esa misma petición | usuario · /analyze A10 |
+| 2026-11-23 | contradicción | La excepción P13 (acciones administrativas sin auditar hasta el objetivo 3) se aprobó en la spec 021, y la constitución manda auditar el alta de imágenes | La excepción se extiende a la galería en esta spec, hasta las specs 027 y 028 (OB1.e) | usuario · /analyze A22 |
+| 2026-11-23 | brecha | Editar una imagen sin archivo acepta hoy una ruta escrita en la petición, que al eliminar la imagen borraría un archivo ajeno (defecto previo de la spec 014) | Se corrige aquí: al editar, como al dar de alta, la foto solo sale del archivo subido (CA3) | usuario · /analyze A17 |
 | 2026-11-23 | brecha | ¿Qué muestra el panel si no puede cargar la lista? | Ni contador ni aviso; la acción de agregar queda como hoy | usuario · /analyze A16 |
 | 2026-11-23 | supuesto | Texto del rechazo y del aviso | Los de CA2 y CA6; `/design-spec` puede ajustarlos sin cambiar su sentido | /specify |
 | 2026-11-23 | diseño | ¿Cómo se ve el límite en el panel? | Sin diseño nuevo: contador bajo la descripción del encabezado, botón con `aria-disabled` y aviso informativo con variantes de marca existentes | [design.md](design.md) |
@@ -147,3 +151,4 @@ _(ninguna)_
 | 2026-11-23 | Spec creada | Petición del usuario: tope de 15 imágenes en la galería |
 | 2026-11-23 | Spec aprobada | Confirmación del usuario |
 | 2026-11-23 | CA5 con el caso de lista sin cargar; Decisiones de auditoría, borrado en rechazos y carga fallida | /analyze A6, A10, A16 (decisiones del usuario) |
+| 2026-11-23 | CA3: la foto solo sale de un archivo subido; Decisiones de la excepción P13 y de la edición | /analyze A17, A22 (decisiones del usuario) |
