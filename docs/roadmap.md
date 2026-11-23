@@ -11,7 +11,7 @@ updated: 2026-11-18
 |---|---|---|---|---|
 | 1 | Tests y CI | Framework de tests adoptado con ADR; autenticación, citas, perfil del paciente y portada cubiertos en verde; CI ejecuta validación, lint, build y tests en cada PR. Riesgos: RD8.a, RD8.b, RD8.c | [018](specs/018-base-tests-autenticacion/spec.md), 019 y 020 (previstas) | en curso |
 | 2 | Permisos del Asistente | Un Asistente recibe 403 en toda ruta de `/usuarios` y nadie puede asignar un rol sin ser Administrador, con tests por rol. Riesgos: RS1.a, RS1.b, RS1.c, RS1.d | ficha 2026-11-09-fix-permisos-asistente (v1.1.0), [021](specs/021-proteccion-cuentas-admin/spec.md) (v1.2.0) | cumplido |
-| 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | — | pendiente |
+| 3 | Auditoría y logs | Todo evento obligatorio de `docs/observability.md` queda en la tabla de solo anexado; cada petición devuelve `X-Request-Id`; ningún log contiene datos personales. Riesgos: OB1.a, OB1.b, OB1.c, OB1.d, OB1.e, OB1.f, OB2.a, OB2.b, OB2.c, OB3.a, OB3.b | [026](specs/026-logs-seguros-correlacion/spec.md), 027 y 028 (previstas) | en curso |
 | 4 | Sitio indexable | Lighthouse SEO 100 en las 6 rutas públicas; cada ruta pública con HTML propio (prerender), título, descripción, canónica y Open Graph únicos; `robots.txt` y `sitemap.xml` válidos; `noindex` en las rutas privadas; 404 real; datos de la clínica para buscadores. Brechas: SE1.a, SE1.b, SE2.a, SE2.b, SE3.a, SE3.b, SE4.a, SE5.a, SE5.b, SE6.a, SE7.a; fuera: SE7.b (sin logo vectorial, pendiente en `docs/seo.md`) | [022](specs/022-sitio-indexable/spec.md) (v1.3.0) | cumplido |
 
 ## Próxima etapa
@@ -130,7 +130,6 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 021/R20 `aria-describedby` solo con mensaje no vacío.
 
 **Calidad**
-- 15 problemas de lint previos en el frontend y 4 errores previos en el backend.
+- 15 problemas de lint previos en el frontend y 2 errores previos en el backend (`faqs.service.js`, `images.service.js`; los de `errorHandler.js` se resolvieron en la spec 026).
 - Lint de estilos que exige el principio P20 de la constitución.
 - Aprobar `docs/constitution.md`, que sigue en `draft`.
-- Limpiar la duplicación de `backend/src/middlewares/errorHandler.js`.
