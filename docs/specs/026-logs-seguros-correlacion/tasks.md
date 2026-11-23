@@ -1,6 +1,7 @@
 ---
 spec: 026-logs-seguros-correlacion
 plan: plan.md
+impl_base: 49825d5
 status: approved
 ---
 
@@ -42,7 +43,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | P16–P20 | ➖ | Sin interfaz, vistas ni rutas públicas | — |
 
 ## Preparación
-- [ ] T001 Escribir la prueba de caracterización de `errorHandler` — `tests/logs/error-handler-caracterizacion.test.js` — hecho cuando: **pasa** sobre el código actual y fija estado y cuerpo de: JWT expirado (401), JWT inválido (401), sin token (401), cuenta desactivada (401), falta de identidad (401), `LIMIT_FILE_SIZE` (400, «La imagen supera el tamaño máximo permitido de 6 MB.»), `AppError` 404 y error no operacional (500, «Error interno del servidor», sin `stack`) con `NODE_ENV=production`. Llama al middleware directamente con `req` y `res` simulados, sin `createApp()`, así que no genera líneas de log (A24). Toma la referencia de `errorHandler` **una sola vez** al cargar el archivo, como `app.js`, porque el `module.exports` interno se reasigna en la primera llamada (A18). Hasta T022 silencia `console.error` con un espía sin comprobarlo
+- [x] T001 Escribir la prueba de caracterización de `errorHandler` — `tests/logs/error-handler-caracterizacion.test.js` — hecho cuando: **pasa** sobre el código actual y fija estado y cuerpo de: JWT expirado (401), JWT inválido (401), sin token (401), cuenta desactivada (401), falta de identidad (401), `LIMIT_FILE_SIZE` (400, «La imagen supera el tamaño máximo permitido de 6 MB.»), `AppError` 404 y error no operacional (500, «Error interno del servidor», sin `stack`) con `NODE_ENV=production`. Llama al middleware directamente con `req` y `res` simulados, sin `createApp()`, así que no genera líneas de log (A24). Toma la referencia de `errorHandler` **una sola vez** al cargar el archivo, como `app.js`, porque el `module.exports` interno se reasigna en la primera llamada (A18). Hasta T022 silencia `console.error` con un espía sin comprobarlo
+  - nota: 9 casos en verde sobre el código actual, dos ejecuciones. Comprobado rompiendo el mensaje de 6 MB, el del 500 y el de JWT inválido: cada uno hace fallar su caso. Se compara el cuerpo serializado (lo que recibe el cliente), porque en producción el objeto lleva `stack: undefined`
 - [ ] T002 Silenciar los logs en la suite — `tests/support/env.js` — hecho cuando: define `LOG_LEVEL=silent` si no viene del entorno y `npm test --prefix backend` sigue verde
 
 ## Tests (antes de implementar)
