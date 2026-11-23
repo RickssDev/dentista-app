@@ -98,8 +98,11 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
 - [x] T034 Test: si `RELEASE_LOCK` falla, queda un aviso en el log sin SQL ni valores — `backend/tests/galeria/limite-galeria-concurrencia.test.js` — hecho cuando: falla por la razón esperada (hoy no hay log): con `fallaRelease`, la captura del logger tiene una línea `warn` «No se pudo soltar el bloqueo de la galería» con el `code` del error y sin el título, la ruta ni el texto del SQL — cubre: CA7 — depende: T031
   - nota: añadida por /review: R8
   - nota: R8: falla por la razón esperada (`Received length: 0`: hoy no hay log). Usa `logger.__capturar()` y un error con `code` para comprobar que solo se registra el código
-- [ ] T035 Registrar el fallo de `RELEASE_LOCK` con `logger.warn` — `backend/src/modules/images/images.repository.js` — hecho cuando: pasa T034 y el resto de `tests/galeria` — cubre: CA7 — depende: T033, T034
+- [x] T035 Registrar el fallo de `RELEASE_LOCK` con `logger.warn` — `backend/src/modules/images/images.repository.js` — hecho cuando: pasa T034 y el resto de `tests/galeria` — cubre: CA7 — depende: T033, T034
   - nota: añadida por /review: R8
+  - nota: R8: `logger.warn('No se pudo soltar el bloqueo de la galería', { code })` en el `catch` del `RELEASE_LOCK`. `tests/galeria` 36/36, lint limpio
+  - nota: archivo extra justificado: el test de T034 hacía `require` del logger dentro del caso, y el bloque anterior del archivo reinicia el registro de módulos, así que capturaba otra instancia. Se carga junto al repositorio
+  - nota: comprobado rompiéndolo: sin el `warn` falla; añadiendo el SQL al contexto del log falla; restaurado, pasa
 - [ ] T036 Test: el `:hover` no cambia el botón no disponible — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: falla por la razón esperada: ninguna regla `:hover` de `.encabezado-btn` en `adminpanel.css` se aplica a `[aria-disabled="true"]` (el selector excluye ese estado) — cubre: CA6 — depende: T032
   - nota: añadida por /review: R11
 - [ ] T037 Limitar el `:hover` de `.encabezado-btn` a los botones disponibles — `frontend/src/styles/adminpanel.css` — hecho cuando: pasa T036 y el resto de `galeria-limite.test.jsx`; el literal previo del `:hover` sigue igual (deuda DS2, fuera de alcance por la decisión A8) — cubre: CA6 — depende: T036

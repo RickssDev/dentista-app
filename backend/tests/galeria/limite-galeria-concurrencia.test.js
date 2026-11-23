@@ -62,6 +62,8 @@ describe('029 · servicio: dos altas simultáneas con 14', () => {
 
 describe('029 · repositorio: crearImagenConLimite', () => {
   const repo = require('../../src/modules/images/images.repository');
+  // Misma instancia que usa el repositorio (el bloque anterior reinicia el registro de módulos)
+  const logger = require('../../src/utils/logger');
   const MARCAS = { titulo: 'TituloMarcaQ29', imagen: '/uploads/marca-q29.jpg', visible: '1' };
 
   // Conexión falsa: responde a las cuatro consultas del alta y registra todo en orden
@@ -154,7 +156,6 @@ describe('029 · repositorio: crearImagenConLimite', () => {
   });
 
   test('R8: si RELEASE_LOCK falla queda un aviso en el log, con el código y sin SQL ni valores', async () => {
-    const logger = require('../../src/utils/logger');
     const captura = logger.__capturar();
     const { conn, pool } = conexionFalsa({ fallaRelease: true });
     conn.query.mockImplementation(async (sql, params = []) => {

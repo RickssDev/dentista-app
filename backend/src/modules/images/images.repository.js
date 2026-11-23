@@ -1,4 +1,5 @@
 const { pool } = require("../../config/db");
+const logger = require("../../utils/logger");
 
 exports.getImagen = async () => {
   const [rows] = await pool.query(`
@@ -73,8 +74,10 @@ exports.crearImagenConLimite = async (data, max, origen = pool) => {
     } finally {
       try {
         await conn.query('SELECT RELEASE_LOCK(?)', [BLOQUEO_ALTA]);
-      } catch {
-        // El alta ya quedó guardada (o su error sigue su curso): no se convierte en otro error
+      } catch (error) {
+        // El alta ya quedó guardada (o su error sigue su curso): no se convierte en otro error.
+        // Solo el código: ni el SQL ni los valores (spec 026; review R8)
+        logger.warn('No se pudo soltar el bloqueo de la galería', { code: error?.code });
         cerrar = true;
       }
     }
