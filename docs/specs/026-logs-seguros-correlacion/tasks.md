@@ -19,6 +19,7 @@ Formato:
   plan → Estrategia de pruebas). Hasta T020 fallan porque el módulo no existe.
 - Corregidas por `/analyze` ronda 1: T001, T010–T013, T021–T023, T028, T090, T091, T098 y las tablas de Cobertura; nueva T029.
 - Corregidas por `/analyze` ronda 2: T001, T010, T013, T015, T021, T022, T029, T091, T098; nueva T016.
+- Añadidas por `/review` ronda 1: T030–T034 (tests) y T040–T044 (implementación).
 
 ## Constitution Check
 Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
@@ -91,6 +92,18 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T016 [P] Escribir la prueba del resumen de error para el registro — `tests/logs/error-registro.test.js` — hecho cuando: falla por la razón esperada (`res.locals.errorRegistro` no existe) y, llamando a `errorHandler` con un `res` simulado, comprueba: un 5xx deja `error_name`, `message` y `stack`; un `ER_DUP_ENTRY` con un correo deja `error_name`, `code` y `errno`, sin el correo ni `sql`; un `AppError` 404 deja `error_name` y el mismo mensaje que la respuesta, sin `stack`; un `SyntaxError` de body-parser con `body` centinela deja solo `error_name` y `type`, sin `body` ni el `message` original (A22, TM6, TM11) — cubre: CA8, CA9
   - nota: falla por la razón esperada: `res.locals.errorRegistro` no existe (5 casos)
 
+### Correcciones de /review ronda 1 (tests)
+- [ ] T030 [P] Ampliar la prueba del logger con los huecos de la review — `tests/logs/logger.test.js` — hecho cuando: falla hoy por la razón esperada y comprueba: (R1) un error con `sqlState` cuyo mensaje tiene un centinela en la 2.ª y la 3.ª línea no deja el centinela en ninguna línea capturada, y el `stack` conserva los marcos `at …`; (R4) en `context`, las claves `clave`, `apellido`, `celular`, `movil`, `pass`, `pwd`, `apikey`, `api_key`, `X-Device-Key`, `jwt`, `bearer`, `session` y `destinatario` salen como `[oculto]`, y `id_cita`, `plantilla`, `servicio`, `codigo`, `status`, `tipo`, `route` y `method` se conservan; (R7) un `BigInt` en `context` no hace perder la línea (sale como texto), un array de 200 elementos sale con 50 más el marcador `[+150]`, un texto de 5000 caracteres sale recortado a 4096 con `…`, un `Buffer` sale como `[binario N bytes]`, una `Date` como su fecha ISO y un mismo objeto en dos ramas hermanas sale completo en las dos (sin `[circular]`); (R6) tras cargar el logger, `process.stdout` tiene un oyente de `error`, y emitir un `error` en `process.stdout` no lanza — cubre: CA9, CA10, CA12
+  - nota: añadida por /review: R1, R4, R6, R7
+- [ ] T031 [P] Probar la petición abortada y la correlación de los errores de proveedor — `tests/logs/correlacion.test.js` — hecho cuando: falla hoy por la razón esperada y comprueba: (R2) una ruta de prueba que responde a los 300 ms, con el cliente que corta a los 50 ms, deja una sola línea «Petición atendida» con `aborted: true`, `status: null` y nivel `warn`, y una petición completa no lleva `aborted`; (R13) con WhatsApp encendido y `axios` rechazando, y con Resend respondiendo 500, todas las líneas de esa petición (incluidas «Aviso de WhatsApp no enviado» y «Correo no enviado») llevan su `request_id` (`todas.every(…)`) — cubre: CA4, CA8
+  - nota: añadida por /review: R2, R13
+- [ ] T032 [P] Probar que un fallo de la base de datos no se atribuye a WhatsApp — `tests/services/recordatorios.test.js` — hecho cuando: falla hoy por la razón esperada y comprueba: (R3) en el cron, con el envío correcto y `marcarRecordatorioEnviado` rechazando con un error de MySQL, queda «Aviso de WhatsApp enviado» y una línea `error` «Recordatorio no marcado» con `id_cita` y `error_name`/`code`, sin `servicio`; no hay «Aviso de WhatsApp no enviado». En `createCita`, con WhatsApp encendido y `getPacienteWhatsApp` rechazando, queda «Aviso de WhatsApp no preparado» con `id_cita`, `plantilla` y `error_name`, sin `servicio: 'whatsapp'`, y la cita se crea igual. Con `sendTemplateMessage` rechazando sigue quedando «Aviso de WhatsApp no enviado» con `servicio: 'whatsapp'` — cubre: CA11
+  - nota: añadida por /review: R3
+- [ ] T033 [P] Endurecer tres pruebas que no prueban del todo lo que dicen — `tests/logs/request-id.test.js`, `tests/logs/silencio.test.js`, `tests/logs/error-handler-caracterizacion.test.js` — hecho cuando: (R8) en `request-id.test.js` cada valor rechazado se busca en las líneas ya parseadas (ningún `request_id` es igual al valor, y `JSON.stringify(captura.lineas)` no contiene `JSON.stringify(valor)` sin comillas exteriores); (R9) en `silencio.test.js` el caso de producción comprueba el nivel efectivo sin captura (con `NODE_ENV=production` y `LOG_LEVEL=silent`, un `logger.info` sí llama a `process.stdout.write` y un `logger.debug` no), en lugar de la aserción sobre stdout dentro de `__capturar()`; (R10) `error-handler-caracterizacion.test.js` sin el espía de `console.error` ni los comentarios de antes de T022. Las tres pasan, y la de R8 falla si `requestId.js` acepta el valor (comprobado rompiéndolo) — cubre: CA3, CA7, CA8
+  - nota: añadida por /review: R8, R9, R10
+- [ ] T034 [P] Probar los logs de la conexión a la base y del borrado de archivos — `tests/logs/sin-datos.test.js` — hecho cuando: falla hoy por la razón esperada y comprueba: (R5) `testConnection` con el pool rechazando un error `ECONNREFUSED` con `message` «connect ECONNREFUSED 10.9.8.7:3306» deja «No se pudo conectar con la base de datos» con `error_name`, `code` y `errno`, sin `10.9.8.7` ni `stack`; (R12) `borrarArchivo` con `fs.unlink` rechazando `EACCES` deja «No se pudo borrar el archivo» solo con `{ code: 'EACCES' }`, sin la ruta, y con `ENOENT` no deja línea — cubre: CA9
+  - nota: añadida por /review: R5, R12
+
 ## Implementación
 - [x] T020 Implementar el contexto y el logger — `src/utils/contexto.js`, `src/utils/logger.js` — hecho cuando: T010 pasa; sin dependencias nuevas en `package.json` — cubre: CA6, CA7, CA10, CA11, CA12 — depende: T010
   - nota: T010 en verde: 23 pruebas, dos ejecuciones; sin dependencias nuevas en `package.json`
@@ -129,6 +142,18 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: comprobado rompiéndolo: quitar la guarda `whatsappActivo()` de los avisos hace fallar los 3 casos de apagado de `recordatorios.test.js` (A2), y meter el cuerpo de la petición en la línea de log hace fallar los 3 de privacidad de `rutas-usuarios.test.js` (A16)
   - nota: `rutas-usuarios.test.js` conserva los espías de `console` y suma la captura, así que también detecta un `console.*` que vuelva
 
+### Correcciones de /review ronda 1 (implementación)
+- [ ] T040 Cerrar los huecos de redacción y robustez del logger — `src/utils/logger.js` — hecho cuando: T030 pasa; `resumirError` conserva del `stack` de un error de MySQL solo las líneas de marco (`/^\s+at /`) tras «[mensaje de MySQL omitido]»; los términos sensibles suman `clave`, `apellido`, `celular`, `movil`, `pass`, `pwd`, `apikey`, `jwt`, `bearer`, `session` y `destinatario`, y una clave cuyo nombre normalizado termina en `key` es sensible; `redactar` limita arrays a 50 elementos, textos a 4096 caracteres, resume `Buffer` y vistas binarias, convierte `bigint` a texto y `Date` a ISO, y solo marca `[circular]` en un ciclo real; al cargar, el logger registra un oyente de `error` en `process.stdout` que no hace nada. T010 y T013 siguen en verde (comprobado rompiendo el filtro de marcos) — cubre: CA9, CA10, CA12 — depende: T030
+  - nota: añadida por /review: R1, R4, R6, R7
+- [ ] T041 Registrar la petición abortada como tal — `src/middlewares/registroPeticion.js` — hecho cuando: T031 pasa; si al cerrarse la conexión la respuesta no terminó, la línea lleva `aborted: true`, `status: null` y nivel `warn` (salvo `/health`, que sigue en `debug`) — cubre: CA8 — depende: T031
+  - nota: añadida por /review: R2
+- [ ] T042 Separar los fallos de la base de datos de los de WhatsApp — `src/services/reminder.service.js`, `src/modules/citas/citas.service.js` — hecho cuando: T032 pasa; en el cron, un fallo de `marcarRecordatorioEnviado` deja «Recordatorio no marcado» con `id_cita` y `resumirError` y la ejecución se detiene como antes; en `createCita`, `updateCita`, `cancelarCita` y `createCitaPaciente`, un fallo al consultar paciente o servicio deja «Aviso de WhatsApp no preparado» con `id_cita`, `plantilla` y `resumirError`, y solo el fallo de `sendTemplateMessage` deja «Aviso de WhatsApp no enviado» con `resumirErrorExterno('whatsapp')`; la cita se crea, reprograma o cancela igual que antes. T013 y T029 siguen en verde — cubre: CA11 — depende: T032
+  - nota: añadida por /review: R3
+- [ ] T043 Ajustar el log de la conexión a la base y restaurar el encabezado del correo — `src/config/db.js`, `src/services/email.service.js` — hecho cuando: T034 pasa; `testConnection` registra solo `error_name`, `code` y `errno`, y su comentario dice por qué; en `email.service.js` vuelve el encabezado «RECUPERACIÓN DE CONTRASEÑA» que borró T025, sin otro cambio — cubre: CA9 — depende: T034
+  - nota: añadida por /review: R5, R11, R12
+- [ ] T044 Forzar el silencio de los logs en la suite — `tests/support/env.js` — hecho cuando: `env.js` fija `LOG_LEVEL=silent` aunque el shell traiga otro valor, y con `LOG_LEVEL=debug` en el entorno `npm test --prefix backend` pasa y no imprime líneas JSON — depende: T033
+  - nota: añadida por /review: R15
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` y la deuda resuelta — `docs/architecture.md`, `docs/roadmap.md` — hecho cuando: la sección Backend describe el logger JSON propio, el contexto por petición y `X-Request-Id`, con enlace al ADR 0011, y lista los cuatro transversales nuevos. La deuda de la duplicación de `errorHandler.js` sale de «Deuda técnica» de `architecture.md` y de «Pendientes y deuda» del roadmap (A14). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028
   - nota: `origin/main` sin cambios desde `impl_base` (la 025 aún no está fusionada): no hizo falta rebasar (A12)
@@ -136,7 +161,7 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` — `docs/deployment.md`, `docs/observability.md` — hecho cuando, en `docs/deployment.md`: `LOG_LEVEL` está en «Variables de entorno», con el piso `info` en producción (`silent` y `debug` se ignoran), y «Verificación post-deploy» añade la comprobación del `request_id` del plan. En `docs/observability.md`: el Resumen marca logs y correlación «en uso»; la sección Logs lista los campos reales (`timestamp`, `level`, `request_id`, `job_id`, `actor_id`, `message`, `context`) (A11); Logs y Correlación quitan «Hoy no existe» y «Hoy no se cumple»; OB2.a, OB2.b, OB2.c, OB3.a, OB3.b, OB4.a y OB4.b siguen en «pendiente» hasta T098, con la nota «resuelta por la spec 026, sin liberar», cada una por separado; OB1 y OB5 siguen pendientes (A15, A26). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028
   - nota: `deployment.md`: `LOG_LEVEL` en Variables de entorno, con su piso, y la comprobación del `request_id` en Verificación post-deploy. `observability.md`: Resumen con logs y correlación «en uso», secciones Logs y Correlación con los campos reales, y OB2.a–OB4.b en «pendiente (resuelta por la spec 026, sin liberar)», una por una; OB1 y OB5 siguen pendientes (A11, A15, A26)
   - nota: `origin/main` sin cambios: no hizo falta rebasar sobre la 025 (A12)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: 12 de 12 criterios marcados: cada uno con su test en verde (backend 355 pruebas, frontend 24 archivos)
 
 ## Despliegue (lo ejecuta `/release`)
@@ -151,25 +176,25 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 |---|---|---|
 | CA1 | T011 | T021 |
 | CA2 | T011 | T021 |
-| CA3 | T011 | T021 |
-| CA4 | T012 | T020, T021, T024 |
+| CA3 | T011, T033 | T021 |
+| CA4 | T012, T031 | T020, T021, T024 |
 | CA5 | T012 | T020, T023 |
 | CA6 | T010, T012 | T020, T027, T028 |
-| CA7 | T010 | T020 |
-| CA8 | T012, T016 | T021, T022 |
-| CA9 | T013, T016, T029 | T022, T023, T024, T025, T026 |
-| CA10 | T010 | T020 |
-| CA11 | T010, T013 | T020, T023, T024, T025, T026 |
-| CA12 | T010, T011 | T020, T021 |
+| CA7 | T010, T033 | T020 |
+| CA8 | T012, T016, T031, T033 | T021, T022, T041 |
+| CA9 | T013, T016, T029, T030, T034 | T022, T023, T024, T025, T026, T040, T043 |
+| CA10 | T010, T030 | T020, T040 |
+| CA11 | T010, T013, T032 | T020, T023, T024, T025, T026, T042 |
+| CA12 | T010, T011, T030 | T020, T021, T040 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
 | TM1 | T021 | T011 |
 | TM2 | T021 | T011 |
 | TM3 | T023, T024 | T013 |
-| TM4 | T020 | T010, T013 |
+| TM4 | T020, T040 | T010, T013, T030 |
 | TM5 | T025 | T013 |
-| TM6 | T020, T022 | T010, T013, T016 |
+| TM6 | T020, T022, T040 | T010, T013, T016, T030 |
 | TM7 | T021 | T012, T013 |
 | TM8 | T020, T021, T023 | T012 |
 | TM9 | T020 | T010 |
@@ -179,23 +204,23 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | `src/utils/contexto.js` | T020 |
-| `src/utils/logger.js` | T020 |
+| `src/utils/logger.js` | T020, T040 |
 | `src/middlewares/requestId.js` | T021 |
-| `src/middlewares/registroPeticion.js` | T021 |
+| `src/middlewares/registroPeticion.js` | T021, T041 |
 | `src/config/app.js` | T021 |
 | `src/middlewares/errorHandler.js` | T001, T016, T022 |
-| `src/services/reminder.service.js` | T023 |
-| `src/modules/citas/citas.service.js` | T024 |
-| `src/services/email.service.js` | T025 |
+| `src/services/reminder.service.js` | T023, T042 |
+| `src/modules/citas/citas.service.js` | T024, T042 |
+| `src/services/email.service.js` | T025, T043 |
 | `src/modules/auth/auth.service.js` | T026 |
-| `src/config/db.js`, `src/utils/borrarArchivo.js`, `server.js` | T027 |
+| `src/config/db.js`, `src/utils/borrarArchivo.js`, `server.js` | T027, T043 |
 | `eslint.config.js` | T028 |
-| `tests/support/env.js` | T002 |
-| `tests/logs/` | T001, T010, T011, T012, T013, T014, T015, T016 |
-| `tests/services/recordatorios.test.js`, `tests/usuarios/rutas-usuarios.test.js` | T029 |
+| `tests/support/env.js` | T002, T044 |
+| `tests/logs/` | T001, T010, T011, T012, T013, T014, T015, T016, T030, T031, T033, T034 |
+| `tests/services/recordatorios.test.js`, `tests/usuarios/rutas-usuarios.test.js` | T029, T032 |
 | `docs/deployment.md`, `docs/observability.md`, `docs/architecture.md`, `docs/roadmap.md` | T090, T091, T098 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
 | Salida por stdout legible con `docker compose logs` | T010; verificación manual en T028 |
-| La suite no imprime logs | T002, T015 |
+| La suite no imprime logs | T002, T015, T044 |
