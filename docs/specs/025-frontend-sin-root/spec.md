@@ -1,7 +1,7 @@
 ---
 id: 025
 slug: frontend-sin-root
-status: approved
+status: implemented
 created: 2026-11-22
 extends: []
 ---
