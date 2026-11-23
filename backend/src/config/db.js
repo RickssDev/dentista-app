@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const logger = require('../utils/logger');
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -11,10 +12,11 @@ const pool = mysql.createPool({
 async function testConnection() {
   try {
     const conn = await pool.getConnection();
-    console.log('Base de datos MySQL conectada correctamente.');
+    logger.info('Base de datos conectada');
     conn.release();
   } catch (err) {
-    console.error('Error al conectar con la base de datos:', err.message);
+    // Sin el mensaje de MySQL, que puede llevar el usuario y el host (spec 026).
+    logger.error('No se pudo conectar con la base de datos', logger.resumirError(err));
     process.exit(1);
   }
 }
