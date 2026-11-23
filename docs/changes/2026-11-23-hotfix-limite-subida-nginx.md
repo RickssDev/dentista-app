@@ -1,6 +1,7 @@
 ---
 lane: hotfix
-status: done
+status: released
+released: v1.7.1 (2026-11-23)
 base: 03542f4
 relates: [014]
 covers: [CA2]
@@ -58,6 +59,9 @@ hechas solo en local con Vite, sin nginx.
   - Hallazgo 3 (el test cortaba el bloque en la primera `}`): corregido, ahora cuenta llaves y va anclado.
   - Hallazgo 4 (posible ECONNRESET en la prueba de 413): corregido, cuerpo de 7,5 MB y error explícito.
   - Hallazgos 1 y 2: aceptados (ver Decisiones).
+- Liberación: PR #94 (CI en verde), fusionado en `main` (6342ffe). Aprobado por RickssDev el
+  2026-11-23 («desplegar v1.7.1 a producción») para v1.7.1. Desplegado por el usuario en el servidor;
+  el usuario confirmó que la subida de imágenes de más de 1 MB funciona en producción.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
