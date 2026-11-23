@@ -66,8 +66,9 @@ el túnel.
     Docker Official Images (`docker.io/library/node`), publicada el 2026-11-05.
   - `nginx:1.31.9-alpine3.24@sha256:fb4658584bd9a916ffb6f6e365f97c25cfdb2923801f551ea08356e695f14ff7`:
     Docker Official Images (`docker.io/library/nginx`), publicada el 2026-11-18; es la que se probó
-    en la prueba de concepto. Cumple los 7 días de `security.agent.min_package_age_days` el
-    2026-11-25: T020 no la fija antes (decisión del usuario, 2026-11-22, `/analyze` A5).
+    en la prueba de concepto. No cumple los 7 días de `security.agent.min_package_age_days` hasta
+    el 2026-11-25. Se fija el 2026-11-22 por excepción del usuario, solo esta vez: es la imagen
+    que ya resuelve `nginx:alpine` sin fijar (comprobado en local; en el servidor no se verificó), así que esperar no evita usarla.
   - `libcap-setcap` 2.78-r0 (solo en el build): repositorio `main` de Alpine 3.24 (paquetes
     firmados que `apk` verifica), compilado el 2026-04-09. No se fija la versión: el repositorio
     retira las antiguas y rompería el build. No llega a la imagen final y T021 anota la versión
@@ -164,7 +165,7 @@ cuida `probar-nginx.mjs`.
 | trivy como check obligatorio del PR | sí, en el workflow; no, en `/review` y `/release` | **No**: sin tocar `.github/workflows` (ruta protegida); CI cubre el usuario y las versiones con la prueba estática (decisión del usuario, 2026-11-22) |
 | Escaneo de CVEs de las piezas base | ninguno; `trivy image` en T023 y `/release`; además en el CI semanal | **`trivy image` en T023 y en cada `/release`**, sin tocar el CI (decisión del usuario, 2026-11-22, `/analyze` A1) |
 | `HEALTHCHECK` en la imagen (trivy AVD-DS-0026, LOW) | añadirlo; dejarlo | **Dejarlo fuera**: no es de la spec; la comprobación de salud del sistema se trata aparte en el roadmap |
-| Antigüedad de la imagen de nginx | fijar el digest más nuevo ya; esperar a que cumpla 7 días | **Esperar**: T020 queda bloqueada hasta el 2026-11-25 y fija el digest del 2026-11-18 (decisión del usuario, 2026-11-22, `/analyze` A5) |
+| Antigüedad de la imagen de nginx | fijar el digest más nuevo ya; esperar a que cumpla 7 días | **Excepción, solo esta vez**: se fija hoy el digest del 2026-11-18, que ya es el que resuelve `nginx:alpine` sin fijar (decisión del usuario, 2026-11-22; antes se había elegido esperar, `/analyze` A5) |
 
 ## Riesgos y mitigaciones
 | Riesgo | Mitigación |

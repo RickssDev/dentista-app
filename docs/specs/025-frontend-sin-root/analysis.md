@@ -1,43 +1,38 @@
 ---
 result: pass
-round: 2
+round: 3
 mode: delta
 constitution_version: 1.0.0
 date: 2026-11-22
-spec_sha: 4590afc02d0b
-plan_sha: ddd146c8ffa7
-tasks_sha: bcad66177ab4
+spec_sha: 18b7e2042cb5
+plan_sha: c99d936d75aa
+tasks_sha: 13a348e2cc8b
 ---
 
 # Análisis · 025 Servicio del sitio sin privilegios de administrador
 
 ## Resumen
-`pass`. Los siete hallazgos abiertos de la ronda 1 están resueltos, y las líneas cambiadas no
-introducen problemas nuevos. Modo delta sin subagente: el diff ocupa unos 25 KB y no tiene cambios
-estructurales (ningún criterio, módulo ni contrato nuevo; CA5 se amplía y se añade TM6). Se revisó
-releyendo desde cero el diff de `aidd.py changes`. La ronda 1, completa y con revisor independiente,
-está en `history/analysis.r1.md`.
+`pass`. El único cambio de diseño es la decisión A5: por excepción del usuario, solo esta vez, la
+imagen de nginx (publicada el 2026-11-18) se fija el 2026-11-22 en lugar de esperar a que cumpla
+los 7 días de `security.agent.min_package_age_days`. El motivo queda escrito: es la imagen que ya
+resuelve `nginx:alpine` sin fijar (comprobado en local). Spec (Decisiones e Historial), plan
+(§Contratos y §Decisiones) y tareas (T020 desbloqueada) dicen lo mismo. El resto del diff son
+tareas marcadas y sus notas, que no invalidan el análisis. Modo delta sin subagente (diff de pocas
+líneas).
 Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
 | Criterios con tarea de test e implementación | 8 / 8 |
-| Amenazas con control y test | 6 / 6 (TM6 nueva) |
-| Principios de la constitución evaluados | 20 / 20 (sin cambios fuera de P3, P11 y P16) |
+| Amenazas con control y test | 6 / 6 |
+| Principios de la constitución evaluados | 20 / 20 (sin cambios; P3 sigue ✅: la regla de antigüedad es del agente, no de la constitución) |
 
 ## Seguimiento de rondas anteriores
 | ID | Severidad | Estado | Evidencia |
 |---|---|---|---|
-| A1 | ALTA | resuelto | spec CA5 y caso de abuso (sin "en cada PR"); plan TM6, Estrategia de pruebas y Decisiones (`trivy image` en T023 y `/release`); tasks T023 (`--exit-code 1`) y sub-punto de T098 |
-| A2 | ALTA | resuelto | plan §Contratos y datos: origen (Docker Official Images; Alpine `main` 3.24, firmado), versión y antigüedad de las imágenes y de `libcap-setcap` 2.78-r0 (2026-04-09); T021 anota la versión instalada |
-| A4 | MEDIA | resuelto | Un solo procedimiento en spec CA8, plan §Rollout, T091 ("Rollback" de `deployment.md`) y T024 (lo prueba, `depende: T091`) |
-| A5 | MEDIA | resuelto | T020 con un solo resultado (digest del 2026-11-18) y `bloqueo:` hasta el 2026-11-25; plan §Decisiones |
-| A6 | MEDIA | resuelto | spec §Decisiones: los dos supuestos pasan a `brecha` con fuente `usuario` |
-| A7 | MEDIA | resuelto | T098, sub-punto: la fila AVD-DS-0002 ya no está en `docs/security.md` y trivy no la reporta |
-| A13 | BAJA | resuelto | P3 y P16 iguales en plan y tareas; Cobertura CA4 con T097; `docs/deployment.md` en "Cambios por módulo" y en la tabla de módulos |
-| A3, A8–A11 | MEDIA/BAJA | aceptados | Notas de tarea (sin cambios; ver "Aceptados") |
-| A12 | BAJA | aceptado | Roadmap |
+| A5 | MEDIA | resuelto (decisión cambiada por el usuario) | spec §Decisiones e Historial; plan §Contratos y §Decisiones; T020 `nota: desbloqueada 2026-11-22` |
+| A1–A4, A6, A7, A13 | — | resueltos en la ronda 2 | `history/analysis.r2.md` |
 
 ## Hallazgos nuevos
 Ninguno.

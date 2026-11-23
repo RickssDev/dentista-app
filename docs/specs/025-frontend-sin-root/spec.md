@@ -111,7 +111,7 @@ Ninguna.
 | 2026-11-22 | implícita | Vulnerabilidades altas o críticas bloquean | El escáner revisa el repositorio en `/review` y `/release` y, cada semana en CI, de forma informativa. No revisa las piezas base de la imagen construida (ver la fila de A1) | `docs/constitution.md` P11, `docs/security.md`, `.github/workflows/ai-dd.yml` |
 | 2026-11-22 | implícita | La excepción AVD-DS-0002 vence el 2026-12-31 | Liberar antes de esa fecha; al liberar se retira de "Excepciones aceptadas" | `docs/security.md` |
 | 2026-11-22 | brecha | Política para actualizar las versiones fijas | Se suben con `/chore` cuando el escaneo de la imagen construida (al implementar o en `/release`) marque una vulnerabilidad alta o crítica, o al revisar el roadmap; sin bot automático | usuario (`/analyze` A6) |
-| 2026-11-22 | brecha | Versiones a fijar | Las que se usan hoy, sin subir ninguna; la de la etapa final, con al menos 7 días de publicada | usuario (`/analyze` A5, A6) |
+| 2026-11-22 | brecha | Versiones a fijar | Las que se usan hoy, sin subir ninguna. Excepción, solo esta vez, a la regla de 7 días de antigüedad: la imagen de la etapa final (publicada el 2026-11-18) se fija el 2026-11-22, porque ya es la que usa `nginx:alpine` sin fijar | usuario (`/analyze` A5, A6; excepción del 2026-11-22) |
 | 2026-11-22 | brecha | ¿Qué detecta las vulnerabilidades de las piezas base? | Un escaneo de la imagen construida al implementar y en cada `/release`, sin tocar el CI | usuario (`/analyze` A1) |
 
 ## Notas para /plan
@@ -135,3 +135,4 @@ Ninguna.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-22 | CA5 incluye el escaneo de la imagen construida; el caso de abuso deja de decir "en cada PR"; los supuestos pasan a decisiones del usuario | `/analyze` A1, A5, A6 |
+| 2026-11-22 | Excepción a la regla de 7 días para la imagen de nginx: se fija hoy en lugar de esperar al 2026-11-25 | Decisión del usuario: la imagen ya está en uso sin fijar |
