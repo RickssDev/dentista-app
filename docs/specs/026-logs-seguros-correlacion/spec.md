@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: logs-seguros-correlacion
-status: approved
+status: implemented
 created: 2026-11-22
 extends: []
 ---
