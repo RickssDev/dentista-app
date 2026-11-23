@@ -3,6 +3,8 @@ const errorHandler = require('../middlewares/errorHandler');
 const indexRoutes = require('../routes');
 const cors = require('cors');
 const helmet = require('helmet');
+const { requestId } = require('../middlewares/requestId');
+const registroPeticion = require('../middlewares/registroPeticion');
 
 const obtenerOrigenesPermitidos = () => {
   const origenes = (process.env.FRONTEND_URL || "")
@@ -22,6 +24,10 @@ const obtenerOrigenesPermitidos = () => {
 function createApp() {
   const app = express();
   app.set('trust proxy', Number(process.env.TRUST_PROXY) || 0);
+
+  // Primero: identificador y línea por petición, para que toda respuesta los tenga (spec 026).
+  app.use(requestId);
+  app.use(registroPeticion);
 
   app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
