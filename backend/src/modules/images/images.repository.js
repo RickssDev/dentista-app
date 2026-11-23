@@ -32,20 +32,6 @@ exports.getImagenById = async (id) => {
   return rows[0];
 };
 
-exports.createImagen = async (data) => {
-  const { titulo, imagen, visible } = data;
-
-  const [result] = await pool.query(
-    `
-    INSERT INTO imagenes (titulo, imagen, visible)
-    VALUES (?, ?, ?)
-  `,
-    [titulo, imagen, visible],
-  );
-
-  return result.insertId;
-};
-
 // Alta con límite de la galería (spec 029, CA7). Un bloqueo con nombre serializa las altas: con él
 // tomado se cuenta y se inserta en la misma conexión, así dos altas simultáneas no pasan del máximo.
 // `origen` permite inyectar otro proveedor de conexiones en las pruebas.

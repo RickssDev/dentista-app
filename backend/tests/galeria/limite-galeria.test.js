@@ -4,7 +4,6 @@
 jest.mock('../../src/modules/images/images.repository', () => ({
   getImagen: jest.fn(),
   getImagenById: jest.fn(),
-  createImagen: jest.fn(),
   crearImagenConLimite: jest.fn(),
   updateImagen: jest.fn(),
   deleteImagen: jest.fn(),
