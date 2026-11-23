@@ -58,13 +58,13 @@ describe('026 · CA6 formato de la línea', () => {
   });
 
   test('dentro de una petición lleva request_id y actor_id numérico', () => {
-    const req = { user: { id: 12, rol: 'Administrador', correo: 'no@debe.salir' } };
+    const req = { user: { id: 12, rol: 'Administrador', correo: 'no-debe-salir@example.test' } };
     const captura = logger.__capturar();
     ejecutarConContexto({ requestId: 'req-prueba-0001', req }, () => logger.info('Dentro'));
     captura.terminar();
 
     expect(captura.lineas[0]).toMatchObject({ request_id: 'req-prueba-0001', actor_id: 12 });
-    expect(JSON.stringify(captura.lineas[0])).not.toContain('no@debe.salir');
+    expect(JSON.stringify(captura.lineas[0])).not.toContain('no-debe-salir@example.test');
   });
 
   test('actor_id se lee al escribir: aparece si req.user se asigna después de abrir el contexto', () => {
