@@ -15,8 +15,13 @@ async function testConnection() {
     logger.info('Base de datos conectada');
     conn.release();
   } catch (err) {
-    // Sin el mensaje de MySQL, que puede llevar el usuario y el host (spec 026).
-    logger.error('No se pudo conectar con la base de datos', logger.resumirError(err));
+    // Solo el nombre y el código: el mensaje y la pila de un error de conexión citan el host y el
+    // puerto, y los de MySQL, el usuario (spec 026, /review R5).
+    logger.error('No se pudo conectar con la base de datos', {
+      error_name: err?.name || 'Error',
+      code: err?.code,
+      errno: err?.errno,
+    });
     process.exit(1);
   }
 }

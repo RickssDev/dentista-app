@@ -249,6 +249,10 @@ const enviarCorreo = async ({
   return resultado;
 };
 
+// ==========================================
+// RECUPERACIÓN DE CONTRASEÑA
+// ==========================================
+
 exports.enviarCorreoRestablecer = async ({
   para,
   nombre,
