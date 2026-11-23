@@ -29,7 +29,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 
 **Seguridad**
 - RS3 Dependencias vulnerables: mitigado en v1.1.0 (RS3.a, RS3.b)
-- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · ~~RS6 Cabeceras~~: mitigado por [024](specs/024-cabeceras-seguridad/spec.md) en v1.5.0 (RS6.a, RS6.b); excepción AVD-DS-0002 (contenedor del frontend como root) hasta 2026-12-31: `/chore` con imagen no root y versiones fijas de `nginx` y `node`
+- RS2 Sesión: RS2.a, RS2.b · RS5 Subidas: RS5.a, RS5.b · ~~RS6 Cabeceras~~: mitigado por [024](specs/024-cabeceras-seguridad/spec.md) en v1.5.0 (RS6.a, RS6.b); el contenedor del frontend sin root y con imágenes fijadas lo resolvió [025](specs/025-frontend-sin-root/spec.md) en v1.7.0; queda AVD-DS-0002 en `backend/Dockerfile` (desarrollo) hasta 2027-03-31
 - RS7 Límite general: RS7.a · RS8 Enumeración: RS8.a · RS9 Guarda con rol: RS9.a
 
 **Observabilidad**
@@ -40,6 +40,21 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - Cloudflare guarda `robots.txt` y `sitemap.xml` 4 h (`max-age=14400`): tras un despliegue sirve la versión anterior. Propuesta: `/fix` con `Cache-Control` corto en nginx para esos archivos (hallado al liberar v1.3.0).
 - ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
 - ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
+
+**Deuda de la spec 025** (aceptada en /review, ronda 1)
+- 025/R3 El `sed` del `Dockerfile` del frontend no comprueba que quitó `user` y movió `pid`.
+- 025/R4 `apk upgrade libxml2` sin versión en el build; la línea sobra cuando la imagen fijada de nginx traiga 2.13.9-r3 o superior (retirar con `/chore`).
+- 025/R5 El test de `USER` de `imagen-contenedor.test.js` debe exigir `nginx` y rechazar `$` y el grupo root.
+- 025/R6 `fileURLToPath` en `imagen-contenedor.test.js` (la ruta con espacios se rompe).
+- 025/R7 Reescribir el parser del `Dockerfile` de `imagen-contenedor.test.js` como bucle explícito, con un caso de prueba.
+- 025/R8 Capa propia y comentario claro para `libxml2` en el `Dockerfile`.
+- 025/R9 Partir la línea larga de `enContenedor` en `probar-nginx.mjs`.
+- 025/R10 La regla de ruta protegida de `tasks.md` de la 025 no menciona T026.
+- 025/R11 Al subir las imágenes con `/chore`, comprobar que la etiqueta corresponde al digest (`docker buildx imagetools inspect`).
+- 025/R12 Endurecer el servicio frontend del compose de producción (`cap_drop`, `read_only`, tmpfs) **sin** `no-new-privileges`, que anularía la capacidad del puerto 80.
+- 025/R13 Quitar `BACKEND_HOST` y `BACKEND_PORT` del compose de producción (sin efecto; con templates, `20-envsubst` no podría escribir sin root).
+- AVD-DS-0002 en `backend/Dockerfile` (imagen de desarrollo): excepción hasta 2027-03-31; `/chore` con `USER node`.
+- Causa probable de 024/R15: el Chrome de la pasada anterior de `probar-csp.mjs` aún ocupa el puerto 9343 cuando arranca la siguiente (visto en la spec 025, T022); `/fix` que espere a liberar el puerto o use uno libre.
 
 **Deuda de la spec 026** (aceptada en /review, rondas 1 y 2)
 - 026/R14 `/health` se registra en `debug` (decisión del plan); alinear el texto de CA8 en la próxima spec que lo toque.

@@ -97,15 +97,20 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen con el contenedor local (T021–T024)
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: no aplica: sin staging; equivalentes locales en T021–T024, T027, T028 y `probar-nginx.mjs` en CI
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-23 para v1.7.0: fusionó los PR #91 y #92 y desplegó él mismo
+  - nota: el usuario no escribió la frase literal ("desplegar v1.7.0 a producción"); como en versiones anteriores, la aprobación se registra al confirmar el resultado
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
   - el contenedor arranca (`docker compose ps`, logs sin errores de permisos) y `exec frontend ps -o user,args` no muestra root (usuario, CA1)
   - el sitio responde por el túnel sin cambiar su configuración ni el compose (usuario y `curl -sI`, CA4)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-11-23, tras el merge del #92 (`00fb1b2`), en el servidor (usuario): `exec frontend ps -o user,args` solo muestra `nginx` (maestro, 12 workers y el propio `ps`); `libxml2-2.13.9-r3`; logs del frontend sin "denied", "emerg" ni "error". Desde fuera (Claude): `/`, `/login`, `/contacto` con 200 y `/no-existe` con 404, todas con las seis cabeceras; `/api/v1/servicios/publicos` 200 con `X-Request-Id`; un `POST` de 64 KB a `/api/v1/verificacion-v170` llega al backend (404, no 500), así que el reenvío con archivo temporal funciona sin root; recorrido en Chrome sin cabeza sin bloqueos de la CSP, mapa y dos botones de Google. El usuario entró con Google: todo bien. Compose y túnel sin cambios
+- [x] T098 Marcar spec como `released`
   - la fila AVD-DS-0002 de "Excepciones aceptadas" en `docs/security.md` ya no cubre el frontend: pasa a cubrir solo `backend/Dockerfile` (imagen de desarrollo, no va a producción), con motivo y vencimiento; `trivy fs` ya no la reporta en `frontend/Dockerfile` (`/analyze` A7; decisión del usuario, 2026-11-22)
   - `trivy image --severity HIGH,CRITICAL` sobre la imagen de producción en `/release`, sin altas ni críticas (CA5, TM6)
+  - nota: fila AVD-DS-0002 acotada a `backend/Dockerfile` en el commit de release (`b89e588`), con vencimiento 2027-03-31 (decisión del usuario). `trivy image` sobre la imagen de v1.7.0 construida desde `8928207`: 0 altas y 0 críticas; `trivy fs`: solo AVD-DS-0002 en `backend/Dockerfile`, cubierta por la excepción
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

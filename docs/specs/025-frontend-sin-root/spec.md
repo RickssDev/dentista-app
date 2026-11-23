@@ -1,7 +1,8 @@
 ---
 id: 025
 slug: frontend-sin-root
-status: implemented
+status: released
+released: v1.7.0 (2026-11-23)
 created: 2026-11-22
 extends: []
 ---
