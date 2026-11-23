@@ -204,6 +204,16 @@ describe('029 · P16, P20 y constante compartida', () => {
     return (new RegExp(`(^|\\n)\\s*${escapado}\\s*\\{([^}]*)\\}`).exec(css) || [])[2]
   }
   const LITERAL = /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/
+  // P20 (review R3): tampoco espaciados, radios, sombras ni duraciones con unidad. Se admiten `0`
+  // (sin unidad) y el `1px` de los bordes que documenta system.md; lo que va en var(...) es token.
+  const MEDIDA = /(?<![\w.-])\d*\.?\d+(px|rem|em|ms|s)\b/g
+  const medidasLiterales = (cuerpo) =>
+    cuerpo.split(';').flatMap((declaracion) => {
+      const [propiedad, ...resto] = declaracion.split(':')
+      const valor = resto.join(':').replace(/var\([^)]*\)/g, '')
+      const nombre = (propiedad || '').trim()
+      return (valor.match(MEDIDA) || []).filter((m) => !(m === '1px' && nombre.startsWith('border')))
+    })
 
   test('control positivo: el patrón detecta un literal de ejemplo', () => {
     const ejemplo = '.ejemplo { color: #5b6472; }'
@@ -211,12 +221,18 @@ describe('029 · P16, P20 y constante compartida', () => {
     expect(regla(ejemplo, '.ejemplo')).toMatch(LITERAL)
   })
 
+  test('control positivo: detecta espaciados, radios y duraciones literales, y admite el borde de 1px y los tokens', () => {
+    const ejemplo = '.ejemplo { margin: 12px 0; border-radius: .5rem; transition: opacity 200ms; border: 1px solid var(--line); padding: var(--space-3) var(--space-4); }'
+    expect(medidasLiterales(regla(ejemplo, '.ejemplo'))).toEqual(['12px', '.5rem', '200ms'])
+  })
+
   test.each(['.encabezado-detalle', '.encabezado-btn[aria-disabled="true"]', '.aviso-panel'])(
-    'la regla %s existe y no tiene colores literales (A4)',
+    'la regla %s existe y no tiene colores ni medidas literales (A4, R3)',
     (selector) => {
       const cuerpo = regla(PANEL, selector)
       expect(cuerpo, `falta la regla ${selector}`).toBeDefined()
       expect(cuerpo).not.toMatch(LITERAL)
+      expect(medidasLiterales(cuerpo)).toEqual([])
     },
   )
 
