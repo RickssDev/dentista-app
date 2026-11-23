@@ -106,6 +106,15 @@ Los campos completos son inferidos de las consultas.
     `tests/seguridad-recursos.test.js` falla si el código usa una URL externa que no esté en su
     lista ni en la CSP.
   - Una `location` nueva debe incluir el archivo; lo comprueba `seguridad-cabeceras.test.js`.
+- Contenedor del frontend sin root (spec 025): nginx corre como `nginx` (uid 101) en el puerto 80,
+  con solo la capacidad `cap_net_bind_service` sobre su binario (`setcap` se instala y se retira en
+  la misma capa). El pid está en `/tmp` y `/var/cache/nginx` es de `nginx`; las páginas y la
+  configuración siguen siendo de root, de solo lectura para el servicio.
+  - Las imágenes base van con etiqueta exacta y digest (`node` y `nginx`). Se suben con `/chore`
+    cuando `trivy image` marque una vulnerabilidad alta o crítica; mientras la imagen fijada no
+    traiga una corrección, el paquete se actualiza en el build (hoy, `libxml2`).
+  - Lo comprueban `tests/imagen-contenedor.test.js` (versiones, `USER`, puerto) y
+    `scripts/probar-nginx.mjs` (procesos, escrituras, capacidades, `setcap`, `libxml2`).
 
 ## Backend
 - Contratos de API: TODO(init): no hay OpenAPI; el contrato es implícito en `routes/` y `normalize.js`.

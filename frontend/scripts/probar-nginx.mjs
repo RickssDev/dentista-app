@@ -27,6 +27,25 @@ const directivas = (csp) => new Set((csp || '').split(';').map((d) => d.trim().s
 
 const docker = (...args) => execFileSync('docker', args, { stdio: ['ignore', 'pipe', 'inherit'] }).toString().trim()
 
+// Control positivo antes de cada comprobación de dentro del contenedor (review 025, R1): la orden se
+// ejecuta, la identidad es nginx y /tmp es escribible. Si no, la comprobación falla diciendo por qué
+const dentro = (comprobar) => {
+  const id = enContenedor('id -un')
+  if (id.codigo !== 0 || id.salida !== 'nginx') return { ok: false, detalle: `control: id -un dio "${id.salida}" (código ${id.codigo}), se esperaba nginx` }
+  const tmp = enContenedor('touch /tmp/.control-escritura && rm /tmp/.control-escritura')
+  if (tmp.codigo !== 0) return { ok: false, detalle: `control: no se pudo escribir en /tmp (código ${tmp.codigo}: ${tmp.salida.slice(0, 80)})` }
+  return comprobar()
+}
+
+// Orden de shell dentro del contenedor en marcha (spec 025); devuelve su código y su salida
+const enContenedor = (orden) => {
+  try {
+    return { codigo: 0, salida: execFileSync('docker', ['exec', CONTENEDOR, 'sh', '-c', orden], { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim() }
+  } catch (e) {
+    return { codigo: e.status ?? 1, salida: `${e.stdout ?? ''}${e.stderr ?? ''}`.trim() }
+  }
+}
+
 const pedir = (ruta) => fetch(`${BASE}${ruta}`, { redirect: 'manual' })
 
 // Petición sin descomprimir: deja ver la cabecera Content-Encoding tal como la manda nginx
@@ -141,6 +160,59 @@ const comprobaciones = [
     const r = await pedir('/no-existe')
     return r.status === 404 && /<meta name="robots" content="noindex"/.test(await r.text()) && Boolean(r.headers.get('content-security-policy'))
   }],
+  // Spec 025 · CA2 (review R2): el reenvío a la API con nginx sin root. Un cuerpo de 64 KB supera el
+  // búfer en memoria (16 KB) y nginx lo escribe en /var/cache/nginx/client_temp antes de reenviarlo.
+  // Sin backend la respuesta esperada es 502; un 500 o un 403 indicaría un problema de permisos
+  ['/api/ con cuerpo de 64 KB → 502 sin backend (reenvío sin root)', async () => {
+    const cuerpo = JSON.stringify({ correo: 'prueba@ejemplo.test', relleno: 'x'.repeat(64 * 1024) })
+    const r = await fetch(`${BASE}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: cuerpo, redirect: 'manual' })
+    return { ok: r.status === 502, detalle: `respondió ${r.status}, se esperaba 502 (sin backend)` }
+  }],
+  // Spec 025 · CA1, CA7: dentro del contenedor, con la identidad por defecto de la imagen.
+  // dentro() exige antes un control positivo: sin él, "denegado" o "no encontrado" no significan nada
+  ['contenedor → ningún proceso como root', () => dentro(() => {
+    const r = enContenedor('ps -o user')
+    const lineas = r.salida.split(/\r?\n/).map((u) => u.trim()).filter(Boolean)
+    if (r.codigo !== 0 || lineas[0] !== 'USER') return { ok: false, detalle: `ps falló (código ${r.codigo}): ${r.salida.slice(0, 120)}` }
+    const deRoot = lineas.slice(1).filter((u) => u === 'root' || u === '0')
+    return { ok: deRoot.length === 0, detalle: `procesos por usuario: ${lineas.slice(1).join(', ')}` }
+  })],
+  ['contenedor → sin permiso para cambiar páginas ni configuración', () => dentro(() => {
+    const intentos = {
+      'crear un archivo en /usr/share/nginx/html': 'touch /usr/share/nginx/html/.prueba-escritura',
+      'sobrescribir /usr/share/nginx/html/index.html': ': >> /usr/share/nginx/html/index.html',
+      'crear un archivo en /etc/nginx/conf.d': 'touch /etc/nginx/conf.d/.prueba-escritura',
+      'escribir en /etc/nginx/nginx.conf': ': >> /etc/nginx/nginx.conf',
+      'escribir en /etc/nginx/snippets/seguridad.conf': ': >> /etc/nginx/snippets/seguridad.conf',
+      'crear un archivo en /docker-entrypoint.d': 'touch /docker-entrypoint.d/.prueba-escritura',
+    }
+    // Denegado = la orden falla y dice por qué; cualquier otro fallo no prueba nada
+    const noDenegados = Object.entries(intentos).flatMap(([que, orden]) => {
+      const r = enContenedor(orden)
+      if (r.codigo === 0) return [`se pudo ${que}`]
+      return /Permission denied|Read-only/i.test(r.salida) ? [] : [`${que}: falló por otra razón (código ${r.codigo}: ${r.salida.slice(0, 80)})`]
+    })
+    return { ok: noDenegados.length === 0, detalle: noDenegados.join('; ') }
+  })],
+  // Spec 025 · TM3: solo la capacidad de abrir puertos bajos (cap_net_bind_service = bit 10)
+  ['contenedor → capacidades efectivas solo cap_net_bind_service', () => dentro(() => {
+    const linea = enContenedor('grep CapEff /proc/1/status').salida
+    const valor = (linea.match(/CapEff:\s*([0-9a-f]+)/i) || [])[1]
+    return { ok: valor !== undefined && BigInt(`0x${valor}`) === 0x400n, detalle: `CapEff del proceso 1: ${valor ?? '(no se pudo leer)'}, se esperaba 0x400` }
+  })],
+  // Spec 025 · CA5, TM6: libxml2 con la corrección de CVE-2026-86144 (2.13.9-r3), comparando con apk
+  ['contenedor → libxml2 2.13.9-r3 o superior (CVE-2026-86144)', () => dentro(() => {
+    const instalada = enContenedor('apk info -e -v libxml2').salida.replace(/^libxml2-/, '')
+    const orden = instalada ? enContenedor(`apk version -t ${instalada} 2.13.9-r3`).salida : ''
+    return { ok: orden === '>' || orden === '=', detalle: `libxml2 ${instalada || '(no instalada)'}, se esperaba 2.13.9-r3 o superior` }
+  })],
+  // Spec 025 · TM5: la herramienta que concede capacidades no queda en la imagen
+  ['contenedor → sin setcap en la imagen', () => dentro(() => {
+    // El código de command -v varía según el shell (busybox da 127): se pide una respuesta explícita
+    const r = enContenedor('command -v setcap || echo AUSENTE')
+    if (r.codigo !== 0) return { ok: false, detalle: `la orden falló (código ${r.codigo}: ${r.salida.slice(0, 80)})` }
+    return { ok: r.salida === 'AUSENTE', detalle: `setcap presente en ${r.salida}` }
+  })],
 ]
 
 let fallos = 0

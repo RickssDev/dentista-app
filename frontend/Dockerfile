@@ -1,5 +1,5 @@
 # Etapa 1: Construir React con Vite
-FROM node:22-alpine AS build
+FROM node:22.23.4-alpine3.24@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 AS build
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN npm run build
 
 # Etapa 2: Servir React con Nginx
-FROM nginx:alpine
+FROM nginx:1.31.9-alpine3.24@sha256:fb4658584bd9a916ffb6f6e365f97c25cfdb2923801f551ea08356e695f14ff7
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
@@ -31,6 +31,20 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY nginx-seguridad.conf /etc/nginx/snippets/seguridad.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Sin root (spec 025): nginx recibe solo el permiso de abrir el puerto 80 (setcap se instala y se
+# retira en esta misma capa), el pid va a /tmp y la caché pasa a ser de nginx. Las páginas y la
+# configuración siguen siendo de root: el servicio no puede modificarlas.
+# libxml2: CVE-2026-86144 (alta), corregida en 2.13.9-r3 y aún sin publicar en la imagen fijada;
+# esta línea sobra cuando una imagen fijada traiga la corrección (spec 025, T026).
+RUN apk upgrade --no-cache libxml2 \
+ && apk add --no-cache --virtual .setcap libcap-setcap \
+ && setcap cap_net_bind_service=+ep /usr/sbin/nginx \
+ && apk del --no-cache .setcap \
+ && sed -i -e '/^user /d' -e 's#^pid .*#pid /tmp/nginx.pid;#' /etc/nginx/nginx.conf \
+ && chown -R nginx:nginx /var/cache/nginx
+
+USER nginx
 
 EXPOSE 80
 
