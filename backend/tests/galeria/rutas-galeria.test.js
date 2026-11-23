@@ -152,6 +152,48 @@ describe('TM6 · la ruta de la imagen solo sale del archivo subido', () => {
   });
 });
 
+describe('R1, R2 · PUT /imagenes/:id con la galería llena', () => {
+  const ANTERIOR = '/uploads/3.jpg';
+
+  beforeEach(() => {
+    repo.getImagenById.mockResolvedValue({ id_imagen: 3, titulo: 'Antes', imagen: ANTERIOR, visible: 1 });
+    repo.updateImagen.mockResolvedValue();
+  });
+
+  test('P8: sin token → 401 y no se actualiza nada', async () => {
+    const r = await request(app).put('/api/v1/imagenes/3').send({ titulo: 'Después' });
+    expect(r.status).toBe(401);
+    expect(repo.updateImagen).not.toHaveBeenCalled();
+  });
+
+  test('P8: Paciente → 403 y no se actualiza nada', async () => {
+    const r = await request(app).put('/api/v1/imagenes/3').set('Authorization', sesion(3))
+      .send({ titulo: 'Después' });
+    expect(r.status).toBe(403);
+    expect(repo.updateImagen).not.toHaveBeenCalled();
+  });
+
+  test('CA3: reemplazar la foto con 15 guarda la subida, borra la anterior y nunca la ajena', async () => {
+    const r = await request(app).put('/api/v1/imagenes/3').set('Authorization', sesion(2))
+      .set('x-prueba-archivo', '1').send({ imagen: AJENA });
+    expect(r.status).toBe(200);
+    const [, cambios] = repo.updateImagen.mock.calls[0];
+    expect(cambios.imagen).toBe(SUBIDA);
+    expect(borrarArchivo).toHaveBeenCalledWith(ANTERIOR);
+    expect(borrarArchivo).not.toHaveBeenCalledWith(AJENA);
+    expect(repo.crearImagenConLimite).not.toHaveBeenCalled();
+  });
+
+  test('CA3: cambiar solo la visibilidad con 15 se guarda', async () => {
+    const r = await request(app).put('/api/v1/imagenes/3').set('Authorization', sesion(1))
+      .send({ visible: '0' });
+    expect(r.status).toBe(200);
+    const [, cambios] = repo.updateImagen.mock.calls[0];
+    expect(cambios).toEqual({ visible: '0' });
+    expect(repo.crearImagenConLimite).not.toHaveBeenCalled();
+  });
+});
+
 describe('P14 y P15 · logs del 409', () => {
   test('la línea «Petición atendida» lleva el request_id de la respuesta y ningún log trae el título ni el archivo', async () => {
     llena();
