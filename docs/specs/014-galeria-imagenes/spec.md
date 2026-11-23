@@ -45,3 +45,4 @@ La clínica muestra fotografías de sus instalaciones y su trabajo.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-23 | Corregido por la ficha 2026-11-23-hotfix-limite-subida-nginx en v1.7.1 (CA2) | /release |
