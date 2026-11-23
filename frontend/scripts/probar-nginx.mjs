@@ -171,6 +171,12 @@ const comprobaciones = [
     const valor = (linea.match(/CapEff:\s*([0-9a-f]+)/i) || [])[1]
     return { ok: valor !== undefined && BigInt(`0x${valor}`) === 0x400n, detalle: `CapEff del proceso 1: ${valor ?? '(no se pudo leer)'}, se esperaba 0x400` }
   }],
+  // Spec 025 · CA5, TM6: libxml2 con la corrección de CVE-2026-86144 (2.13.9-r3), comparando con apk
+  ['contenedor → libxml2 2.13.9-r3 o superior (CVE-2026-86144)', async () => {
+    const instalada = enContenedor('apk info -e -v libxml2').salida.replace(/^libxml2-/, '')
+    const orden = instalada ? enContenedor(`apk version -t ${instalada} 2.13.9-r3`).salida : ''
+    return { ok: orden === '>' || orden === '=', detalle: `libxml2 ${instalada || '(no instalada)'}, se esperaba 2.13.9-r3 o superior` }
+  }],
   // Spec 025 · TM5: la herramienta que concede capacidades no queda en la imagen
   ['contenedor → sin setcap en la imagen', async () => {
     const r = enContenedor('command -v setcap')
