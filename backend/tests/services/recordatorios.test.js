@@ -107,7 +107,8 @@ const lineasCon = (mensaje) => captura.lineas.filter((l) => l.message === mensaj
 describe('026 · /review R3 fallos de la base de datos en los avisos', () => {
   test('cron: si falla marcar el recordatorio, queda «Recordatorio no marcado» y no «no enviado»', async () => {
     encender();
-    repo.marcarRecordatorioEnviado.mockRejectedValue(errorDeMySQL());
+    // Once: el automock no se restaura entre casos (/review R22).
+    repo.marcarRecordatorioEnviado.mockRejectedValueOnce(errorDeMySQL());
 
     await correrCron();
 
@@ -120,6 +121,22 @@ describe('026 · /review R3 fallos de la base de datos en los avisos', () => {
       context: { id_cita: 1, error_name: 'Error', code: 'ER_LOCK_DEADLOCK' },
     });
     expect(linea.context).not.toHaveProperty('servicio');
+  });
+
+  test('cron: tras el fallo al marcar, la ejecución se detiene y cierra con su resumen', async () => {
+    encender();
+    repo.getCitasParaRecordatorio.mockResolvedValueOnce([CITA, { ...CITA, id_cita: 2 }]);
+    repo.marcarRecordatorioEnviado.mockRejectedValueOnce(errorDeMySQL());
+
+    await correrCron();
+
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(lineasCon('Recordatorio no marcado')).toEqual([
+      expect.objectContaining({ context: expect.objectContaining({ id_cita: 1 }) }),
+    ]);
+    expect(lineasCon('Recordatorios: fin de ejecución')).toEqual([
+      expect.objectContaining({ context: { revisadas: 1, enviadas: 1 } }),
+    ]);
   });
 
   test('crear: si falla la consulta del paciente, queda «Aviso de WhatsApp no preparado» y la cita se crea', async () => {
