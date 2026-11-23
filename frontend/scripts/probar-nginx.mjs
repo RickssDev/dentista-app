@@ -168,6 +168,26 @@ const comprobaciones = [
     const r = await fetch(`${BASE}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: cuerpo, redirect: 'manual' })
     return { ok: r.status === 502, detalle: `respondió ${r.status}, se esperaba 502 (sin backend)` }
   }],
+  // Spec 014 · CA2 (hotfix 2026-11-23): una imagen del límite de la app (6 MB) en un formulario
+  // multipart llega a Express. Sin backend, 502; un 413 es nginx cortando en su 1 MB por defecto
+  ['/api/ con una imagen de 6 MB → 502 sin backend (nginx no la corta)', async () => {
+    const form = new FormData()
+    form.append('titulo', 'Prueba')
+    form.append('imagen', new Blob([new Uint8Array(6 * 1024 * 1024)], { type: 'image/jpeg' }), 'prueba.jpg')
+    const r = await fetch(`${BASE}/api/v1/imagenes`, { method: 'POST', body: form, redirect: 'manual' })
+    return { ok: r.status === 502, detalle: `respondió ${r.status}, se esperaba 502 (sin backend)` }
+  }],
+  // El límite sigue existiendo: un cuerpo de 7,5 MB lo corta nginx. nginx responde 413 por el
+  // Content-Length sin leer el cuerpo y cierra; si la conexión se corta antes de leer la respuesta,
+  // se informa como tal en vez de un fallo genérico (review del hotfix, hallazgo 4)
+  ['/api/ con un cuerpo de 7,5 MB → 413', async () => {
+    try {
+      const r = await fetch(`${BASE}/api/v1/imagenes`, { method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: new Uint8Array(7.5 * 1024 * 1024), redirect: 'manual' })
+      return { ok: r.status === 413, detalle: `respondió ${r.status}, se esperaba 413` }
+    } catch (e) {
+      return { ok: false, detalle: `la conexión se cortó sin leer la respuesta (${e.cause?.code || e.message}); repetir la prueba` }
+    }
+  }],
   // Spec 025 · CA1, CA7: dentro del contenedor, con la identidad por defecto de la imagen.
   // dentro() exige antes un control positivo: sin él, "denegado" o "no encontrado" no significan nada
   ['contenedor → ningún proceso como root', () => dentro(() => {
