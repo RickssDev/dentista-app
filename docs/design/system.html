@@ -116,6 +116,10 @@
     --color-focus: #c7446a;
     --color-danger: #e11d48;
     --color-success: #047857;
+    /* Variantes de marca (system.md → Color) que usa el aviso informativo del panel (spec 029) */
+    --primary-50: #fff4f6;
+    --primary-100: #fce1e7;
+    --ink-2: #334155;
 
     --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
     --font-mono: ui-monospace, monospace;
@@ -178,6 +182,8 @@
   .opt .c-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-5);
                 border: var(--border-width) solid var(--color-border); }
 
+  .opt .c-aviso-panel { margin: 0; padding: var(--space-3) var(--space-4); border: var(--border-width) solid var(--primary-100);
+                border-radius: var(--radius-sm); background: var(--primary-50); color: var(--ink-2); }
   .opt .c-alert { display: grid; gap: var(--space-1); padding: var(--space-4); border-radius: var(--radius-md);
                 border: var(--border-width) solid currentColor; }
   .opt .c-alert--error { color: var(--color-danger); }
@@ -296,6 +302,10 @@
     <h2>Componentes</h2>
     <p class="v-note">Se muestran como recortes de capturas; sin capturas por decisión del usuario. Su descripción y estados están en <code>docs/design/system.md</code>.</p>
     <div class="v-stage"><div class="opt" style="padding:var(--space-5)"><p class="t-small">sin captura (decisión del usuario): .dt-btn, .mf-btn, ModalFormulario, ModalConfirmacion, EmptyState, TablaCitas, CalendarioMes.</p></div></div>
+    <h3>Aviso informativo del panel (spec 029)</h3>
+    <div class="v-stage"><div class="opt" style="padding:var(--space-5)">
+      <p class="c-aviso-panel" role="status">Llegaste al máximo de 15 imágenes. Elimina una para agregar otra.</p>
+    </div></div>
   </section>
 
   <section class="v-section" id="pantallas">

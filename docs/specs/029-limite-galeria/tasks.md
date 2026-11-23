@@ -1,6 +1,7 @@
 ---
 spec: 029-limite-galeria
 plan: plan.md
+impl_base: 567c0b9
 status: approved
 ---
 
@@ -30,7 +31,8 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   públicas. ➖
 
 ## Preparación
-- [ ] T001 Incorporar al sistema de diseño el «Aviso informativo del panel» y `aria-disabled` en `EncabezadoModulo` — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: «Aviso, diálogo y mensajes» describe el aviso (fondo `--primary-50`, borde `--primary-100`, texto `--ink-2`, `role="status"`, contraste 9,63:1); «Aviso» incluye el relleno 12px 16px, el borde de 1px y el radio `--radius-sm`; «Lista o tarjeta» dice que `EncabezadoModulo` admite una línea de detalle (texto `--muted`) y el botón con `aria-disabled` + `aria-describedby`, como mejora propia; DS10 **sigue «pendiente»** sin cambios (A5); `system.html` muestra el aviso; hay una fila en «Decisiones» que cita la spec 029
+- [x] T001 Incorporar al sistema de diseño el «Aviso informativo del panel» y `aria-disabled` en `EncabezadoModulo` — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: «Aviso, diálogo y mensajes» describe el aviso (fondo `--primary-50`, borde `--primary-100`, texto `--ink-2`, `role="status"`, contraste 9,63:1); «Aviso» incluye el relleno 12px 16px, el borde de 1px y el radio `--radius-sm`; «Lista o tarjeta» dice que `EncabezadoModulo` admite una línea de detalle (texto `--muted`) y el botón con `aria-disabled` + `aria-describedby`, como mejora propia; DS10 **sigue «pendiente»** sin cambios (A5); `system.html` muestra el aviso; hay una fila en «Decisiones» que cita la spec 029
+  - nota: el relleno del aviso usa los tokens existentes `--space-3` y `--space-4` (12px y 16px): no hizo falta añadir valores al sistema. `system.html` gana las variantes `--primary-50`, `--primary-100` e `--ink-2` en sus tokens y una muestra del aviso. DS10 sigue «pendiente» (A5)
 - [ ] T002 [P] Crear la constante y el mensaje del límite en el backend — `backend/src/modules/images/images.limites.js` — hecho cuando: exporta `MAX_IMAGENES_GALERIA = 15`, `MENSAJE_GALERIA_LLENA` con el texto exacto de CA2 y `MENSAJE_GALERIA_OCUPADA` («La galería está ocupada. Intenta de nuevo.») — cubre: CA2
 - [ ] T003 [P] Crear la constante del límite en el frontend — `frontend/src/utils/limitesGaleria.js` — hecho cuando: exporta `MAX_IMAGENES_GALERIA = 15` — cubre: CA5
 
