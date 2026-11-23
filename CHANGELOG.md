@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-11-23
+### Fixed
+- Vuelven a poder subirse imágenes de hasta 6 MB en la galería, las promociones, los servicios y las fotos de usuario; desde hace un tiempo se rechazaba cualquier imagen de más de 1 MB (fix 2026-11-23-hotfix-limite-subida-nginx).
+
 ## [1.7.0] - 2026-11-23
 ### Security
 - El servidor que entrega el sitio ya no corre con permisos de administrador: aunque alguien aprovechara una falla suya, no podría cambiar las páginas que ven pacientes y personal ni sus protecciones (spec 025).
