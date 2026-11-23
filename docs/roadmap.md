@@ -130,7 +130,6 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - 021/R20 `aria-describedby` solo con mensaje no vacío.
 
 **Calidad**
-- 15 problemas de lint previos en el frontend y 4 errores previos en el backend.
+- 15 problemas de lint previos en el frontend y 2 errores previos en el backend (`faqs.service.js`, `images.service.js`; los de `errorHandler.js` se resolvieron en la spec 026).
 - Lint de estilos que exige el principio P20 de la constitución.
 - Aprobar `docs/constitution.md`, que sigue en `draft`.
-- Limpiar la duplicación de `backend/src/middlewares/errorHandler.js`.
