@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-23
+### Security
+- Los registros técnicos del servidor ya no guardan teléfonos, correos, nombres, contraseñas, tokens ni enlaces de recuperación de contraseña, tampoco cuando falla un envío por WhatsApp o por correo ni cuando falla la base de datos (spec 026).
+
+### Changed
+- Cada respuesta del servidor lleva un identificador de petición (`X-Request-Id`), y todos los registros de esa petición, y de cada ejecución de los recordatorios, lo llevan también. Así, ante un error que reporte alguien, se pueden encontrar todos sus registros (spec 026).
+- Los registros del servidor son una línea JSON por mensaje, con nivel, fecha y quién hizo la petición, y cada petición deja una sola línea con su resultado y su duración (spec 026).
+
 ## [1.5.0] - 2026-11-22
 ### Security
 - El navegador protege a quien visita el sitio: solo ejecuta el código del propio sitio y el inicio de sesión de Google, no deja mostrar el sitio dentro de páginas ajenas (evita que engañen a alguien para pulsar donde no quiere) y siempre usa la conexión segura (spec 024).
