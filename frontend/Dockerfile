@@ -35,7 +35,10 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Sin root (spec 025): nginx recibe solo el permiso de abrir el puerto 80 (setcap se instala y se
 # retira en esta misma capa), el pid va a /tmp y la caché pasa a ser de nginx. Las páginas y la
 # configuración siguen siendo de root: el servicio no puede modificarlas.
-RUN apk add --no-cache --virtual .setcap libcap-setcap \
+# libxml2: CVE-2026-86144 (alta), corregida en 2.13.9-r3 y aún sin publicar en la imagen fijada;
+# esta línea sobra cuando una imagen fijada traiga la corrección (spec 025, T026).
+RUN apk upgrade --no-cache libxml2 \
+ && apk add --no-cache --virtual .setcap libcap-setcap \
  && setcap cap_net_bind_service=+ep /usr/sbin/nginx \
  && apk del --no-cache .setcap \
  && sed -i -e '/^user /d' -e 's#^pid .*#pid /tmp/nginx.pid;#' /etc/nginx/nginx.conf \
