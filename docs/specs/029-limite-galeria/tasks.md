@@ -1,7 +1,7 @@
 ---
 spec: 029-limite-galeria
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 029 Límite de 15 imágenes en la galería

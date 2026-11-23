@@ -1,6 +1,6 @@
 ---
 spec: 029-limite-galeria
-status: draft   # draft | approved | blocked
+status: approved   # draft | approved | blocked
 constitution_version: 1.0.0
 created: 2026-11-23
 ---
