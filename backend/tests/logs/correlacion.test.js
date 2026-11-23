@@ -274,13 +274,19 @@ describe('026 · /review R2 petición abortada por el cliente', () => {
 
   let servidor;
   let temporizadores;
+  let avisarLlegada;
+  let llegada;
 
   beforeEach(async () => {
     temporizadores = [];
+    llegada = new Promise((resolve) => {
+      avisarLlegada = resolve;
+    });
     const mini = express();
     mini.use(requestId);
     mini.use(registroPeticion);
     mini.get('/lenta', (_req, res) => {
+      avisarLlegada();
       temporizadores.push(setTimeout(() => res.end('tarde'), 300));
     });
     mini.get('/rapida', (_req, res) => res.end('ok'));
@@ -310,7 +316,10 @@ describe('026 · /review R2 petición abortada por el cliente', () => {
       const { port } = servidor.address();
       const cliente = http.get({ port, path: '/lenta' });
       cliente.on('error', () => {});
-      temporizadores.push(setTimeout(() => cliente.destroy(), 50));
+      // Se corta cuando la ruta ya recibió la petición, no tras un tiempo fijo (con carga, 50 ms
+      // podían cortar antes de que llegara).
+      await llegada;
+      cliente.destroy();
 
       const linea = await esperarLinea(captura);
       // Dejar que la respuesta tardía llegue a escribirse: no debe sumar otra línea.
