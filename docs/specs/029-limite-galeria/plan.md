@@ -116,8 +116,8 @@ cambian. El panel cuenta con `GET /imagenes`, que ya trae todas, visibles y ocul
     - alta con archivo subido e `imagen` ajena en el cuerpo, con 14 → 201 y el repositorio recibe
       la ruta del archivo subido;
     - lo mismo con 15 → 409, y `borrarArchivo` recibe solo la ruta del archivo subido;
-    - `PUT` sin archivo y con `imagen` ajena en el cuerpo → 200 y la imagen guardada no cambia de
-      ruta (/analyze A17).
+    - `PUT` sin archivo, con un título nuevo e `imagen` ajena en el cuerpo → 200: se guarda el
+      título y la ruta no cambia (/analyze A17).
   - Con un título distintivo: existe la línea «Petición atendida» con `status` 409 y el
     `request_id` de la cabecera, y el título no aparece en ninguna línea capturada.
 - **Panel (Vitest + Testing Library):** `frontend/tests/galeria-limite.test.jsx`, con `api`
