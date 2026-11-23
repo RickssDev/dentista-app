@@ -45,7 +45,7 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - nota: 9 de 12 fallan por la razón esperada. Pasan desde el principio los dos de permisos (TM5) y el de alta sin archivo ni título
   - nota: TM5 comprobado rompiendo la ruta: sin `authorizeRoles`, el caso de Paciente falla; sin `verifyToken` ni `authorizeRoles`, falla el de sin token (`authorizeRoles` sola ya responde 401). Restaurado, pasan
   - nota: el caso «sin archivo ni título con imagen ajena» se comprobará rompiendo el control en T021, porque el borrado aún no existe
-- [ ] T013 [P] Tests del panel de la galería con `api` simulado — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: fallan por la razón esperada (no hay contador ni aviso). Casos:
+- [x] T013 [P] Tests del panel de la galería con `api` simulado — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: fallan por la razón esperada (no hay contador ni aviso). Casos:
   - con 3: «3 de 15 imágenes» y el botón «Nueva imagen» sin `aria-disabled`;
   - con 15: el botón tiene `aria-disabled="true"`, su descripción accesible es el texto del aviso, el clic no abre el diálogo y el aviso tiene `role="status"`;
   - agregar una imagen y eliminar otra actualizan el contador sin recargar, y eliminar con 15 reactiva el botón;
@@ -56,6 +56,10 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - `MAX_IMAGENES_GALERIA` coincide con el valor de `backend/src/modules/images/images.limites.js`;
   - la página pública `Gallery` con 15 imágenes no muestra «de 15».
   — cubre: CA2, CA4, CA5, CA6, CA9 — depende: T002, T003
+  - nota: 7 de 12 fallan por la razón esperada (no hay contador, aviso ni reglas CSS); dos corridas iguales
+  - nota: comprobados rompiendo lo protegido los que pasan desde el principio: contraste (`--ink-2` cambiado a un gris claro), constante compartida (15 → 16 en el frontend) y galería pública (texto «de N imágenes» añadido a `Gallery.jsx`); todos fallan rotos y pasan restaurados. El control positivo de literales es su propia comprobación. El caso «lista sin cargar» (A16) pasa hoy porque no hay contador: se comprueba rompiéndolo en T023
+  - nota: CA9: la página pública ya muestra «Mostrando N de 15» (paginación); el test busca «de 15 imágenes», el texto del contador del panel
+  - nota: jsdom no da `import.meta.url` como ruta de archivo: se leen los CSS con `process.cwd()`, como `galeria-estados.test.jsx`
 - [ ] T014 [P] Test de no regresión de `EncabezadoModulo` sin las props nuevas — `frontend/tests/encabezado-modulo.test.jsx` — hecho cuando: pasa antes del cambio (caracterización) y comprueba que, sin `detalle` ni `botonNoDisponible`, el botón no lleva `aria-disabled` ni `aria-describedby`, el clic llama a `onBoton` y no se pinta la línea de detalle; los casos con `botonNoDisponible` fallan por la razón esperada — cubre: CA6
 
 ## Implementación
