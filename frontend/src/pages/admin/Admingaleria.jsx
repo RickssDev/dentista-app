@@ -14,6 +14,11 @@ import FiltrosCard from "../../components/FiltrosCard";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
 import ModalFormulario from "../../components/ModalFormulario";
 import { validarImagen } from "../../utils/validarImagen";
+import { MAX_IMAGENES_GALERIA } from "../../utils/limitesGaleria";
+
+// Aviso de galería llena (spec 029, CA6); el botón «Nueva imagen» lo usa como descripción
+const ID_AVISO_LLENA = "aviso-galeria-llena";
+const AVISO_LLENA = `Llegaste al máximo de ${MAX_IMAGENES_GALERIA} imágenes. Elimina una para agregar otra.`;
 
 const MESES = [
   "Ene",
@@ -73,14 +78,21 @@ function AdminImagenes() {
   const [errorForm, setErrorForm] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [vistaPrevia, setVistaPrevia] = useState(null);
+  // Sin lista cargada no se muestran contador ni aviso: el servidor sigue limitando (spec 029, A16)
+  const [listaCargada, setListaCargada] = useState(false);
   const obtenerImagenes = async () => {
     try {
       const data = await api("/imagenes");
       setImagenes(data.payload);
+      setListaCargada(true);
     } catch (error) {
       console.error(error);
+      setListaCargada(false);
     }
   };
+
+  // El límite lo aplica el servidor; el panel solo lo refleja (spec 029, P17)
+  const galeriaLlena = listaCargada && imagenes.length >= MAX_IMAGENES_GALERIA;
 
   useEffect(() => {
     obtenerImagenes();
@@ -121,6 +133,7 @@ function AdminImagenes() {
   };
 
   const abrirNueva = () => {
+    if (galeriaLlena) return;
     setForm({ ...FORM_VACIO });
     setEditando(false);
     setImagenId(null);
@@ -185,6 +198,8 @@ function AdminImagenes() {
     } catch (error) {
       console.error(error);
       setErrorForm(error.message || "No se pudo guardar la imagen");
+      // Otra persona pudo llenar la galería: se corrige el contador (spec 029)
+      obtenerImagenes();
     } finally {
       setGuardando(false);
     }
@@ -230,9 +245,20 @@ function AdminImagenes() {
       <EncabezadoModulo
         titulo="Galería"
         descripcion="Administra las imágenes que se muestran en el sitio público de la clínica."
+        detalle={
+          listaCargada
+            ? `${imagenes.length} de ${MAX_IMAGENES_GALERIA} imágenes`
+            : undefined
+        }
         textoBoton="Nueva imagen"
         onBoton={abrirNueva}
+        botonNoDisponible={galeriaLlena}
+        idDescripcionBoton={ID_AVISO_LLENA}
       />
+
+      <div role="status" id={ID_AVISO_LLENA}>
+        {galeriaLlena && <p className="aviso-panel">{AVISO_LLENA}</p>}
+      </div>
 
       <FiltrosCard
         placeholder="Buscar por título..."

@@ -141,13 +141,35 @@
   transition: 0.2s;
 }
 
-.encabezado-btn:hover {
+.encabezado-btn:not([aria-disabled="true"]):not(:disabled):hover {
   background: #d63a5a;
 }
 
 .encabezado-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Spec 029: botón no disponible pero enfocable (aria-disabled), igual que :disabled */
+.encabezado-btn[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Spec 029: línea de detalle bajo la descripción (p. ej. «3 de 15 imágenes») */
+.encabezado-detalle {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+}
+
+/* Spec 029: aviso informativo del panel (system.md → Aviso, diálogo y mensajes) */
+.aviso-panel {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--primary-100);
+  border-radius: var(--radius-sm);
+  background: var(--primary-50);
+  color: var(--ink-2);
 }
 
 /* Grupo de varios botones (reportes, usuario en el dashboard) */

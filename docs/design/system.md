@@ -87,9 +87,18 @@ Estilos por pantalla, sin componente común; altura 44–48px. Los errores de lo
 
 ### Lista o tarjeta
 `TablaCitas`, `CalendarioMes`, `FiltrosCard` y `EncabezadoModulo` en el panel; `SectionHeader` y `PageHero` en el sitio.
+`EncabezadoModulo` admite una línea de detalle bajo la descripción (texto `--muted`, 4,76:1) y un
+botón no disponible: `aria-disabled="true"` + `aria-describedby` hacia el motivo, enfocable, que no
+ejecuta la acción y se ve como el `:disabled` (opacidad 0,6). No usa `disabled` nativo para que el
+lector de pantalla lo anuncie con su motivo (spec 029).
 
 ### Aviso, diálogo y mensajes
 `ModalFormulario`: `role="dialog"`, `aria-modal`, cierra con Escape y clic en el fondo, bloquea el scroll y enfoca el primer campo; sin trampa de foco (DS10). `ModalConfirmacion` lo envuelve.
+
+**Aviso informativo del panel** (`.aviso-panel`, spec 029): mensaje que no es error, entre el
+encabezado y el contenido. Fondo `--primary-50`, borde de 1px `--primary-100`, texto `--ink-2`
+(9,63:1), radio `--radius-sm`, relleno `--space-3` `--space-4` y `role="status"`. Modo `fijo`. No
+añade colores: el sistema sigue sin token de aviso (`warning`).
 
 ### Estados de pantalla
 `EmptyState` con reintento en el sitio; `PageLoader` con `role="status"`. El panel y el portal usan texto propio en cada página (DS11).
@@ -195,4 +204,5 @@ código previo; se corrige cuando una spec toca la pantalla o como objetivo del 
 | 2026-11-08 | diseño | ¿Documentar el diseño existente? | Sí, sin cambiar código | usuario |
 | 2026-11-17 | diseño | P20 exige tokens de espaciado y texto y el sistema no los tenía | Escala mínima `--space-1…6`, `--icono-lg` y `--text-sm`, con los valores que ya usaba el bloque del mapa | usuario (/review 023 R2) |
 | 2026-11-08 | diseño | ¿Capturas de las vistas con API simulada? | Sin capturas | usuario |
+| 2026-11-23 | diseño | Mensaje informativo del panel y acción no disponible, sin token `warning` ni `:disabled` anunciable | «Aviso informativo del panel» con variantes de marca y tokens de espaciado existentes; `EncabezadoModulo` con línea de detalle y `aria-disabled`. DS10 sigue pendiente | spec 029 (`design.md` aprobado por el usuario) |
 | 2026-11-08 | brecha | ¿Dentissa o Melissa López N.? | Ambos son intencionales | usuario |
