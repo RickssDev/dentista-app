@@ -82,12 +82,17 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 - [x] T024 Comprobar el rollback — `.ai/inspect/025-rollback/ (generado por docker build y curl)` — hecho cuando: en una copia temporal del repo con la rama de esta spec, el procedimiento de "Rollback" del plan (el mismo que T091 deja en `docs/deployment.md`: `git checkout <commit de v1.5.0> -- frontend` y reconstruir solo el frontend) da una imagen que arranca en el puerto 80 y responde `/` 200 con las seis cabeceras · verificación manual: registro de los comandos y las respuestas en `.ai/inspect/025-rollback/` — cubre: CA8 — depende: T021, T091
   - nota: en una copia temporal de la rama (b3a23f3): `git checkout 616c507 -- frontend` (v1.5.0) y build `--no-cache` solo del frontend → la imagen arranca en el 80 y responde `/` 200 con las seis cabeceras; corre como root, como v1.5.0. Registro en `.ai/inspect/025-rollback/registro.md`; copia borrada. Desde `backend/` en el servidor la ruta es `../frontend`, como en `deployment.md`
 
+- [ ] T027 Hacer que las comprobaciones dentro del contenedor no den verde si la orden no se pudo ejecutar — `frontend/scripts/probar-nginx.mjs` — hecho cuando: hay un control positivo (`id -un` es `nginx` y escribir en `/tmp` funciona) y sin él fallan las demás; cada intento de escritura denegado debe devolver código distinto de 0 **y** decir "Permission denied" o "Read-only"; los intentos incluyen `/etc/nginx/nginx.conf`, sobrescribir `/usr/share/nginx/html/index.html` y crear en `/docker-entrypoint.d`; `ps` exige código 0 y la cabecera `USER`; "sin setcap" solo acepta el código 1 de `command -v` (125/126/127 fallan con su nombre); comprobado rompiendo: (1) con el contenedor detenido antes de las comprobaciones, todas fallan nombrando el error; (2) con una imagen que da escritura a `nginx` sobre `nginx.conf`, falla nombrando ese archivo; restaurado, pasa en dos ejecuciones — cubre: CA1, CA7
+  - nota: añadida por /review: R1
+- [ ] T028 Comprobar el reenvío a la API con nginx sin root — `frontend/scripts/probar-nginx.mjs` — hecho cuando: un `POST /api/v1/auth/login` con un cuerpo de 64 KB (mayor que el búfer en memoria, así se escribe en `/var/cache/nginx/client_temp`) responde 502 sin backend, no 500 ni 403; comprobado rompiendo (imagen sin el `chown` de `/var/cache/nginx`: la comprobación falla nombrando el código recibido, o nginx no arranca); restaurado, pasa en dos ejecuciones — cubre: CA2 — depende: T027
+  - nota: añadida por /review: R2
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: la sección del frontend dice que el contenedor corre como `nginx` con solo `cap_net_bind_service` y que las imágenes base van con etiqueta y digest, y se suben con `/chore`
   - nota: sección "Frontend" de `docs/architecture.md`: contenedor como `nginx` con solo `cap_net_bind_service`, pid y caché, archivos de solo lectura, imágenes con etiqueta y digest, cuándo se suben y la actualización de `libxml2` en el build; qué pruebas lo comprueban
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — `docs/deployment.md` — hecho cuando: "Rollback" describe el procedimiento del plan (solo el frontend: `git checkout <commit> -- ../frontend`, `build --no-cache frontend`, `up -d frontend`); "Verificación post-deploy" incluye `docker compose ... exec frontend ps -o user,args` sin procesos de root; `observability.md` sin cambios (no hay logs ni métricas nuevos)
   - nota: `docs/deployment.md` → "Rollback": se añade la vuelta atrás solo del frontend (`git checkout <commit> -- ../frontend`, `build --no-cache frontend`, `up -d frontend`), comprobada en T024; el procedimiento general se conserva para versiones que cambian el backend. "Verificación post-deploy": `exec frontend ps -o user,args` solo con `nginx`. `observability.md` sin cambios
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -103,29 +108,29 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T010, T011 | T021 |
-| CA2 | T011 (suite de `probar-nginx.mjs`), T023 | T021 |
+| CA1 | T010, T011, T027 | T021 |
+| CA2 | T011 (suite de `probar-nginx.mjs`), T023, T028 | T021 |
 | CA3 | T022 | T021, T022 |
 | CA4 | T010, T097 | T021 |
 | CA5 | T010, T023, T025 | T021, T026, T098 |
 | CA6 | T010 | T020 |
-| CA7 | T011 | T021 |
+| CA7 | T011, T027 | T021 |
 | CA8 | T024 | T024 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
-| TM1 | T021 | T010, T011 |
+| TM1 | T021 | T010, T011, T027 |
 | TM2 | T020 | T010 |
 | TM3 | T021 | T011 |
 | TM4 | T021 | T011 |
-| TM5 | T021 | T011 |
+| TM5 | T021 | T011, T027 |
 | TM6 | T023, T026, T098 | T023, T025 |
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | `frontend/Dockerfile` | T020, T021, T026 |
 | `frontend/tests/imagen-contenedor.test.js` | T010 |
-| `frontend/scripts/probar-nginx.mjs` | T011, T025 |
+| `frontend/scripts/probar-nginx.mjs` | T011, T025, T027, T028 |
 | `docs/architecture.md` | T090 |
 | `docs/deployment.md` | T091 |
 | `docs/security.md` | T098 (retirar AVD-DS-0002 en `/release`) |
