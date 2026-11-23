@@ -189,11 +189,17 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 
   - nota: tras las tareas de /review ronda 2 (T035, T036, T045): backend con 32 suites, 389 pruebas y 5 `todo`; frontend con 220 pruebas, en dos corridas. Lint con los 2 errores previos, build en verde, sin altas en `npm audit` y gitleaks sin hallazgos en `49825d5..HEAD`
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen en local en T028
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout): solo backend; `curl -sI` con `X-Request-Id: verificacion-026-a1` devuelve el mismo valor y `docker compose logs backend` tiene su línea con `status` 200; en la primera hora, sin líneas fuera de JSON salvo el arranque de Node, sin correos ni teléfonos (`grep -E '@|[0-9]{10}'`), sin más `"level":"error"` que el día anterior y con `job_id` en el cron
-- [ ] T098 Marcar spec como `released`, y en `docs/observability.md` pasar OB2.a, OB2.b, OB2.c, OB3.a, OB3.b, OB4.a y OB4.b de «pendiente» a «mitigada (vX.Y.Z)» y quitar su nota (A15, A26)
+  - nota: no aplica: sin staging; equivalente local con Docker en T028 (cabecera devuelta, líneas JSON, 401 como `warn`, 500 con el mensaje de MySQL omitido)
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-23 para v1.6.0: fusionó el PR #89 (`acefa7f`, 06:28 UTC) y desplegó él mismo en el servidor
+  - nota: el usuario no escribió la frase literal («desplegar v1.6.0 a producción»); como en v1.3.0–v1.5.0, la aprobación se registra al confirmar el resultado. CI del PR #89 en verde antes del merge
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout): solo backend; `curl -sI` con `X-Request-Id: verificacion-026-a1` devuelve el mismo valor y `docker compose logs backend` tiene su línea con `status` 200; en la primera hora, sin líneas fuera de JSON salvo el arranque de Node, sin correos ni teléfonos (`grep -E '@|[0-9]{10}'`), sin más `"level":"error"` que el día anterior y con `job_id` en el cron
+  - nota: 2026-11-23, tras el merge del #89: `curl -sI /api/v1/servicios/publicos` con `X-Request-Id: verificacion-v1-6-0` devolvió la misma cabecera, y `docker compose logs backend` mostró su línea «Petición atendida» (`HEAD`, `status` 200, `duration_ms` 13.6), en JSON (usuario)
+  - nota: vigilancia de 15 min (usuario): la única línea fuera de JSON es el arranque de `dotenv` («injecting env»); 0 líneas `"level":"error"`; sin correos ni teléfonos (el único `@` era `dotenv@17.2.4`). Sin `job_id` en el cron porque producción tiene `WHATSAPP_ENABLED=false` y el cron sale antes de registrar (comportamiento previo, `reminder.service.js:13`)
+- [x] T098 Marcar spec como `released`, y en `docs/observability.md` pasar OB2.a, OB2.b, OB2.c, OB3.a, OB3.b, OB4.a y OB4.b de «pendiente» a «mitigada (vX.Y.Z)» y quitar su nota (A15, A26)
+  - nota: spec `released: v1.6.0 (2026-11-23)`; OB2.a–OB4.b mitigadas (v1.6.0) en `observability.md`; deuda 026/R14, R16, R17, R19 y R21 en el roadmap (confirmado por el usuario)
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

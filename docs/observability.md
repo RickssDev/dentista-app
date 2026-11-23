@@ -1,6 +1,6 @@
 ---
 status: inferred
-updated: 2026-11-08
+updated: 2026-11-23
 ---
 
 # Observabilidad y auditoría de Dentissa
@@ -76,22 +76,22 @@ WhatsApp, que pueden incluir el teléfono; hoy apagado en producción con `WHATS
 `email.service.js:188` imprime destinatario y cuerpo con el enlace de recuperación cuando
 `NODE_ENV` no es `production`. Atendida por el objetivo 3 de [roadmap](roadmap.md).
 Correcciones:
-- OB2.a Dejar de imprimir respuestas completas de WhatsApp — estado: pendiente (resuelta por la spec 026, sin liberar)
-- OB2.b No imprimir destinatario ni cuerpo de correos, tampoco en desarrollo — estado: pendiente (resuelta por la spec 026, sin liberar)
-- OB2.c Revisar y sanear los `console.*` restantes, incluidos los stack de `errorHandler` — estado: pendiente (resuelta por la spec 026, sin liberar)
+- OB2.a Dejar de imprimir respuestas completas de WhatsApp — estado: mitigada (v1.6.0)
+- OB2.b No imprimir destinatario ni cuerpo de correos, tampoco en desarrollo — estado: mitigada (v1.6.0)
+- OB2.c Revisar y sanear los `console.*` restantes, incluidos los stack de `errorHandler` — estado: mitigada (v1.6.0)
 
 ### OB3 · Alta — Sin correlación por petición
 No hay forma de relacionar los mensajes de una misma petición. Atendida por el objetivo 3 de
 [roadmap](roadmap.md).
 Correcciones:
-- OB3.a Middleware que asigne `X-Request-Id` y lo devuelva en la respuesta — estado: pendiente (resuelta por la spec 026, sin liberar)
-- OB3.b Incluir `request_id` en cada log de la petición — estado: pendiente (resuelta por la spec 026, sin liberar)
+- OB3.a Middleware que asigne `X-Request-Id` y lo devuelva en la respuesta — estado: mitigada (v1.6.0)
+- OB3.b Incluir `request_id` en cada log de la petición — estado: mitigada (v1.6.0)
 
 ### OB4 · Media — Logs sin estructura ni niveles
 Trece módulos no registran nada y los errores 4xx se imprimen con stack, igual que los 5xx.
 Correcciones:
-- OB4.a Adoptar un logger JSON con niveles, con ADR — estado: pendiente (resuelta por la spec 026, sin liberar)
-- OB4.b Registrar método, ruta y estado, separando 4xx de 5xx — estado: pendiente (resuelta por la spec 026, sin liberar)
+- OB4.a Adoptar un logger JSON con niveles, con ADR — estado: mitigada (v1.6.0)
+- OB4.b Registrar método, ruta y estado, separando 4xx de 5xx — estado: mitigada (v1.6.0)
 
 ### OB5 · Media — Sin métricas ni alertas
 Una caída o una ola de errores solo se detecta si alguien avisa.
