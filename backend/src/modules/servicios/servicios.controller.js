@@ -12,18 +12,22 @@ exports.getServicioById = catchAsync(async (req, res) => {
   return HandleResponse.success(res, 200, "Servicio obtenido", data);
 });
 
+// La imagen solo sale del archivo subido; una `imagen` en el cuerpo se descarta para que nadie
+// apunte un servicio a un archivo ajeno de uploads/ (ficha 2026-11-23-fix-imagen-servicios)
+const conImagenSubida = (body, file) => {
+  const datos = { ...(body || {}) };
+  delete datos.imagen;
+  if (file) datos.imagen = "/uploads/" + file.filename;
+  return datos;
+};
+
 exports.createServicio = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.imagen = "/uploads/" + req.file.filename;}
-  const data = await service.createServicio(req.body);
+  const data = await service.createServicio(conImagenSubida(req.body, req.file));
   return HandleResponse.created(res, 201, "Servicio creado", data);
 });
 
 exports.updateServicio = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.imagen = "/uploads/" + req.file.filename;
-  }
-  const data = await service.updateServicio(req.params.id, req.body);
+  const data = await service.updateServicio(req.params.id, conImagenSubida(req.body, req.file));
   return HandleResponse.success(res, 200, "Servicio actualizado", data);
 });
 
