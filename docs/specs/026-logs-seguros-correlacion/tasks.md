@@ -45,7 +45,8 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
 ## Preparación
 - [x] T001 Escribir la prueba de caracterización de `errorHandler` — `tests/logs/error-handler-caracterizacion.test.js` — hecho cuando: **pasa** sobre el código actual y fija estado y cuerpo de: JWT expirado (401), JWT inválido (401), sin token (401), cuenta desactivada (401), falta de identidad (401), `LIMIT_FILE_SIZE` (400, «La imagen supera el tamaño máximo permitido de 6 MB.»), `AppError` 404 y error no operacional (500, «Error interno del servidor», sin `stack`) con `NODE_ENV=production`. Llama al middleware directamente con `req` y `res` simulados, sin `createApp()`, así que no genera líneas de log (A24). Toma la referencia de `errorHandler` **una sola vez** al cargar el archivo, como `app.js`, porque el `module.exports` interno se reasigna en la primera llamada (A18). Hasta T022 silencia `console.error` con un espía sin comprobarlo
   - nota: 9 casos en verde sobre el código actual, dos ejecuciones. Comprobado rompiendo el mensaje de 6 MB, el del 500 y el de JWT inválido: cada uno hace fallar su caso. Se compara el cuerpo serializado (lo que recibe el cliente), porque en producción el objeto lleva `stack: undefined`
-- [ ] T002 Silenciar los logs en la suite — `tests/support/env.js` — hecho cuando: define `LOG_LEVEL=silent` si no viene del entorno y `npm test --prefix backend` sigue verde
+- [x] T002 Silenciar los logs en la suite — `tests/support/env.js` — hecho cuando: define `LOG_LEVEL=silent` si no viene del entorno y `npm test --prefix backend` sigue verde
+  - nota: suite del backend en verde: 25 archivos, 265 pruebas y 5 pendientes
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Escribir las pruebas unitarias del logger — `tests/logs/logger.test.js` — hecho cuando: falla por la razón esperada (no existe `src/utils/logger.js`) y comprueba:
