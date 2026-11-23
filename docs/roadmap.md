@@ -43,7 +43,7 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 
 **Deuda de la spec 029** (aceptada en /review, ronda 1)
 - 029/R7 El bloqueo `dentissa_galeria_alta` es global a la instancia de MySQL; si un día se comparte la instancia entre bases, incluir la base en el nombre.
-- 029/R9 Un `PUT /imagenes/:id` con archivo nuevo que falla (404, 400 o error del repositorio) deja la foto en disco (defecto previo a la 029); ficha `/fix`.
+- ~~029/R9~~ resuelto por la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria (sin liberar). Un `PUT /imagenes/:id` con archivo nuevo que falla (404, 400 o error del repositorio) deja la foto en disco (defecto previo a la 029); ficha `/fix`.
 - 029/R12 Medir en navegador el objetivo de toque del botón de `EncabezadoModulo` a 390 px.
 
 **Deuda de la spec 025** (aceptada en /review, ronda 1)
