@@ -1,56 +1,52 @@
 ---
 spec: 026-logs-seguros-correlacion
-verdict: changes_requested
-round: 2
+verdict: approved
+round: 3
 date: 2026-11-22
-base: 75afdf6
-head: 59318ce
+base: 59318ce
+head: a8b25b9
 human_signoff: pending
 ---
 
 # Review · 026 Logs seguros y correlación por petición
 
 ## Resumen
-Ronda 2 (`--rerun`), del `head` de la ronda 1 a `59318ce`. Los 14 hallazgos abiertos (R1–R13 y
-R15) están corregidos y probados. Aparecen 6 menores nuevos, sin bloqueantes ni importantes. El
-usuario decidió corregir R18, R20, R22 y R23 antes de liberar; R19 y R21 quedan aceptados y van al
-roadmap. R14, R16 y R17 siguen aceptados desde la ronda 1.
-Conteo: bloqueante 0 · importante 0 · menor 6
+Ronda 3 (`--rerun`), de `59318ce` a `a8b25b9`. R18, R20, R22 y R23 están corregidos y probados, y
+no aparecen hallazgos nuevos. Sin bloqueantes ni importantes: el veredicto es `approved`. La
+definición de terminado de la constitución pide que una persona revise el cambio, así que
+`human_signoff` queda `pending` hasta que el usuario lo confirme.
+Conteo: bloqueante 0 · importante 0 · menor 0
 
-Revisor único con contexto limpio (`opus`), con los encargos A, C+D y S sobre
-`.ai/cache/review/026-logs-seguros-correlacion/`: code.diff de 32 KB, rango `75afdf6..59318ce`.
+El code.diff ocupa 4.7 KB (`logger.js`, `logger.test.js`, `recordatorios.test.js`), por debajo de
+~30 KB. Por eso la revisión se hizo sin subagente, releyendo los archivos desde cero (modo
+`--rerun`).
 
 ## Verificación automática
 | Comando | Resultado |
 |---|---|
-| `npm test` (dos corridas) | ✅ backend: 32 suites, 387 pruebas y 5 `todo`; frontend: 24 archivos y 220 pruebas, en las dos corridas. El fallo único sin identificar que registró T092 no se repitió (27 corridas en total) |
-| `npm run lint --prefix backend` | ✅ solo los 2 errores previos |
+| `npm test` (dos corridas) | ✅ backend: 32 suites, 389 pruebas y 5 `todo`; frontend: 24 archivos y 220 pruebas, en las dos |
+| `npm run lint --prefix backend` | ✅ solo los 2 errores previos (`faqs.service.js:4`, `images.service.js:20`) |
 | `npm run build --prefix frontend` | ✅ |
 | `aidd.py validate` | ✅ 0 errores |
 
 ## Criterios de aceptación
 | CA | Test | Estado | Nota |
 |---|---|---|---|
-| CA1, CA2, CA5, CA6 | sin cambios desde la ronda 1 | ✅ | |
-| CA3 | `tests/logs/request-id.test.js` | ✅ | R8 corregido |
-| CA4 | `tests/logs/correlacion.test.js` | ✅ | R13 corregido |
-| CA7 | `tests/logs/silencio.test.js`, `tests/logs/logger.test.js` | ✅ | R9 corregido |
-| CA8 | `tests/logs/correlacion.test.js` | ✅ | R2 corregido; el caso abortado corta cuando la petición ya llegó, no por tiempo |
-| CA9 | `tests/logs/sin-datos.test.js`, `tests/logs/logger.test.js` | ⚠ | R1 y R5 corregidos; el filtro de marcos todavía se puede eludir (R18) |
-| CA10 | `tests/logs/logger.test.js` | ⚠ | R4 corregido; la prueba de claves conservadas no cubre todas las que se usan (R20) |
-| CA11 | `tests/services/recordatorios.test.js` | ⚠ | R3 corregido; falta fijar que el cron se detiene tras el fallo al marcar (R23) |
-| CA12 | `tests/logs/logger.test.js` | ✅ | R6 corregido |
+| CA1–CA8, CA12 | sin cambios desde la ronda 2 | ✅ | |
+| CA9 | `tests/logs/logger.test.js` («R18 un valor con forma de marco…») | ✅ | R18 corregido |
+| CA10 | `tests/logs/logger.test.js` («las claves técnicas se conservan») | ✅ | R20 corregido; la lista cubre las 19 claves que emite `src` |
+| CA11 | `tests/services/recordatorios.test.js` («tras el fallo al marcar, la ejecución se detiene…») | ✅ | R22 y R23 corregidos |
 
 ## Conformidad con el plan
-- Cambios fuera del plan: ninguno. Los 14 archivos de código del rango tienen tarea (`scope.md`).
-- Partes del plan sin implementar: ninguna.
+- Cambios fuera del plan: ninguno. Los 3 archivos del rango tienen tarea: T035, T036 y T045.
+- Partes del plan sin implementar: ninguna. Las 32 tareas de trabajo están hechas.
 
 ## Constitution Check (sobre el código)
 | Principio | Resultado | Evidencia |
 |---|---|---|
 | P1–P20 | ✅ sin violaciones | Sin dependencias nuevas (`deps.stat` vacío) |
-| P2 (código tocado con test) | ✅ | R12 corregido: `borrarArchivo` y `db.js` tienen prueba |
-| P15 (sin datos sensibles en logs) | ✅ con un hueco menor | R18 |
+| P15 (sin datos sensibles en logs) | ✅ | `resumirError` quita el mensaje entero antes de tomar los marcos (`logger.js:71-75`) |
+| P5 (producción con aprobación humana) | ➖ | Corresponde a `/release` (T096) |
 
 ## Seguridad
 | Herramienta | Resultado |
@@ -62,51 +58,42 @@ Revisor único con contexto limpio (`opus`), con los encargos A, C+D y S sobre
 
 | Tema OWASP (Top 10:2025) | Resultado | Evidencia |
 |---|---|---|
-| A02 Configuración | ✅ | Sin cambios en rutas protegidas |
-| A03 Cadena de suministro | ✅ | Sin cambios en lockfiles |
-| A04 Datos sensibles | ⚠ | R1, R4 y R5 corregidos. Quedan R18 (eludir el filtro de marcos) y R19 (host de la base en errores de red, que no es dato personal) |
-| A06 Diseño inseguro | ✅ | Los controles TM1–TM11 siguen con su test |
-| A09 Registro y alertas | ✅ | R2 y R3 corregidos: la petición abortada y el servicio que falló quedan registrados como lo que son |
-| A10 Errores y condiciones excepcionales | ✅ | R6 y R7 corregidos; restos menores en R21 |
-| A01, A05, A07, A08, SSRF | ➖ | Sin cambios respecto de la ronda 1 |
+| A04 Datos sensibles | ✅ | R18 corregido: el valor citado ya no puede imitar un marco. Quedan R19 y R21, aceptados |
+| A09 Registro y alertas | ✅ | El corte del cron tras «Recordatorio no marcado» queda fijado por una prueba |
+| Resto | ➖ | Sin cambios respecto de la ronda 2 |
+
+Nota de la revisión, sin hallazgo: si el `message` de un error de MySQL se reasignara después de
+construirlo, `indexOf` no lo encontraría y se volvería al filtro de marcos de R1. mysql2 no lo
+hace, y el caso sigue sin dejar el texto del mensaje en la primera línea.
 
 ## Observabilidad
 - Eventos de auditoría de la spec: no aplica (OB1 queda para las specs 027 y 028).
-- Datos sensibles en logs del código tocado: ninguno en los llamadores actuales; huecos de defensa en R18 y R19.
-- `request_id` presente en los logs nuevos: sí. «Recordatorio no marcado» lleva `job_id`, y «Aviso de WhatsApp no preparado», el `request_id` de la petición.
+- Datos sensibles en logs del código tocado: ninguno. Los huecos de defensa restantes (R19, R21) están aceptados y van al roadmap.
+- `request_id` presente en los logs nuevos: sí; `job_id` en el cron.
 
-## Seguimiento de la ronda 1
+## Seguimiento de la ronda 2
 | ID | Estado | Evidencia |
 |---|---|---|
-| R1 | corregido (efecto nuevo → R18) | `logger.js:70` conserva solo `/^\s+at /`; `logger.test.js` con centinela de varias líneas |
-| R2 | corregido | `registroPeticion.js`: `!res.writableFinished` deja `aborted`, `status: null` y `warn`; la prueba falla con el código anterior |
-| R3 | corregido | `citas.service.js:31-39` (`enviarAviso`), `avisoNoPreparado` en las 4 llamadas; `reminder.service.js:52-57` |
-| R4 | corregido (efecto nuevo → R20) | `logger.js:16-21,41`; ninguna clave de contexto actual queda oculta |
-| R5 | corregido (mismo patrón en otros logs → R19) | `config/db.js:20-24` |
-| R6 | corregido | `logger.js:29-33`; sin el oyente, la prueba falla |
-| R7 | corregido (restos → R21) | `logger.js:94-122` |
-| R8, R9, R10, R11, R12, R13, R15 | corregido | Ver `history/review.r1.md` y las notas de T033, T034, T043 y T044 |
+| R18 | corregido | `logger.js:71-75` corta el `stack` tras el `message` y luego filtra `/^\s+at /`; la prueba con `\n    at centinela-de-marco` falla sin el corte (nota de T045) |
+| R20 | corregido | `logger.test.js`: `conservadas` con las 19 claves de `src`; falla si se añaden términos amplios (nota de T035) |
+| R22 | corregido | `recordatorios.test.js:111,129` usan `mockRejectedValueOnce`; `getPacienteWhatsApp` se reinicia en `beforeEach` (línea 40) |
+| R23 | corregido | Caso con dos citas: un envío, «Recordatorio no marcado» de la primera y «fin de ejecución» con `revisadas: 1, enviadas: 1`; falla sin el `break` (nota de T036) |
 
 ## Hallazgos
 | ID | Severidad | Archivo:línea | Hallazgo | Sugerencia |
 |---|---|---|---|---|
-| R18 | menor | `backend/src/utils/logger.js:70` | Si el valor citado en un mensaje de MySQL lleva `\n    at …`, esa línea pasa el filtro como si fuera un marco. El revisor lo comprobó con un correo en el valor duplicado. TM6 se puede eludir, aunque hace falta un valor del usuario con salto de línea | Quitar del `stack` el prefijo exacto `${name}: ${message}` antes de tomar los marcos; probarlo con `\n    at centinela` |
-| R19 | menor | `backend/src/services/reminder.service.js:55`, `backend/src/modules/citas/citas.service.js:26` | «Recordatorio no marcado» y «Aviso de WhatsApp no preparado» usan `resumirError`: en un error de red de mysql2 sin `sqlState` salen `message` y `stack`, con el host y el puerto de la base. No son datos personales | Aceptado → roadmap |
-| R20 | menor | `backend/tests/logs/logger.test.js:512,521-527` | La lista `conservadas` no incluye claves que se emiten hoy (`id_proveedor`, `duration_ms`, `revisadas`, `enviadas`, `errno`, `stack`, `message`, `aborted`, `code`, `error`, `port`). Un término nuevo demasiado amplio las ocultaría sin que falle nada | Añadir todas las claves de contexto que emite `src` |
-| R21 | menor | `backend/src/utils/logger.js:100,114-117` | `Map` y `Set` salen como `{}`; los objetos no tienen tope de claves; un `Error` anidado no pasa por el recorte de texto | Aceptado → roadmap |
-| R22 | menor | `backend/tests/services/recordatorios.test.js:727` | `marcarRecordatorioEnviado.mockRejectedValue` no se deshace: `restoreAllMocks` no restaura los `jest.fn` del automock y `clearAllMocks` no borra implementaciones, así que el resultado depende del orden | `mockRejectedValueOnce` |
-| R23 | menor | `backend/tests/services/recordatorios.test.js:725-740`; `backend/src/services/reminder.service.js:56` | El `break` conserva el flujo de antes, pero ninguna prueba lo fija: con una sola cita, nada comprueba que la segunda no se envíe ni que «fin de ejecución» siga saliendo | Caso con dos citas |
+
+Sin hallazgos nuevos en esta ronda.
 
 ## Preparación para release
-- Rollback factible: sí. Solo cambia el backend, sin migraciones; basta con la imagen anterior, según `docs/deployment.md`.
+- Rollback factible: sí. Solo cambia el backend, sin migraciones ni variables obligatorias (`LOG_LEVEL` es opcional). Basta con desplegar la imagen anterior, según `docs/deployment.md`.
 - Migraciones compatibles con la versión anterior: no hay migraciones.
-- Docs actualizadas: sin cambios desde la ronda 1. OB2.a–OB4.b siguen «pendiente (resuelta por la spec 026, sin liberar)».
+- Feature flags: el plan no pide ninguno.
+- Docs actualizadas: `architecture.md` (T090), y `deployment.md` y `observability.md` (T091). OB2.a–OB4.b siguen «pendiente (resuelta por la spec 026, sin liberar)», una por una, y `/release` las pasa a mitigadas (T098).
 - SCA: sin críticas ni altas.
 
 ## Tareas añadidas
-- T035 ← R18, R20 (test)
-- T036 ← R22, R23 (test)
-- T045 ← R18
+Ninguna en esta ronda.
 
 ## Aceptados sin tarea
 Aceptados por el usuario el 2026-11-22:
