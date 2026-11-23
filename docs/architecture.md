@@ -55,7 +55,7 @@ flowchart LR
 | dashboard | `backend/src/modules/dashboard` | Resumen del panel | — |
 | servicios | `backend/src/modules/servicios` | Catálogo de servicios | utils/upload |
 | promocion | `backend/src/modules/promocion` | Promociones | utils/upload |
-| images | `backend/src/modules/images` | Galería | utils/upload |
+| images | `backend/src/modules/images` | Galería. Máximo 15 imágenes: las altas se serializan con el bloqueo con nombre de MySQL `dentissa_galeria_alta` (contar e insertar en la misma conexión). La ruta de la imagen sale solo del archivo subido, y la foto de un alta rechazada se borra (spec 029) | utils/upload, utils/borrarArchivo |
 | comentarios | `backend/src/modules/comentarios` | Reseñas y moderación | citas.repository |
 | faqs | `backend/src/modules/faqs` | Preguntas frecuentes | — |
 | Transversal | `backend/src/{config,middlewares,utils,services}` | Pool, auth, errores, logs y correlación, correo, WhatsApp, cron | — |
@@ -153,7 +153,7 @@ staging. Detalle en [deployment.md](deployment.md).
 
 ## Deuda técnica y riesgos observados
 - Módulos que importan el repository de otro (`citas.service` → `servicios.repository`).
-- 2 errores de lint previos en el backend (`faqs.service.js`, `images.service.js`) y 15 problemas en el frontend.
+- 1 error de lint previo en el backend (`faqs.service.js`; el de `images.service.js` desapareció con la spec 029) y 12 problemas en el frontend (7 errores).
 - Validación manual dispersa en services.
 - El cron de recordatorios vive en el proceso web.
 - Volumen `uploads` declarado y sin usar en `docker-compose.prod.yml`.
