@@ -72,7 +72,7 @@ cantidad a una acción que el personal ya tiene permitida, y la galería es cont
 ## Diseño
 Cambia solo el panel de la galería (`/admin/galeria`). El personal debe saber de un vistazo
 cuántas imágenes hay y si puede agregar otra, sin descubrirlo al fallar. Sistema:
-[docs/design/system.md](../../design/system.md).
+[docs/design/system.md](../../design/system.md). Acta de diseño: [design.md](design.md).
 
 - Qué debe lograr: entender en cinco segundos «N de 15» y, si está llena, que debe eliminar una
   antes de agregar.
@@ -109,6 +109,7 @@ _(ninguna)_
 | 2026-11-23 | supuesto | ¿El límite aplica igual a Administrador y Asistente? | Sí, a los dos roles | spec 014 (mismos permisos) |
 | 2026-11-23 | implícita | ¿Hace falta auditoría? | No: no toca datos sensibles, autenticación ni permisos | `docs/observability.md`, `docs/security.md` |
 | 2026-11-23 | supuesto | Texto del rechazo y del aviso | Los de CA2 y CA6; `/design-spec` puede ajustarlos sin cambiar su sentido | /specify |
+| 2026-11-23 | diseño | ¿Cómo se ve el límite en el panel? | Sin diseño nuevo: contador bajo la descripción del encabezado, botón con `aria-disabled` y aviso informativo con variantes de marca existentes | [design.md](design.md) |
 
 ## Notas para /plan
 - La foto se recibe antes de saber si hay sitio. Si el alta se rechaza por el límite, el archivo
