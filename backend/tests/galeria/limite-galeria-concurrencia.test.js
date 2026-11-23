@@ -44,7 +44,10 @@ describe('029 · servicio: dos altas simultáneas con 14', () => {
     jest.dontMock('../../src/utils/borrarArchivo');
   });
 
-  test('CA7: una se crea, la otra recibe 409 y la galería queda en 15', async () => {
+  // Este repositorio falso ya serializa: el caso solo prueba que el servicio convierte el rechazo en
+  // 409. Lo atómico de CA7 lo prueban el caso TM1 del repositorio (GET_LOCK → COUNT → INSERT en una
+  // conexión) y la verificación con MySQL real de T021 (review R4).
+  test('el servicio convierte el rechazo del repositorio en 409 (dos altas con 14)', async () => {
     const resultados = await Promise.allSettled([
       service.createImagen({ titulo: 'A', visible: '1' }, '/uploads/a.jpg'),
       service.createImagen({ titulo: 'B', visible: '1' }, '/uploads/b.jpg'),
@@ -120,6 +123,15 @@ describe('029 · repositorio: crearImagenConLimite', () => {
 
     await expect(repo.crearImagenConLimite(MARCAS, 15, pool)).rejects.toThrow('fallo del INSERT');
     expect(orden(conn)).toEqual(['GET_LOCK', 'COUNT', 'INSERT', 'RELEASE_LOCK', 'release()']);
+    expect(conn.destroy).not.toHaveBeenCalled();
+  });
+
+  test('TM4 (R10): si fallan el INSERT y RELEASE_LOCK, sube el error del INSERT y la conexión se cierra', async () => {
+    const { conn, pool } = conexionFalsa({ fallaInsert: true, fallaRelease: true });
+
+    await expect(repo.crearImagenConLimite(MARCAS, 15, pool)).rejects.toThrow('fallo del INSERT');
+    expect(conn.destroy).toHaveBeenCalledTimes(1);
+    expect(conn.release).not.toHaveBeenCalled();
   });
 
   test.each([[0], [null]])('TM4: GET_LOCK devuelve %p → sin bloqueo, sin COUNT, y la conexión se libera', async (bloqueo) => {

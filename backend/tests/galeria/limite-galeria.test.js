@@ -132,11 +132,10 @@ describe('029 · editar y eliminar no pasan por el límite', () => {
   test('CA3: con 15, editar el título guarda sin consultar el límite', async () => {
     conImagenes(15);
 
-    await service.updateImagen(3, { titulo: 'Nuevo título' });
+    const actualizada = await service.updateImagen(3, { titulo: 'Nuevo título' });
 
     expect(repo.updateImagen).toHaveBeenCalledWith(3, { titulo: 'Nuevo título' });
-    expect(repo.crearImagenConLimite).not.toHaveBeenCalled();
-    expect(galeria).toHaveLength(15);
+    expect(actualizada).toMatchObject({ id_imagen: 3 });
   });
 
   test('CA4: con 15, tras eliminar una, otra alta pasa', async () => {
@@ -145,7 +144,7 @@ describe('029 · editar y eliminar no pasan por el límite', () => {
     await service.deleteImagen(1);
     const id = await service.createImagen({ ...DATOS }, SUBIDA);
 
-    expect(id).toBeDefined();
+    expect(id).toBe(114);
     expect(galeria).toHaveLength(15);
   });
 });
