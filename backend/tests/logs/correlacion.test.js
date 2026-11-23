@@ -226,3 +226,119 @@ describe('026 · CA6 actor de la petición', () => {
     expect(atendidas(lineas)[0]).not.toHaveProperty('actor_id');
   });
 });
+
+// Spec 026, T031: huecos que encontró /review ronda 1 (R2, R13).
+describe('026 · /review R13 CA4 también para los errores del proveedor', () => {
+  test('WhatsApp rechaza: «Aviso de WhatsApp no enviado» lleva el identificador de la petición', async () => {
+    encenderWhatsApp();
+    axios.post.mockRejectedValue(Object.assign(new Error('fallo de Meta'), { response: { status: 500 } }));
+    const { cabecera } = sesion();
+    const { respuesta, id, todas, lineas } = await peticion(() =>
+      request(app)
+        .post('/api/v1/citas')
+        .set('Authorization', cabecera)
+        .send({ id_paciente: 3, fecha_agendada: CITA.fecha_agendada, hora: '10:00', id_servicio: 1 }),
+    );
+
+    expect(respuesta.status).toBe(201);
+    expect(lineas.map((l) => l.message)).toEqual(
+      expect.arrayContaining(['Aviso de WhatsApp no enviado', ATENDIDA]),
+    );
+    expect(todas.every((l) => l.request_id === id)).toBe(true);
+  });
+
+  test('Resend responde 500: «Correo no enviado» lleva el identificador de la petición', async () => {
+    db.agregarUsuario({
+      correo: 'paciente@example.test',
+      nombre_usuario: 'Ana',
+      contrasena: bcrypt.hashSync('clave-de-prueba-1', 4),
+    });
+    process.env.RESEND_API_KEY = 'clave-ficticia';
+    global.fetch = jest.fn(async () => ({ ok: false, status: 500, text: async () => '{"name":"internal_server_error"}' }));
+
+    const { respuesta, id, todas, lineas } = await peticion(() =>
+      request(app).post('/api/v1/auth/olvide-contrasena').send({ correo: 'paciente@example.test' }),
+    );
+
+    expect(respuesta.status).toBe(200);
+    expect(lineas.map((l) => l.message)).toEqual(expect.arrayContaining(['Correo no enviado', ATENDIDA]));
+    expect(todas.every((l) => l.request_id === id)).toBe(true);
+  });
+});
+
+describe('026 · /review R2 petición abortada por el cliente', () => {
+  const http = require('http');
+  const express = require('express');
+  const { requestId } = require('../../src/middlewares/requestId');
+  const registroPeticion = require('../../src/middlewares/registroPeticion');
+
+  let servidor;
+  let temporizadores;
+
+  beforeEach(async () => {
+    temporizadores = [];
+    const mini = express();
+    mini.use(requestId);
+    mini.use(registroPeticion);
+    mini.get('/lenta', (_req, res) => {
+      temporizadores.push(setTimeout(() => res.end('tarde'), 300));
+    });
+    mini.get('/rapida', (_req, res) => res.end('ok'));
+    servidor = mini.listen(0);
+    await new Promise((resolve) => servidor.once('listening', resolve));
+  });
+
+  afterEach(async () => {
+    temporizadores.forEach(clearTimeout);
+    await new Promise((resolve) => servidor.close(resolve));
+  });
+
+  // Espera por condición, no por tiempo: hasta que aparezca la línea o venza el plazo.
+  const esperarLinea = async (captura, plazoMs = 2000) => {
+    const limite = Date.now() + plazoMs;
+    while (Date.now() < limite) {
+      const linea = captura.lineas.find((l) => l.message === ATENDIDA);
+      if (linea) return linea;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    return null;
+  };
+
+  test('una petición cortada deja una sola línea con aborted, sin estado y como advertencia', async () => {
+    const captura = logger.__capturar();
+    try {
+      const { port } = servidor.address();
+      const cliente = http.get({ port, path: '/lenta' });
+      cliente.on('error', () => {});
+      temporizadores.push(setTimeout(() => cliente.destroy(), 50));
+
+      const linea = await esperarLinea(captura);
+      // Dejar que la respuesta tardía llegue a escribirse: no debe sumar otra línea.
+      await new Promise((resolve) => setTimeout(resolve, 350));
+
+      expect(linea).toMatchObject({ level: 'warn', context: { route: '/lenta', status: null, aborted: true } });
+      expect(captura.lineas.filter((l) => l.message === ATENDIDA)).toHaveLength(1);
+    } finally {
+      captura.terminar();
+    }
+  });
+
+  test('una petición completa no lleva aborted', async () => {
+    const captura = logger.__capturar();
+    try {
+      const { port } = servidor.address();
+      await new Promise((resolve, reject) => {
+        http.get({ port, path: '/rapida' }, (res) => {
+          res.resume();
+          res.on('end', resolve);
+        }).on('error', reject);
+      });
+      const linea = await esperarLinea(captura);
+
+      expect(linea).toMatchObject({ level: 'info', context: { status: 200 } });
+      expect(linea.context).not.toHaveProperty('aborted');
+    } finally {
+      captura.terminar();
+    }
+  });
+});
