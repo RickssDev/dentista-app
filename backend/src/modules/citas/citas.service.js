@@ -18,6 +18,26 @@ const avisoNoEnviado = (idCita, plantilla, error) => {
   });
 };
 
+// Fallo al preparar el aviso (consultas a la base, formato): no es un fallo de WhatsApp (/review R3).
+const avisoNoPreparado = (idCita, plantilla, error) => {
+  logger.error("Aviso de WhatsApp no preparado", {
+    id_cita: idCita,
+    plantilla,
+    ...logger.resumirError(error),
+  });
+};
+
+// Solo el fallo del envío se atribuye a WhatsApp (spec 026, CA11).
+const enviarAviso = async (idCita, plantilla, telefono, parametros) => {
+  try {
+    await sendTemplateMessage(telefono, plantilla, parametros);
+  } catch (error) {
+    avisoNoEnviado(idCita, plantilla, error);
+    return;
+  }
+  avisoEnviado(idCita, plantilla);
+};
+
 const CAMPOS_EDITABLES = ["fecha_agendada", "hora", "motivo"];
 
 const timeToMinutes = (time) => {
@@ -202,9 +222,7 @@ exports.createCita = async (data) => {
   const servicio = await servicioRepo.getServicioById(id_servicio);
 
   if (paciente?.telefono) {
-    await sendTemplateMessage(
-      paciente.telefono,
-      "appointment_confirmation_1",
+    await enviarAviso(id, "appointment_confirmation_1", paciente.telefono,
       [
         paciente.nombre_usuario,
         "Clínica Dental Dentissa",
@@ -213,11 +231,9 @@ exports.createCita = async (data) => {
         formatearHora(hora),
       ],
     );
-
-    avisoEnviado(id, "appointment_confirmation_1");
   }
 } catch (error) {
-  avisoNoEnviado(id, "appointment_confirmation_1", error);
+  avisoNoPreparado(id, "appointment_confirmation_1", error);
 }
   return { id };
 };
@@ -326,17 +342,15 @@ exports.updateCita = async (id, data) => {
           hour12: true,
         });
 
-        await sendTemplateMessage(datos.telefono, "reprogramada_cita", [
+        await enviarAviso(id, "reprogramada_cita", datos.telefono, [
           datos.nombre_usuario,
           "Clínica Dental Dentissa",
           fechaFormateada,
           horaFormateada,
         ]);
-
-        avisoEnviado(id, "reprogramada_cita");
       }
     } catch (error) {
-      avisoNoEnviado(id, "reprogramada_cita", error);
+      avisoNoPreparado(id, "reprogramada_cita", error);
     }
   }
 
@@ -391,15 +405,13 @@ exports.cancelarCita = async (id, motivo) => {
         "es-MX",
       );
 
-      await sendTemplateMessage(datos.telefono, "cancelada_cita", [
+      await enviarAviso(id, "cancelada_cita", datos.telefono, [
         datos.nombre_usuario,
         fechaFormateada,
       ]);
-
-      avisoEnviado(id, "cancelada_cita");
     }
   } catch (error) {
-    avisoNoEnviado(id, "cancelada_cita", error);
+    avisoNoPreparado(id, "cancelada_cita", error);
   }
 
   return {
@@ -519,9 +531,7 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
     const servicio = await servicioRepo.getServicioById(id_servicio);
 
     if (paciente?.telefono) {
-      await sendTemplateMessage(
-        paciente.telefono,
-        "appointment_confirmation_1",
+      await enviarAviso(id, "appointment_confirmation_1", paciente.telefono,
         [
           paciente.nombre_usuario,
           "Clínica Dental Dentissa",
@@ -530,11 +540,9 @@ const paciente = await pacienteRepo.findByUserId(idUsuario);
           formatearHora(hora),
         ],
       );
-
-      avisoEnviado(id, "appointment_confirmation_1");
     }
   } catch (error) {
-    avisoNoEnviado(id, "appointment_confirmation_1", error);
+    avisoNoPreparado(id, "appointment_confirmation_1", error);
   }
   return { id };
 };

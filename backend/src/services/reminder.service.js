@@ -47,7 +47,14 @@ const enviarRecordatorios = async () => {
       logger.info("Aviso de WhatsApp enviado", { id_cita: cita.id_cita, plantilla: PLANTILLA });
       enviadas += 1;
 
-      await citasRepo.marcarRecordatorioEnviado(cita.id_cita);
+      // Un fallo de la base al marcarlo no es un fallo de WhatsApp (/review R3). Como antes, detiene
+      // la ejecución: la cita sin marcar se reintenta en la siguiente.
+      try {
+        await citasRepo.marcarRecordatorioEnviado(cita.id_cita);
+      } catch (error) {
+        logger.error("Recordatorio no marcado", { id_cita: cita.id_cita, ...logger.resumirError(error) });
+        break;
+      }
     }
   } catch (error) {
     // Como antes, un error detiene la ejecución; las citas pendientes se intentan en la siguiente.
