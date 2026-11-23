@@ -85,7 +85,8 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - nota: módulo `images` con el límite, el bloqueo con nombre, la ruta solo del archivo y el borrado en rechazos; la deuda de lint pasa a 1 error en el backend (el de `images.service.js` desapareció) y 12 problemas en el frontend
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian (sin variables, logs ni eventos nuevos), anotado como nota
   - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos. El 409 y el 503 quedan en la línea «Petición atendida» de la spec 026
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
+  - nota: 9 de 9 criterios marcados, cada uno con su test en verde: backend 35 suites, 419 pruebas y 5 `todo`; frontend 28 archivos y 243 pruebas. Build en verde; lint con solo los errores previos (backend 1, frontend 7). gitleaks no está instalado en el equipo: lo ejecuta el CI del PR
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

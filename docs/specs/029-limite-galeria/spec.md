@@ -1,7 +1,7 @@
 ---
 id: 029
 slug: limite-galeria
-status: approved
+status: implemented
 created: 2026-11-23
 extends: [014]
 ---
@@ -25,31 +25,31 @@ parcialmente: sus correcciones quedan fuera (ver «Cobertura de riesgos»).
   aunque la galería esté llena, para corregirlas sin tener que borrarlas.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada una galería con menos de 15 imágenes (visibles u ocultas), cuando el personal
+- [x] CA1 · Dada una galería con menos de 15 imágenes (visibles u ocultas), cuando el personal
   agrega una imagen válida, entonces se guarda como hoy (spec 014).
-- [ ] CA2 · Dada una galería con 15 imágenes, entre visibles y ocultas, cuando el personal intenta
+- [x] CA2 · Dada una galería con 15 imágenes, entre visibles y ocultas, cuando el personal intenta
   agregar otra, entonces se rechaza con el mensaje «La galería admite como máximo 15 imágenes.
   Elimina una para agregar otra.», la galería sigue con 15 y la foto enviada no queda guardada.
-- [ ] CA3 · Dada una galería con 15 imágenes, cuando el personal cambia el título o la visibilidad
+- [x] CA3 · Dada una galería con 15 imágenes, cuando el personal cambia el título o la visibilidad
   de una o reemplaza su foto, entonces el cambio se guarda y la galería sigue con 15. La foto de una
   imagen, al darla de alta o al editarla, solo puede ser un archivo subido en esa misma acción:
   nunca una ruta indicada por quien envía la petición.
-- [ ] CA4 · Dada una galería con 15 imágenes, cuando el personal elimina una, entonces puede
+- [x] CA4 · Dada una galería con 15 imágenes, cuando el personal elimina una, entonces puede
   volver a agregar una.
-- [ ] CA5 · Dado el panel de la galería, cuando el personal lo abre, entonces ve cuántas imágenes
+- [x] CA5 · Dado el panel de la galería, cuando el personal lo abre, entonces ve cuántas imágenes
   hay del máximo, con el texto «N de 15 imágenes», y el número se actualiza al agregar o eliminar
   sin recargar la página. Si la lista de imágenes no se pudo cargar, no se muestran el contador ni
   el aviso de CA6, y la acción de agregar queda como hoy (el límite lo sigue aplicando el servidor).
-- [ ] CA6 · Dada una galería con 15 imágenes, cuando el personal abre el panel, entonces la acción
+- [x] CA6 · Dada una galería con 15 imágenes, cuando el personal abre el panel, entonces la acción
   de agregar imagen aparece desactivada, se ve el aviso «Llegaste al máximo de 15 imágenes. Elimina
   una para agregar otra.» y un lector de pantalla anuncia que la acción no está disponible y por qué.
-- [ ] CA7 · (abuso) Dada una galería con 14 imágenes, cuando llegan dos altas al mismo tiempo
+- [x] CA7 · (abuso) Dada una galería con 14 imágenes, cuando llegan dos altas al mismo tiempo
   (dos personas o dos pestañas), entonces se guarda solo una, la otra recibe el rechazo de CA2 y la
   galería nunca pasa de 15.
-- [ ] CA8 · (abuso) Dada una galería con 15 imágenes, cuando alguien envía el alta sin pasar por
+- [x] CA8 · (abuso) Dada una galería con 15 imágenes, cuando alguien envía el alta sin pasar por
   el panel (por ejemplo, desde otra herramienta con una sesión válida del personal), entonces se
   rechaza igual que en CA2.
-- [ ] CA9 · Dada una galería con 15 imágenes, cuando un visitante abre la página pública de la
+- [x] CA9 · Dada una galería con 15 imágenes, cuando un visitante abre la página pública de la
   galería, entonces la ve igual que hoy: solo las visibles y sin ningún aviso del límite.
 
 ## Fuera de alcance
@@ -152,3 +152,4 @@ _(ninguna)_
 | 2026-11-23 | Spec aprobada | Confirmación del usuario |
 | 2026-11-23 | CA5 con el caso de lista sin cargar; Decisiones de auditoría, borrado en rechazos y carga fallida | /analyze A6, A10, A16 (decisiones del usuario) |
 | 2026-11-23 | CA3: la foto solo sale de un archivo subido; Decisiones de la excepción P13 y de la edición | /analyze A17, A22 (decisiones del usuario) |
+| 2026-11-23 | Implementada (12 de 12 tareas) | /implement |
