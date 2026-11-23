@@ -13,6 +13,8 @@ Hoy la galería admite cualquier cantidad de imágenes. La clínica quiere una g
 imágenes como máximo, contando las visibles y las ocultas, para mantenerla curada y controlar el
 espacio que ocupa. Sin el límite, el personal puede seguir acumulando fotos sin revisar las
 anteriores, y el personal no sabe cuántas hay ni cuántas le quedan.
+Toca la subida de archivos y una acción administrativa, pero no atiende RS5 ni OB1, ni siquiera
+parcialmente: sus correcciones quedan fuera (ver «Cobertura de riesgos»).
 
 ## Historias de usuario
 - Como personal (Administrador o Asistente), quiero que la galería no pase de 15 imágenes para
@@ -34,7 +36,8 @@ anteriores, y el personal no sabe cuántas hay ni cuántas le quedan.
   volver a agregar una.
 - [ ] CA5 · Dado el panel de la galería, cuando el personal lo abre, entonces ve cuántas imágenes
   hay del máximo, con el texto «N de 15 imágenes», y el número se actualiza al agregar o eliminar
-  sin recargar la página.
+  sin recargar la página. Si la lista de imágenes no se pudo cargar, no se muestran el contador ni
+  el aviso de CA6, y la acción de agregar queda como hoy (el límite lo sigue aplicando el servidor).
 - [ ] CA6 · Dada una galería con 15 imágenes, cuando el personal abre el panel, entonces la acción
   de agregar imagen aparece desactivada, se ve el aviso «Llegaste al máximo de 15 imágenes. Elimina
   una para agregar otra.» y un lector de pantalla anuncia que la acción no está disponible y por qué.
@@ -65,9 +68,25 @@ anteriores, y el personal no sabe cuántas hay ni cuántas le quedan.
   - Como usuario con sesión del personal, envío el alta sin pasar por el panel para saltarme el
     botón desactivado → se rechaza igual (CA8).
 
+## Cobertura de riesgos
+La spec no atiende ningún riesgo documentado. Toca dos zonas que tienen riesgos abiertos, y los
+deja fuera (/analyze A6, A7):
+
+| Corrección | Alcance | Criterios / motivo y destino |
+|---|---|---|
+| RS5.a — Validar el contenido real y una lista de extensiones permitidas | fuera | La spec no cambia qué tipo de archivo se acepta → sigue pendiente en `docs/security.md` |
+| RS5.b — Servir `/uploads` con `nosniff` y sin contenido activo | fuera | La spec no cambia cómo se sirven los archivos → sigue pendiente en `docs/security.md` |
+| OB1.a — Tabla de auditoría de solo anexado | fuera | Excepción P13 del usuario (2026-11-11) → objetivo 3 (specs 027 y 028) |
+| OB1.b — Auditar logins y accesos denegados | fuera | No lo toca → objetivo 3 |
+| OB1.c — Auditar lecturas de historial y datos de paciente | fuera | No lo toca → objetivo 3 |
+| OB1.d — Auditar altas y cambios de pacientes e historial | fuera | No lo toca → objetivo 3 |
+| OB1.e — Auditar acciones administrativas | fuera | El alta de imágenes es una acción administrativa; queda bajo la excepción P13 → objetivo 3 |
+| OB1.f — Consulta de auditoría solo para el Administrador | fuera | No lo toca → objetivo 3 |
+
 ## Auditoría
-No aplica: la spec no toca datos sensibles, autenticación ni permisos. Solo añade un límite de
-cantidad a una acción que el personal ya tiene permitida, y la galería es contenido público.
+Sin eventos nuevos en esta spec. El alta de imágenes es una acción administrativa, pero su registro
+sigue cubierto por la excepción P13 aprobada por el usuario (2026-11-11) hasta el objetivo 3 del
+roadmap (specs 027 y 028). La spec no toca datos sensibles, autenticación ni permisos.
 
 ## Diseño
 Cambia solo el panel de la galería (`/admin/galeria`). El personal debe saber de un vistazo
@@ -107,7 +126,9 @@ _(ninguna)_
 | 2026-11-23 | brecha | ¿Qué ve el personal en el panel? | Contador «N de 15» y acción de agregar desactivada con aviso al llegar a 15 | usuario |
 | 2026-11-23 | supuesto | ¿Reemplazar la foto de una imagen existente cuenta como alta? | No: editar y reemplazar se permiten con la galería llena | usuario (petición inicial) |
 | 2026-11-23 | supuesto | ¿El límite aplica igual a Administrador y Asistente? | Sí, a los dos roles | spec 014 (mismos permisos) |
-| 2026-11-23 | implícita | ¿Hace falta auditoría? | No: no toca datos sensibles, autenticación ni permisos | `docs/observability.md`, `docs/security.md` |
+| 2026-11-23 | implícita | ¿Hace falta auditoría? | No en esta spec. El alta de imágenes es una acción administrativa que `docs/observability.md` manda auditar, pero sigue cubierta por la excepción P13 del usuario hasta el objetivo 3 (specs 027 y 028) | excepción P13 (decisión del usuario, 2026-11-11; `docs/specs/021-proteccion-cuentas-admin/plan.md`) · /analyze A6 |
+| 2026-11-23 | brecha | ¿La foto de un alta rechazada se borra del disco en todos los rechazos o solo en el del límite? | En todo rechazo del alta (galería llena, galería ocupada y datos faltantes). Solo se borra el archivo subido en esa misma petición | usuario · /analyze A10 |
+| 2026-11-23 | brecha | ¿Qué muestra el panel si no puede cargar la lista? | Ni contador ni aviso; la acción de agregar queda como hoy | usuario · /analyze A16 |
 | 2026-11-23 | supuesto | Texto del rechazo y del aviso | Los de CA2 y CA6; `/design-spec` puede ajustarlos sin cambiar su sentido | /specify |
 | 2026-11-23 | diseño | ¿Cómo se ve el límite en el panel? | Sin diseño nuevo: contador bajo la descripción del encabezado, botón con `aria-disabled` y aviso informativo con variantes de marca existentes | [design.md](design.md) |
 
@@ -125,3 +146,4 @@ _(ninguna)_
 |---|---|---|
 | 2026-11-23 | Spec creada | Petición del usuario: tope de 15 imágenes en la galería |
 | 2026-11-23 | Spec aprobada | Confirmación del usuario |
+| 2026-11-23 | CA5 con el caso de lista sin cargar; Decisiones de auditoría, borrado en rechazos y carga fallida | /analyze A6, A10, A16 (decisiones del usuario) |

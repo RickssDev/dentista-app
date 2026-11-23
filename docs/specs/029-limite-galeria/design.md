@@ -9,7 +9,7 @@ accepted: none
 score: 0
 system_version: 1.0.0
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-23  # refinado por /analyze A4, A5
 ---
 
 # Diseño · 029 Límite de 15 imágenes en la galería
@@ -27,8 +27,9 @@ Ninguno: sin ciclo de candidatos (ver Resultado y Decisiones).
 encabezado del módulo (`EncabezadoModulo`) del panel de la galería, y todo se compone con piezas
 que ya existen:
 
-- **Contador (CA5):** una línea «N de 15 imágenes» debajo de la descripción del encabezado, con el
-  mismo estilo de texto secundario (`.encabezado-descripcion`). Con la galería llena, el número se
+- **Contador (CA5):** una línea «N de 15 imágenes» debajo de la descripción del encabezado, como
+  texto secundario con el token `--muted` (4,76:1 sobre blanco). No copia el `#5b6472` literal de
+  `.encabezado-descripcion` (DS2; /analyze A4). Con la galería llena, el número se
   mantiene igual («15 de 15 imágenes»): el estado lo comunica el aviso, no un color nuevo.
 - **Acción desactivada (CA6):** el botón «Nueva imagen» (`.encabezado-btn`) usa el estado
   desactivado que ya tiene (`opacity: 0.6`, `cursor: not-allowed`). No se quita del DOM ni del
@@ -37,7 +38,8 @@ que ya existen:
   el motivo, cosa que un `disabled` nativo no permite porque saca el botón del foco.
 - **Aviso de galería llena (CA6):** un bloque de texto entre el encabezado y los filtros con
   «Llegaste al máximo de 15 imágenes. Elimina una para agregar otra.». Usa variantes de marca que
-  ya existen: fondo `--primary-50`, borde `--primary-100` y texto `--ink-2`. Lleva
+  ya existen: fondo `--primary-50`, borde de 1px `--primary-100`, texto `--ink-2` y radio
+  `--radius-sm`. El relleno (12px 16px) se añade al sistema con el aviso. Lleva
   `role="status"` para que se anuncie cuando aparece después de agregar la imagen 15. Solo se
   muestra con la galería llena.
 - **Rechazo del servidor (CA2, CA7, CA8):** si el alta se rechaza igual, por ejemplo cuando otra
@@ -81,8 +83,8 @@ Ninguna.
 
 | Cambio | Modo | Motivo |
 |---|---|---|
-| «Aviso informativo del panel»: bloque de texto con fondo `--primary-50`, borde `--primary-100`, texto `--ink-2` y `role="status"`. No añade tokens nuevos | fijo | El sistema no tiene aviso no-error en el panel (no hay token `warning`, ver system.md → Color). Se documenta para reutilizarlo y no inventar otro |
-| `EncabezadoModulo`: botón con `aria-disabled` además de `:disabled` | fijo | Una acción no disponible tiene que seguir siendo anunciable (P16). Atiende **parcialmente** DS10: solo la parte del botón del encabezado del panel; la trampa de foco del modal y el `:disabled` de `.dt-btn` siguen en DS10 |
+| «Aviso informativo del panel»: bloque de texto con fondo `--primary-50`, borde de 1px `--primary-100`, texto `--ink-2`, radio `--radius-sm`, relleno 12px 16px y `role="status"`. No añade colores nuevos | fijo | El sistema no tiene aviso no-error en el panel (no hay token `warning`, ver system.md → Color). Se documenta para reutilizarlo y no inventar otro |
+| `EncabezadoModulo`: línea de detalle (texto `--muted`) y botón con `aria-disabled` + `aria-describedby` además de `:disabled` | fijo | Una acción no disponible tiene que seguir siendo anunciable (P16). Es una mejora propia del componente: **no** cambia DS10, que sigue «pendiente» con sus dos correcciones (trampa de foco del modal y `:disabled` de `.dt-btn`) (/analyze A5) |
 
 ## Movimiento
 
@@ -103,4 +105,5 @@ Ninguno.
 |---|---|---|---|---|
 | 2026-11-23 | diseño | ¿Ciclo de candidatos o sin diseño nuevo? | Sin diseño nuevo: tres estados de componentes existentes, sin composición nueva | `references/spec-mode.md` §1 |
 | 2026-11-23 | diseño | ¿`disabled` nativo o `aria-disabled`? | `aria-disabled` + `aria-describedby`: el nativo saca el botón del foco y el lector no anuncia el motivo (CA6) | constitución P16 |
+| 2026-11-23 | refinado | Color del contador: el estilo de `.encabezado-descripcion` usa un literal | Token `--muted`; los literales previos siguen en DS2 | /analyze A4, A8 (decisión del usuario: P20 solo en reglas nuevas) |
 | 2026-11-23 | diseño | Color del aviso, sin token `warning` | Variantes de marca existentes (`--primary-50`, `--primary-100`, `--ink-2`), sin tokens nuevos | `docs/design/system.md` → Color |
