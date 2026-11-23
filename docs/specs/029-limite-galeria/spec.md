@@ -1,7 +1,7 @@
 ---
 id: 029
 slug: limite-galeria
-status: implemented
+status: approved
 created: 2026-11-23
 extends: [014]
 ---
@@ -153,3 +153,4 @@ _(ninguna)_
 | 2026-11-23 | CA5 con el caso de lista sin cargar; Decisiones de auditoría, borrado en rechazos y carga fallida | /analyze A6, A10, A16 (decisiones del usuario) |
 | 2026-11-23 | CA3: la foto solo sale de un archivo subido; Decisiones de la excepción P13 y de la edición | /analyze A17, A22 (decisiones del usuario) |
 | 2026-11-23 | Implementada (12 de 12 tareas) | /implement |
+| 2026-11-23 | Vuelve a `approved`: /review ronda 1 pide T030–T037 | /review (changes_requested) |

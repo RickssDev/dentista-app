@@ -80,12 +80,30 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
   - nota: desbloqueada 2026-11-23 — el usuario hizo la verificación manual
   - nota: verificación manual OK 2026-11-23 (usuario): frontend de la rama en Vite contra la API local, con 1 y 15 imágenes (14 de prueba insertadas y borradas después). Con 15: «15 de 15 imágenes», botón «Nueva imagen» atenuado que no abre nada y el aviso «Llegaste al máximo de 15 imágenes. Elimina una para agregar otra.», a 1440 y 390 px; el lector de pantalla lo anuncia; al eliminar una vuelve a «14 de 15» y el botón responde
 
+## Correcciones de /review (ronda 1)
+- [ ] T030 Tests HTTP de `PUT /api/v1/imagenes/:id`: permisos, reemplazo de foto y visibilidad con la galería llena — `backend/tests/galeria/rutas-galeria.test.js` — hecho cuando: sin token → 401 y Paciente → 403 sin llamar a `repo.updateImagen`; `PUT` con archivo subido e `imagen` ajena en el cuerpo, con 15 → 200, `repo.updateImagen` recibe `imagen: '/uploads/subida-q29.jpg'`, `borrarArchivo` se llama con la foto anterior y nunca con la ajena, y `crearImagenConLimite` no se llama; `PUT` solo de `visible` con 15 → 200 y `updateImagen` recibe `visible`. Como el comportamiento ya existe, cada caso se comprueba rompiendo lo que protege (quitar `authorizeRoles` del `PUT`, tomar `imagen` del cuerpo en el controller) — cubre: CA3
+  - nota: añadida por /review: R1, R2
+- [ ] T031 Endurecer los tests del servicio y del repositorio — `backend/tests/galeria/limite-galeria.test.js`, `backend/tests/galeria/limite-galeria-concurrencia.test.js` — hecho cuando: el test de servicio «CA7» se llama «el servicio convierte el rechazo del repositorio en 409» y su comentario remite a TM1 y a la verificación con MySQL real; CA3 afirma que `updateImagen` con 15 devuelve la imagen actualizada en lugar de las dos aserciones triviales; CA4 usa `toBe(114)`; el caso del `INSERT` que falla afirma que no hay `destroy()`; caso nuevo con `INSERT` y `RELEASE_LOCK` fallando: rechaza con el error del `INSERT`, `destroy()` una vez y sin `release()`. Cada caso nuevo o endurecido se comprueba rompiendo lo protegido — cubre: CA3, CA4, CA7
+  - nota: añadida por /review: R4, R5, R10
+- [ ] T032 Detectar en el test de P20 también espaciados, radios, sombras y duraciones literales — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: el test de las reglas nuevas falla con un valor `px`, `rem`, `em`, `ms` o `s` literal, salvo `0` y el `1px` del borde que documenta `system.md`; tiene un control positivo con un espaciado literal de ejemplo; y pasa con las reglas actuales — cubre: CA6
+  - nota: añadida por /review: R3
+- [ ] T033 Quitar `createImagen` del repositorio, ya sin uso, y de los mocks de los tests — `backend/src/modules/images/images.repository.js`, `backend/tests/galeria/limite-galeria.test.js`, `backend/tests/galeria/rutas-galeria.test.js` — hecho cuando: `grep -rn "createImagen\b" backend/src` solo encuentra el servicio y el controller (que llaman a `crearImagenConLimite`), y `tests/galeria` sigue en verde — cubre: CA2 — depende: T031
+  - nota: añadida por /review: R6
+- [ ] T034 Test: si `RELEASE_LOCK` falla, queda un aviso en el log sin SQL ni valores — `backend/tests/galeria/limite-galeria-concurrencia.test.js` — hecho cuando: falla por la razón esperada (hoy no hay log): con `fallaRelease`, la captura del logger tiene una línea `warn` «No se pudo soltar el bloqueo de la galería» con el `code` del error y sin el título, la ruta ni el texto del SQL — cubre: CA7 — depende: T031
+  - nota: añadida por /review: R8
+- [ ] T035 Registrar el fallo de `RELEASE_LOCK` con `logger.warn` — `backend/src/modules/images/images.repository.js` — hecho cuando: pasa T034 y el resto de `tests/galeria` — cubre: CA7 — depende: T033, T034
+  - nota: añadida por /review: R8
+- [ ] T036 Test: el `:hover` no cambia el botón no disponible — `frontend/tests/galeria-limite.test.jsx` — hecho cuando: falla por la razón esperada: ninguna regla `:hover` de `.encabezado-btn` en `adminpanel.css` se aplica a `[aria-disabled="true"]` (el selector excluye ese estado) — cubre: CA6 — depende: T032
+  - nota: añadida por /review: R11
+- [ ] T037 Limitar el `:hover` de `.encabezado-btn` a los botones disponibles — `frontend/src/styles/adminpanel.css` — hecho cuando: pasa T036 y el resto de `galeria-limite.test.jsx`; el literal previo del `:hover` sigue igual (deuda DS2, fuera de alcance por la decisión A8) — cubre: CA6 — depende: T036
+  - nota: añadida por /review: R11
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: en el módulo `images` se menciona el límite de 15 altas, el bloqueo con nombre `dentissa_galeria_alta` y el borrado de la foto en los rechazos
   - nota: módulo `images` con el límite, el bloqueo con nombre, la ruta solo del archivo y el borrado en rechazos; la deuda de lint pasa a 1 error en el backend (el de `images.service.js` desapareció) y 12 problemas en el frontend
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian (sin variables, logs ni eventos nuevos), anotado como nota
   - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos. El 409 y el 503 quedan en la línea «Petición atendida» de la spec 026
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: 9 de 9 criterios marcados, cada uno con su test en verde: backend 35 suites, 419 pruebas y 5 `todo`; frontend 28 archivos y 243 pruebas. Build en verde; lint con solo los errores previos (backend 1, frontend 7). gitleaks no está instalado en el equipo: lo ejecuta el CI del PR
 
 ## Despliegue (lo ejecuta `/release`)
@@ -99,34 +117,34 @@ Revisado contra el Constitution Check de [plan.md](plan.md). Lo que el desglose 
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T010 | T021 |
-| CA2 | T010, T012, T013 | T002, T020, T021, T023 |
-| CA3 | T010, T012 | T021 |
-| CA4 | T010, T013 | T021, T023 |
+| CA2 | T010, T012, T013 | T002, T020, T021, T023, T033 |
+| CA3 | T010, T012, T030, T031 | T021 |
+| CA4 | T010, T013, T031 | T021, T023 |
 | CA5 | T013 | T003, T022, T023 |
-| CA6 | T013, T014 | T022, T023 |
-| CA7 | T011 | T020, T021 |
+| CA6 | T013, T014, T032, T036 | T022, T023, T037 |
+| CA7 | T011, T031, T034 | T020, T021, T035 |
 | CA8 | T012 | T021 |
 | CA9 | T013 | T023 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
-| TM1 | T020 | T011 |
+| TM1 | T020 | T011, T031 |
 | TM2 | T021 | T012 |
 | TM3 | T021 | T010 |
-| TM4 | T020 | T011 |
-| TM5 | T021 | T012 |
-| TM6 | T021 | T010, T012 |
+| TM4 | T020, T035 | T011, T031, T034 |
+| TM5 | T021 | T012, T030 |
+| TM6 | T021 | T010, T012, T030 |
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | `backend/src/modules/images/images.limites.js` | T002 |
-| `backend/src/modules/images/images.repository.js` | T020 |
+| `backend/src/modules/images/images.repository.js` | T020, T033, T035 |
 | `backend/src/modules/images/images.service.js` | T021 |
 | `backend/src/modules/images/images.controller.js` | T021 |
 | `docs/design/system.md`, `docs/design/system.html` | T001 |
 | `frontend/src/utils/limitesGaleria.js` | T003 |
 | `frontend/src/components/EncabezadoModulo.jsx` | T022 |
-| `frontend/src/styles/adminpanel.css` | T022 |
+| `frontend/src/styles/adminpanel.css` | T022, T037 |
 | `frontend/src/pages/admin/Admingaleria.jsx` | T023 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |

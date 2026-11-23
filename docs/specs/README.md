@@ -33,6 +33,6 @@ En una spec inferida, `[x]` significa "un test existente cubre este criterio" y 
 | [024](024-cabeceras-seguridad/spec.md) | Protecciones del navegador en todo el sitio | Seguridad | released | — |
 | [025](025-frontend-sin-root/spec.md) | Servicio del sitio sin privilegios de administrador | Seguridad | released | v1.7.0 |
 | [026](026-logs-seguros-correlacion/spec.md) | Logs seguros y correlación por petición | Observabilidad | released | v1.6.0 |
-| [029](029-limite-galeria/spec.md) | Límite de 15 imágenes en la galería | Contenido y sitio público | implemented | — |
+| [029](029-limite-galeria/spec.md) | Límite de 15 imágenes en la galería | Contenido y sitio público | approved | — |
 
 Las pantallas de cada feature están en el inventario de vistas de [docs/design/system.md](../design/system.md).
