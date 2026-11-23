@@ -3,7 +3,6 @@
 // Se llama al middleware directamente, sin createApp(), para no generar líneas de log.
 const AppError = require('../../src/utils/AppError');
 
-// Referencia tomada una sola vez: el módulo actual reasigna module.exports en la primera llamada.
 const errorHandler = require('../../src/middlewares/errorHandler');
 
 const NODE_ENV_ORIGINAL = process.env.NODE_ENV;
@@ -34,8 +33,6 @@ const conNombre = (nombre, mensaje = 'detalle interno') => {
 
 beforeEach(() => {
   process.env.NODE_ENV = 'production';
-  // Hasta T022 el manejador imprime con console.error; se silencia sin comprobarlo.
-  jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -72,7 +69,6 @@ describe.each(casos)('026 · errorHandler responde igual: %s', (_nombre, crear, 
 });
 
 test('026 · tras varios errores seguidos el caso de 6 MB sigue respondiendo 400', () => {
-  // El module.exports interno se reasigna en la primera llamada; la referencia tomada sigue siendo la buena.
   responder(new Error('primero'));
   responder(conNombre('TokenExpiredError'));
   const res = responder(Object.assign(new Error('File too large'), { code: 'LIMIT_FILE_SIZE' }));

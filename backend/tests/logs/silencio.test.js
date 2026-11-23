@@ -1,4 +1,4 @@
-// Spec 026, T015: la suite no imprime logs (RNF), tampoco con NODE_ENV=production dentro de una captura.
+// Spec 026, T015: la suite no imprime logs (RNF); en producción, silent se ignora (A24, /review R9).
 const request = require('supertest');
 
 jest.mock('google-auth-library', () => ({
@@ -40,17 +40,14 @@ test('026 · RNF con LOG_LEVEL=silent y sin captura, /health y un 500 no escribe
   expect(escrito).toHaveLength(0);
 });
 
-test('026 · RNF con NODE_ENV=production dentro de una captura tampoco escribe en stdout (A24)', async () => {
-  const captura = logger.__capturar();
-  try {
-    process.env.NODE_ENV = 'production';
-    await request(app).get('/health');
-    await request(app).get('/api/v1/servicios/publicos');
-    await pausa();
-  } finally {
-    captura.terminar();
-  }
+test('026 · RNF en producción, sin captura, silent se ignora: info escribe en stdout y debug no (A24)', () => {
+  expect(process.env.LOG_LEVEL).toBe('silent');
+  process.env.NODE_ENV = 'production';
 
-  expect(captura.lineas.length).toBeGreaterThan(0);
+  logger.debug('Depuración de prueba');
   expect(escrito).toHaveLength(0);
+
+  logger.info('Información de prueba');
+  expect(escrito).toHaveLength(1);
+  expect(JSON.parse(escrito[0])).toMatchObject({ level: 'info', message: 'Información de prueba' });
 });

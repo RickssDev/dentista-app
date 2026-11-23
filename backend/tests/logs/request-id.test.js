@@ -108,7 +108,9 @@ describe('026 · CA3 identificador inválido (abuso; TM1, TM2)', () => {
     expect(respuesta.headers[CABECERA]).not.toBe(valor);
     expect(respuesta.headers[CABECERA]).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
     expect(captura.lineas.length).toBeGreaterThan(0);
-    expect(captura.crudas.join('')).not.toContain(valor);
+    // Sobre las líneas ya parseadas: en la línea cruda JSON.stringify escapa `"` y `	` (/review R8).
+    expect(captura.lineas.some((l) => l.request_id === valor)).toBe(false);
+    expect(JSON.stringify(captura.lineas)).not.toContain(JSON.stringify(valor).slice(1, -1));
   });
 
   test('el validador rechaza saltos de línea, que el cliente HTTP de Node no deja enviar (A4)', () => {
