@@ -160,6 +160,14 @@ const comprobaciones = [
     const r = await pedir('/no-existe')
     return r.status === 404 && /<meta name="robots" content="noindex"/.test(await r.text()) && Boolean(r.headers.get('content-security-policy'))
   }],
+  // Spec 025 · CA2 (review R2): el reenvío a la API con nginx sin root. Un cuerpo de 64 KB supera el
+  // búfer en memoria (16 KB) y nginx lo escribe en /var/cache/nginx/client_temp antes de reenviarlo.
+  // Sin backend la respuesta esperada es 502; un 500 o un 403 indicaría un problema de permisos
+  ['/api/ con cuerpo de 64 KB → 502 sin backend (reenvío sin root)', async () => {
+    const cuerpo = JSON.stringify({ correo: 'prueba@ejemplo.test', relleno: 'x'.repeat(64 * 1024) })
+    const r = await fetch(`${BASE}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: cuerpo, redirect: 'manual' })
+    return { ok: r.status === 502, detalle: `respondió ${r.status}, se esperaba 502 (sin backend)` }
+  }],
   // Spec 025 · CA1, CA7: dentro del contenedor, con la identidad por defecto de la imagen.
   // dentro() exige antes un control positivo: sin él, "denegado" o "no encontrado" no significan nada
   ['contenedor → ningún proceso como root', () => dentro(() => {
