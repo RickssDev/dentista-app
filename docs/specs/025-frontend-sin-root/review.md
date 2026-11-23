@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-23
 base: f9732c3
 head: 18e0294
-human_signoff: pending
+human_signoff: RickssDev 2026-11-23 (revisó y fusionó el PR #91)
 ---
 
 # Review · 025 Servicio del sitio sin privilegios de administrador

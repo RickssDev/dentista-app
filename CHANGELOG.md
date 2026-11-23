@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-23
+### Security
+- El servidor que entrega el sitio ya no corre con permisos de administrador: aunque alguien aprovechara una falla suya, no podría cambiar las páginas que ven pacientes y personal ni sus protecciones (spec 025).
+- La construcción del sitio usa versiones exactas y revisadas de sus piezas base, y corrige una vulnerabilidad conocida en una de ellas (spec 025).
+
 ## [1.6.0] - 2026-11-23
 ### Security
 - Los registros técnicos del servidor ya no guardan teléfonos, correos, nombres, contraseñas, tokens ni enlaces de recuperación de contraseña, tampoco cuando falla un envío por WhatsApp o por correo ni cuando falla la base de datos (spec 026).
