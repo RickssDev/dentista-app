@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-23
+### Added
+- La galería admite como máximo 15 imágenes, contando visibles y ocultas. Al llegar a 15, el panel lo indica («15 de 15 imágenes»), desactiva «Nueva imagen» con un aviso que explica qué hacer y el servidor rechaza cualquier alta nueva, también si se intenta sin pasar por el panel o desde dos pestañas a la vez. Editar y reemplazar la foto de una imagen existente sigue permitido (spec 029).
+
+### Security
+- La foto de una imagen de la galería solo puede ser un archivo subido en ese momento: ya no se acepta una ruta indicada en la petición, que podía hacer que se borrara un archivo de otra sección del sitio (spec 029).
+
+### Fixed
+- Cuando un alta de imagen se rechaza (galería llena o datos incompletos), la foto enviada ya no queda guardada sin usar en el servidor (spec 029).
+
 ## [1.7.1] - 2026-11-23
 ### Fixed
 - Vuelven a poder subirse imágenes de hasta 6 MB en la galería, las promociones, los servicios y las fotos de usuario; desde hace un tiempo se rechazaba cualquier imagen de más de 1 MB (fix 2026-11-23-hotfix-limite-subida-nginx).
