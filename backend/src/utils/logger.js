@@ -7,17 +7,30 @@ const { contextoActual } = require('./contexto');
 const NIVELES = { debug: 10, info: 20, warn: 30, error: 40, silent: 100 };
 const PISO_PRODUCCION = 'info';
 const PROFUNDIDAD_MAXIMA = 5;
+const ELEMENTOS_MAXIMOS = 50;
+const TEXTO_MAXIMO = 4096;
 const OCULTO = '[oculto]';
 
-// Una clave es sensible si su nombre normalizado contiene alguno de estos términos.
+// Una clave es sensible si su nombre normalizado contiene alguno de estos términos, o si termina en
+// «key» (apikey, X-Device-Key…). Incluye las variantes en español del dominio (/review R4).
 const TERMINOS_SENSIBLES = [
-  'correo', 'email', 'telefono', 'phone', 'password', 'contrasena', 'token', 'authorization',
-  'credential', 'credencial', 'secret', 'cookie', 'nombre', 'name', 'direccion', 'address',
+  'correo', 'email', 'telefono', 'phone', 'celular', 'movil', 'password', 'pass', 'pwd',
+  'contrasena', 'clave', 'token', 'jwt', 'bearer', 'session', 'authorization', 'credential',
+  'credencial', 'secret', 'cookie', 'apikey', 'nombre', 'name', 'apellido', 'direccion', 'address',
+  'destinatario',
 ];
 // Claves que solo produce resumirError; se comparan tal cual, sin normalizar.
 const CLAVES_PERMITIDAS = new Set(['error_name', 'type']);
 
 let captura = null;
+
+// Un error asíncrono de stdout (EPIPE si se cierra el destino) no debe tumbar el proceso (CA12,
+// /review R6). Se registra una sola vez aunque el módulo se cargue varias veces (pruebas).
+const OYENTE_STDOUT = Symbol.for('dentissa.logger.errorDeStdout');
+if (!process.stdout[OYENTE_STDOUT]) {
+  process.stdout[OYENTE_STDOUT] = true;
+  process.stdout.on('error', () => {});
+}
 
 const normalizarClave = (clave) =>
   clave.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[-_\s]/g, '');
@@ -25,7 +38,7 @@ const normalizarClave = (clave) =>
 const esSensible = (clave) => {
   if (CLAVES_PERMITIDAS.has(clave)) return false;
   const normalizada = normalizarClave(clave);
-  return TERMINOS_SENSIBLES.some((termino) => normalizada.includes(termino));
+  return normalizada.endsWith('key') || TERMINOS_SENSIBLES.some((termino) => normalizada.includes(termino));
 };
 
 /** Nivel mínimo vigente: el de la captura, o el del entorno con el piso de producción. */
@@ -53,7 +66,8 @@ const resumirError = (error) => {
   const esDeMySQL = Boolean(error.sqlState || error.sqlMessage);
 
   if (esDeMySQL) {
-    const pila = String(error.stack || '').split('\n').slice(1);
+    // Solo los marcos «at …»: el mensaje puede ocupar varias líneas con el valor citado (/review R1).
+    const pila = String(error.stack || '').split('\n').filter((linea) => /^\s+at /.test(linea));
     return {
       error_name: errorName,
       code: error.code,
@@ -75,20 +89,36 @@ const resumirErrorExterno = (servicio, error) => {
   return { servicio, status: typeof status === 'number' ? status : null, codigo };
 };
 
-const redactar = (valor, profundidad = 0, vistos = new WeakSet()) => {
+// `enCamino` guarda solo los objetos de la rama actual: un objeto repetido en ramas hermanas sale
+// completo, y solo un ciclo real se marca como circular (/review R7).
+const redactar = (valor, profundidad = 0, enCamino = new WeakSet()) => {
+  if (typeof valor === 'bigint') return valor.toString();
+  if (typeof valor === 'string') {
+    return valor.length > TEXTO_MAXIMO ? `${valor.slice(0, TEXTO_MAXIMO)}…` : valor;
+  }
   if (valor === null || typeof valor !== 'object') return valor;
   if (valor instanceof Error) return resumirError(valor);
-  if (vistos.has(valor)) return '[circular]';
+  if (valor instanceof Date) return Number.isNaN(valor.getTime()) ? null : valor.toISOString();
+  if (ArrayBuffer.isView(valor) || valor instanceof ArrayBuffer) return `[binario ${valor.byteLength} bytes]`;
+  if (enCamino.has(valor)) return '[circular]';
   if (profundidad >= PROFUNDIDAD_MAXIMA) return '[profundo]';
-  vistos.add(valor);
 
-  if (Array.isArray(valor)) return valor.map((v) => redactar(v, profundidad + 1, vistos));
+  enCamino.add(valor);
+  try {
+    if (Array.isArray(valor)) {
+      const limpio = valor.slice(0, ELEMENTOS_MAXIMOS).map((v) => redactar(v, profundidad + 1, enCamino));
+      if (valor.length > ELEMENTOS_MAXIMOS) limpio.push(`[+${valor.length - ELEMENTOS_MAXIMOS}]`);
+      return limpio;
+    }
 
-  const limpio = {};
-  for (const [clave, v] of Object.entries(valor)) {
-    limpio[clave] = esSensible(clave) ? OCULTO : redactar(v, profundidad + 1, vistos);
+    const limpio = {};
+    for (const [clave, v] of Object.entries(valor)) {
+      limpio[clave] = esSensible(clave) ? OCULTO : redactar(v, profundidad + 1, enCamino);
+    }
+    return limpio;
+  } finally {
+    enCamino.delete(valor);
   }
-  return limpio;
 };
 
 const escribir = (level, message, context) => {
