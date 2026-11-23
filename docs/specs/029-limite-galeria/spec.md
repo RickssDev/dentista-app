@@ -1,7 +1,8 @@
 ---
 id: 029
 slug: limite-galeria
-status: implemented
+status: released
+released: v1.8.0 (2026-11-23)
 created: 2026-11-23
 extends: [014]
 ---
@@ -155,3 +156,4 @@ _(ninguna)_
 | 2026-11-23 | Implementada (12 de 12 tareas) | /implement |
 | 2026-11-23 | Vuelve a `approved`: /review ronda 1 pide T030–T037 | /review (changes_requested) |
 | 2026-11-23 | Implementada de nuevo con T030–T037 (review ronda 1) | /implement |
+| 2026-11-23 | Liberada en v1.8.0 | /release |
