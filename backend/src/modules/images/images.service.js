@@ -1,6 +1,11 @@
 const repo = require('./images.repository');
 const AppError = require('../../utils/AppError');
 const borrarArchivo = require('../../utils/borrarArchivo');
+const {
+  MAX_IMAGENES_GALERIA,
+  MENSAJE_GALERIA_LLENA,
+  MENSAJE_GALERIA_OCUPADA,
+} = require('./images.limites');
 
 exports.getImagen = async () => {
 
@@ -17,22 +22,35 @@ exports.getImagenById = async (id) => {
   return i;
 };
 
-exports.createImagen = async (data, file) => {
-  const {
-    titulo,
-    imagen,
-    visible
-  } = data;
+// Alta con el límite de la galería (spec 029). La ruta de la imagen es la del archivo subido en esta
+// petición, nunca un valor del cuerpo (TM6). Si el alta se rechaza por cualquier motivo, se borra
+// ese archivo para no dejarlo huérfano en el disco (TM3, decisión del usuario /analyze A10).
+exports.createImagen = async (data, rutaArchivo) => {
+  try {
+    const { titulo, visible } = data;
 
-  if (!titulo || !imagen || visible === undefined) {
-    throw new AppError('Todos los campos son obligatorios', 400);
+    if (!titulo || !rutaArchivo || visible === undefined) {
+      throw new AppError('Todos los campos son obligatorios', 400);
+    }
+
+    const resultado = await repo.crearImagenConLimite(
+      { titulo, imagen: rutaArchivo, visible },
+      MAX_IMAGENES_GALERIA,
+    );
+
+    if (resultado.bloqueo === false) {
+      throw new AppError(MENSAJE_GALERIA_OCUPADA, 503);
+    }
+
+    if (!resultado.creada) {
+      throw new AppError(MENSAJE_GALERIA_LLENA, 409);
+    }
+
+    return resultado.id;
+  } catch (error) {
+    if (rutaArchivo) await borrarArchivo(rutaArchivo);
+    throw error;
   }
-
-  return await repo.createImagen({
-   titulo,
-   imagen: data.imagen,
-   visible
-  });
 };
 
 exports.updateImagen = async (id, data) => {
