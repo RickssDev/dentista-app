@@ -16,8 +16,8 @@ npm ci --prefix backend && npm ci --prefix frontend  # instalar
 npm run dev --prefix backend                         # API local
 npm run dev --prefix frontend                        # SPA local
 npm test                                             # pruebas de backend y frontend (no usan datos ni servicios reales)
-npm run lint --prefix backend                        # lint del backend  # ⚠ 5 errores previos en backend/src
-npm run lint --prefix frontend                       # lint del frontend  # ⚠ 10 errores previos
+npm run lint --prefix backend                        # lint del backend  # ⚠ 1 error previo (faqs.service.js)
+npm run lint --prefix frontend                       # lint del frontend  # ⚠ 7 errores previos (12 problemas)
 npm run build --prefix frontend                      # build
 ```
 
