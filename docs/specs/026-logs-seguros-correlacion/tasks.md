@@ -60,13 +60,14 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - RNF: sin captura, escribe en `process.stdout`.
   — cubre: CA6, CA7, CA10, CA11, CA12
   - nota: falla por la razón esperada: no existe `src/utils/logger`. La captura expone además `crudas` (las líneas tal como se escriben), para comprobar que cada una es JSON de una sola línea. Se añadió un caso de referencia circular: escribirla no debe lanzar (CA12)
-- [ ] T011 [P] Escribir las pruebas de `X-Request-Id` — `tests/logs/request-id.test.js` — hecho cuando: falla por la razón esperada (sin cabecera) y comprueba con `createApp()`, obteniendo cada estado como dice el plan → Estrategia de pruebas (A7):
+- [x] T011 [P] Escribir las pruebas de `X-Request-Id` — `tests/logs/request-id.test.js` — hecho cuando: falla por la razón esperada (sin cabecera) y comprueba con `createApp()`, obteniendo cada estado como dice el plan → Estrategia de pruebas (A7):
   - CA1: cabecera en 200 (`/api/v1/servicios/publicos` con el repositorio simulado), 401 (ruta protegida sin token), 404, 429 (once logins fallidos), 500 (repositorio simulado que lanza, a través del `errorHandler` de `createApp()`) y `/health`, distinta en dos peticiones.
   - CA2: eco de `abc12345-XYZ_9`.
   - CA3, TM1 y TM2 por HTTP: con 65 caracteres, con espacio, con `;`, con `"}` y con tabulador → cabecera distinta del valor enviado; se comprueba que hay líneas capturadas de la petición y que ninguna contiene el valor.
   - CA3 unitario: el validador exportado por `requestId.js` rechaza valores con `\n` y con `\r` (A4).
   - CA12: con el destino del logger forzado a lanzar y la captura en `debug`, se comprueba que el destino se invocó al menos una vez y que la respuesta de `/health` y de un 404 es la misma (A3).
   — cubre: CA1, CA2, CA3, CA12
+  - nota: falla por la razón esperada: no existe `src/utils/logger`, que la prueba usa para la captura. Los estados salen de un `spyOn` sobre `servicios.repository` (200 y 500) y del limitador real (429)
 - [ ] T012 [P] Escribir las pruebas de correlación — `tests/logs/correlacion.test.js` — hecho cuando: falla por la razón esperada y comprueba, siempre con líneas capturadas > 0 antes de cada ausencia (A3):
   - CA4 y TM8: crear una cita (aviso de confirmación, `createCita`) con WhatsApp activo y `axios.post` simulado deja todas las líneas de la petición, incluida la del aviso, con el mismo `request_id` que la cabecera; lo mismo una solicitud de recuperación de contraseña con `fetch` simulado (A9).
   - CA5: dos ejecuciones del callback capturado de `cron.schedule` en `reminder.service.js` → `job_id` común dentro de cada una y distinto entre ellas.
