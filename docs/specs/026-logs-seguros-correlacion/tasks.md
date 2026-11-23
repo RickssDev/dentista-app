@@ -172,8 +172,9 @@ Revisión del desglose contra `plan.md` (constitución 1.0.0, en `draft`).
   - nota: añadida por /review: R15
   - nota: con `LOG_LEVEL=debug` en el entorno, antes la suite imprimía 102 líneas JSON y fallaba `silencio.test.js`; ahora no imprime ninguna y pasa entera (32 suites, 387 pruebas)
 
-- [ ] T045 Quitar el mensaje exacto de la pila antes de tomar los marcos — `src/utils/logger.js` — hecho cuando: T035 pasa; `resumirError` quita del `stack` de un error de MySQL el prefijo `${name}: ${message}` y solo después conserva las líneas `/^\s+at /`; T010, T013 y T030 siguen en verde — cubre: CA9 — depende: T035
+- [x] T045 Quitar el mensaje exacto de la pila antes de tomar los marcos — `src/utils/logger.js` — hecho cuando: T035 pasa; `resumirError` quita del `stack` de un error de MySQL el prefijo `${name}: ${message}` y solo después conserva las líneas `/^\s+at /`; T010, T013 y T030 siguen en verde — cubre: CA9 — depende: T035
   - nota: añadida por /review: R18 (ronda 2)
+  - nota: T035 en verde y la suite completa del backend también (32 suites, 389 pruebas, 5 `todo`). Se busca el `message` dentro del `stack` y se corta tras él, en lugar de comparar el prefijo `${name}: `, porque `name` puede cambiar después de construir el error; si no aparece, se filtran los marcos como antes. Comprobado rompiéndolo: sin el corte, R18 falla y R1 sigue pasando
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` y la deuda resuelta — `docs/architecture.md`, `docs/roadmap.md` — hecho cuando: la sección Backend describe el logger JSON propio, el contexto por petición y `X-Request-Id`, con enlace al ADR 0011, y lista los cuatro transversales nuevos. La deuda de la duplicación de `errorHandler.js` sale de «Deuda técnica» de `architecture.md` y de «Pendientes y deuda» del roadmap (A14). Antes, si la 025 ya está en `main`, se rebasa sobre ella (A12) — depende: T028

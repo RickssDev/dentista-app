@@ -66,8 +66,13 @@ const resumirError = (error) => {
   const esDeMySQL = Boolean(error.sqlState || error.sqlMessage);
 
   if (esDeMySQL) {
-    // Solo los marcos «at …»: el mensaje puede ocupar varias líneas con el valor citado (/review R1).
-    const pila = String(error.stack || '').split('\n').filter((linea) => /^\s+at /.test(linea));
+    // Primero se quita el mensaje entero, que puede ocupar varias líneas y hasta imitar un marco
+    // («\n    at …») con el valor citado; después quedan solo los marcos (/review R1, R18).
+    const texto = String(error.stack || '');
+    const mensaje = String(error.message || '');
+    const inicio = mensaje ? texto.indexOf(mensaje) : -1;
+    const resto = inicio >= 0 ? texto.slice(inicio + mensaje.length) : texto;
+    const pila = resto.split('\n').filter((linea) => /^\s+at /.test(linea));
     return {
       error_name: errorName,
       code: error.code,
