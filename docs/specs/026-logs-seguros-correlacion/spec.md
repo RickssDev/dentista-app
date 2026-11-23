@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: logs-seguros-correlacion
-status: approved
+status: implemented
 created: 2026-11-22
 extends: []
 ---
@@ -25,23 +25,23 @@ auditoría (OB1) queda para las specs 027 y 028.
 - Como Administrador, quiero que un error en un servicio externo (WhatsApp, correo, Google) quede registrado sin exponer los datos del mensaje, para poder diagnosticarlo sin filtrar información.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada una petición a la API sin identificador, cuando el servidor responde, entonces la respuesta incluye `X-Request-Id` con un identificador nuevo, distinto en cada petición. Vale también para las respuestas 4xx, 5xx, las rechazadas por un limitador y la ruta de salud.
-- [ ] CA2 · Dada una petición con un `X-Request-Id` válido (de 8 a 64 caracteres, solo letras, dígitos, guion y guion bajo), cuando el servidor responde, entonces devuelve ese mismo valor y lo usa en los mensajes de la petición.
-- [ ] CA3 · (abuso) Como atacante, envío un `X-Request-Id` inválido (más largo que el límite, con saltos de línea, espacios u otros caracteres) para falsear o romper los logs → se ignora, se genera uno nuevo, la petición se atiende con normalidad y el valor recibido no aparece en ningún mensaje.
-- [ ] CA4 · Dada una petición que genera mensajes (incluidos los de error y los de envíos de WhatsApp o correo que dispara), cuando se revisan los logs, entonces todos llevan el identificador de esa petición.
-- [ ] CA5 · Dada una ejecución del trabajo programado de recordatorios, cuando se revisan los logs, entonces todos sus mensajes comparten un identificador propio de esa ejecución, distinto en cada ejecución.
-- [ ] CA6 · Dado cualquier mensaje del servidor, entonces es una sola línea estructurada con fecha, nivel, texto, identificador de la petición o del trabajo (si lo hay) e identificador numérico del usuario (si hay sesión). Nunca lleva su nombre ni su correo.
-- [ ] CA7 · Dado el servidor en producción, cuando se emite un mensaje de depuración, entonces no aparece. Dado el servidor en local, sí aparece. El nivel mínimo por entorno es `info` en producción y `debug` en local.
-- [ ] CA8 · Dada una petición terminada, entonces queda una línea con método, ruta sin parámetros de consulta, estado y duración. Una respuesta 2xx o 3xx se registra como informativa; una 4xx como advertencia, sin traza de pila; una 5xx como error, con traza de pila.
-- [ ] CA9 · (abuso) Dados los flujos que hoy imprimen datos, cuando se ejecutan con datos de prueba reconocibles, entonces ningún mensaje contiene teléfono, correo, nombre, dirección, texto o variables del mensaje enviado, enlace o token de recuperación, contraseña, cabecera de autorización, credencial de Google ni cuerpo de la petición o de la respuesta del proveedor. Los flujos son:
+- [x] CA1 · Dada una petición a la API sin identificador, cuando el servidor responde, entonces la respuesta incluye `X-Request-Id` con un identificador nuevo, distinto en cada petición. Vale también para las respuestas 4xx, 5xx, las rechazadas por un limitador y la ruta de salud.
+- [x] CA2 · Dada una petición con un `X-Request-Id` válido (de 8 a 64 caracteres, solo letras, dígitos, guion y guion bajo), cuando el servidor responde, entonces devuelve ese mismo valor y lo usa en los mensajes de la petición.
+- [x] CA3 · (abuso) Como atacante, envío un `X-Request-Id` inválido (más largo que el límite, con saltos de línea, espacios u otros caracteres) para falsear o romper los logs → se ignora, se genera uno nuevo, la petición se atiende con normalidad y el valor recibido no aparece en ningún mensaje.
+- [x] CA4 · Dada una petición que genera mensajes (incluidos los de error y los de envíos de WhatsApp o correo que dispara), cuando se revisan los logs, entonces todos llevan el identificador de esa petición.
+- [x] CA5 · Dada una ejecución del trabajo programado de recordatorios, cuando se revisan los logs, entonces todos sus mensajes comparten un identificador propio de esa ejecución, distinto en cada ejecución.
+- [x] CA6 · Dado cualquier mensaje del servidor, entonces es una sola línea estructurada con fecha, nivel, texto, identificador de la petición o del trabajo (si lo hay) e identificador numérico del usuario (si hay sesión). Nunca lleva su nombre ni su correo.
+- [x] CA7 · Dado el servidor en producción, cuando se emite un mensaje de depuración, entonces no aparece. Dado el servidor en local, sí aparece. El nivel mínimo por entorno es `info` en producción y `debug` en local.
+- [x] CA8 · Dada una petición terminada, entonces queda una línea con método, ruta sin parámetros de consulta, estado y duración. Una respuesta 2xx o 3xx se registra como informativa; una 4xx como advertencia, sin traza de pila; una 5xx como error, con traza de pila.
+- [x] CA9 · (abuso) Dados los flujos que hoy imprimen datos, cuando se ejecutan con datos de prueba reconocibles, entonces ningún mensaje contiene teléfono, correo, nombre, dirección, texto o variables del mensaje enviado, enlace o token de recuperación, contraseña, cabecera de autorización, credencial de Google ni cuerpo de la petición o de la respuesta del proveedor. Los flujos son:
   - los avisos de WhatsApp de confirmación, reprogramación, cancelación y recordatorio, con éxito y con error del proveedor;
   - el envío de correo de recuperación, de aviso de contraseña y de Google, con éxito y con error;
   - la verificación fallida de Google;
   - un login fallido;
   - un error 4xx y uno 5xx con cuerpo.
-- [ ] CA10 · Dado un mensaje que incluye información adicional con campos de nombre sensible (correo, teléfono, contraseña, token, autorización, credencial y sus variantes), cuando se registra, entonces el valor de esos campos aparece reemplazado por un marcador y el resto del mensaje se conserva.
-- [ ] CA11 · Dado un error de un servicio externo (WhatsApp, correo o Google), cuando se registra, entonces el mensaje dice qué servicio falló, el estado HTTP y el código de error del proveedor si lo da, más el identificador de la cita o del envío cuando exista. Para un correo en local o en producción, el mensaje dice qué tipo de correo se envió y el identificador del proveedor, sin destinatario ni contenido.
-- [ ] CA12 · Dado un fallo al escribir un mensaje de log, cuando ocurre durante una petición, entonces la petición se responde igual que sin el fallo.
+- [x] CA10 · Dado un mensaje que incluye información adicional con campos de nombre sensible (correo, teléfono, contraseña, token, autorización, credencial y sus variantes), cuando se registra, entonces el valor de esos campos aparece reemplazado por un marcador y el resto del mensaje se conserva.
+- [x] CA11 · Dado un error de un servicio externo (WhatsApp, correo o Google), cuando se registra, entonces el mensaje dice qué servicio falló, el estado HTTP y el código de error del proveedor si lo da, más el identificador de la cita o del envío cuando exista. Para un correo en local o en producción, el mensaje dice qué tipo de correo se envió y el identificador del proveedor, sin destinatario ni contenido.
+- [x] CA12 · Dado un fallo al escribir un mensaje de log, cuando ocurre durante una petición, entonces la petición se responde igual que sin el fallo.
 
 ## Fuera de alcance
 - Registro de auditoría (quién vio o cambió qué): specs 027 y 028 (OB1).
