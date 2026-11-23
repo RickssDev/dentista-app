@@ -141,7 +141,7 @@
   transition: 0.2s;
 }
 
-.encabezado-btn:hover {
+.encabezado-btn:not([aria-disabled="true"]):not(:disabled):hover {
   background: #d63a5a;
 }
 
