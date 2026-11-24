@@ -32,60 +32,77 @@ exports.getServicioById = async (id) => {
   };
 };
 
+// `data.imagen` solo llega del archivo subido en esta petición (el controller descarta la del
+// cuerpo). Si el alta o la edición fallan antes de guardarse, se borra para no dejarla huérfana
+// (ficha 2026-11-23-fix-imagen-servicios).
 exports.createServicio = async (data) => {
-  if (!data || Object.keys(data).length === 0) {
-    throw new AppError("No se recibieron datos", 400);
+  try {
+    if (!data || Object.keys(data).length === 0) {
+      throw new AppError("No se recibieron datos", 400);
+    }
+
+    const { nombre, descripcion, duracion } = data;
+
+    if (!nombre || !descripcion || !duracion) {
+      throw new AppError("Faltan campos obligatorios", 400);
+    }
+
+    const existingServicio = await repo.getServicioByName(nombre);
+    if (existingServicio) {
+      throw new AppError(`El servicio con nombre "${nombre}" ya existe`, 400);
+    }
+
+    const id = await repo.createServicio(data);
+
+    return { id };
+  } catch (error) {
+    if (data?.imagen) await borrarArchivo(data.imagen);
+    throw error;
   }
-
-  const { nombre, descripcion, duracion } = data;
-
-  if (!nombre || !descripcion || !duracion) {
-    throw new AppError("Faltan campos obligatorios", 400);
-  }
-
-  const existingServicio = await repo.getServicioByName(nombre);
-  if (existingServicio) {
-    throw new AppError(`El servicio con nombre "${nombre}" ya existe`, 400);
-  }
-
-  const id = await repo.createServicio(data);
-
-  return { id };
 };
 
 exports.updateServicio = async (id, data) => {
-  const exists = await repo.getServicioById(id);
-  
+  let exists;
+  let cleanedData;
+  try {
+    exists = await repo.getServicioById(id);
+
     if (!exists) {
       throw new AppError('Servicio no encontrado', 404);
     }
-  const cleanedData = {};
 
-  for (const key in data) {
-    if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
-      cleanedData[key] = data[key];
+    cleanedData = {};
+
+    for (const key in data) {
+      if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
+        cleanedData[key] = data[key];
+      }
     }
+
+    if (cleanedData.nombre) {
+      const existingServicio = await repo.getServicioByName(cleanedData.nombre);
+      if (existingServicio && existingServicio.id_servicio != id) {
+        throw new AppError(
+          `Ya existe un servicio con nombre "${cleanedData.nombre}"`,
+          400,
+        );
+      }
+    }
+
+    if (Object.keys(cleanedData).length === 0) {
+      throw new AppError("No hay campos para actualizar", 400);
+    }
+
+    await repo.updateServicio(id, cleanedData);
+  } catch (error) {
+    if (data?.imagen) await borrarArchivo(data.imagen);
+    throw error;
   }
 
-  if (cleanedData.nombre) {
-    const existingServicio = await repo.getServicioByName(cleanedData.nombre);
-    if (existingServicio && existingServicio.id_servicio != id) {
-      throw new AppError(
-        `Ya existe un servicio con nombre "${cleanedData.nombre}"`,
-        400,
-      );
-    }
+  if (cleanedData.imagen && cleanedData.imagen !== exists.imagen) {
+    await borrarArchivo(exists.imagen);
   }
 
-  if (Object.keys(cleanedData).length === 0) {
-    throw new AppError("No hay campos para actualizar", 400);
-  }
-
-  await repo.updateServicio (id, cleanedData);
-    if (cleanedData.imagen && cleanedData.imagen !== exists.imagen) {
-      await borrarArchivo(exists.imagen);
-    }
-    
   return await repo.getServicioById(id);
 };
 

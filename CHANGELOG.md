@@ -5,6 +5,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-23
+### Security
+- La imagen de un servicio solo puede ser un archivo subido en ese momento: ya no se acepta una ruta indicada en la petición, que podía hacer que se borrara la foto de otra sección del sitio, como la de perfil de un paciente (fix 2026-11-23-fix-imagen-servicios).
+
+### Fixed
+- Si falla el alta o la edición de un servicio o de una promoción, o la edición de una imagen de la galería, la foto enviada ya no queda guardada sin usar en el servidor (fix 2026-11-23-fix-imagen-servicios, fix 2026-11-23-fix-foto-huerfana-promociones, fix 2026-11-23-fix-foto-huerfana-edicion-galeria).
+
 ## [1.8.0] - 2026-11-23
 ### Added
 - La galería admite como máximo 15 imágenes, contando visibles y ocultas. Al llegar a 15, el panel lo indica («15 de 15 imágenes»), desactiva «Nueva imagen» con un aviso que explica qué hacer y el servidor rechaza cualquier alta nueva, también si se intenta sin pasar por el panel o desde dos pestañas a la vez. Editar y reemplazar la foto de una imagen existente sigue permitido (spec 029).

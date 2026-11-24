@@ -193,6 +193,36 @@ describe('R1, R2 · PUT /imagenes/:id con la galería llena', () => {
   });
 });
 
+// Ficha 2026-11-23-fix-foto-huerfana-edicion-galeria (029/R9): si la edición con archivo nuevo
+// falla, la foto subida no queda en disco sin que ninguna imagen la use
+describe('fix · PUT con archivo nuevo que falla', () => {
+  test('imagen inexistente (404): se borra la foto subida', async () => {
+    repo.getImagenById.mockResolvedValue(undefined);
+    const r = await request(app).put('/api/v1/imagenes/99').set('Authorization', sesion(1))
+      .set('x-prueba-archivo', '1').send({ titulo: 'Después' });
+    expect(r.status).toBe(404);
+    expect(borrarArchivo).toHaveBeenCalledWith(SUBIDA);
+  });
+
+  test('error del repositorio al guardar: se borra la foto subida y no la anterior', async () => {
+    repo.getImagenById.mockResolvedValue({ id_imagen: 3, titulo: 'Antes', imagen: '/uploads/3.jpg', visible: 1 });
+    repo.updateImagen.mockRejectedValue(new Error('fallo de la base'));
+    const r = await request(app).put('/api/v1/imagenes/3').set('Authorization', sesion(1))
+      .set('x-prueba-archivo', '1').send({ titulo: 'Después' });
+    expect(r.status).toBe(500);
+    expect(borrarArchivo).toHaveBeenCalledWith(SUBIDA);
+    expect(borrarArchivo).not.toHaveBeenCalledWith('/uploads/3.jpg');
+  });
+
+  test('sin archivo, un fallo no borra nada', async () => {
+    repo.getImagenById.mockResolvedValue(undefined);
+    const r = await request(app).put('/api/v1/imagenes/99').set('Authorization', sesion(1))
+      .send({ titulo: 'Después', imagen: '/uploads/foto-de-perfil-ajena.jpg' });
+    expect(r.status).toBe(404);
+    expect(borrarArchivo).not.toHaveBeenCalled();
+  });
+});
+
 describe('P14 y P15 · logs del 409', () => {
   test('la línea «Petición atendida» lleva el request_id de la respuesta y ningún log trae el título ni el archivo', async () => {
     llena();
