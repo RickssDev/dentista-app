@@ -77,13 +77,16 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: pasa T010 (25/25) y siguen en verde `tests/citas` y `tests/comentarios` (85/85). `ahoraEnMexico` (fecha con `toLocaleDateString` en `America/Mexico_City` y minuto del día), `aunNoEmpieza` y `yaTermino` con `fechaComoTexto` y minutos numéricos
   - nota: comprobado rompiendo cada regla: sin el rechazo fallan 3 casos de CA10; rechazando por el inicio falla «en curso»; sin la guarda de duración NULL falla su caso; con `>=` en el inicio falla «empieza justo ahora»; con la fecha UTC fallan 2 casos de modificable. Restaurado, pasan
   - nota: archivo extra justificado (test de T010): el caso de duración NULL usaba una cita de mañana y no llegaba a mirar la duración; ahora es de hoy y más tarde
-- [ ] T021 Extraer el formulario de Inicio a `ModalAccionCita` y usarlo en Inicio — `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: T011 sigue en verde sin cambiar ninguna de sus aserciones. El componente: — cubre: CA3, CA4, CA5, CA7 — depende: T011
+- [x] T021 Extraer el formulario de Inicio a `ModalAccionCita` y usarlo en Inicio — `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: T011 sigue en verde sin cambiar ninguna de sus aserciones. El componente: — cubre: CA3, CA4, CA5, CA7 — depende: T011
   - recibe `cita` (`id`, `id_servicio`), `subtitulo` ya formateado, `accion`, `ancho`, `onCerrar` y `onHecho(accion)`;
   - tiene los mismos títulos, campos, textos y validación del motivo;
   - carga los horarios con `cita.id_servicio` y llama a `PUT` o `PATCH` con `cita.id`;
   - muestra en `error` el mensaje del servidor o el de respaldo;
   - no gestiona el foco ni tiene valores visuales literales.
   Inicio le pasa `{ ...proximaCita, id: proximaCita.id_cita }`, su subtítulo de hoy y `ancho={500}`, y en `onHecho` recarga y muestra su aviso como hoy
+  - nota: T011 sigue 4/4 en dos corridas sin tocar sus aserciones. `ModalAccionCita` recibe `cita`, `subtitulo`, `accion`, `ancho`, `onCerrar` y `onHecho`; Inicio le pasa `{ ...proximaCita, id: id_cita }`, su subtítulo y `ancho={500}`
+  - nota: archivo extra justificado: `src/utils/avisosCita.js` con los avisos de éxito, porque exportar una constante desde el archivo del componente rompe `react-refresh/only-export-components`; así las dos pantallas comparten los mismos textos (A14)
+  - nota: lint: al simplificar Inicio, el analizador de React marcó `set-state-in-effect` en su carga inicial (antes no la marcaba). Se difiere con `Promise.resolve().then(cargarTodo)`; Inicio queda con la misma advertencia previa que tenía. A27: queda una copia de `formatearHora` en el componente para las opciones de horario
 - [ ] T022 Mostrar «Reprogramar» y «Cancelar cita» en «Mis citas» — `frontend/src/pages/paciente/CitasPaciente.jsx` — hecho cuando: pasa T012 y siguen en verde `inicio-paciente.test.jsx` y los demás tests del frontend. En las tarjetas con `modificable`: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9 — depende: T012, T020, T021
   - los dos botones (`.mf-btn .mf-btn-prin` y `.mf-btn .mf-btn-sec`, con sus íconos) dentro de `.cita-acciones`, con `aria-label` de la cita;
   - abren `ModalAccionCita` con el mismo `ancho` que Inicio (500, deuda DS2) y el subtítulo «servicio · fecha · hora»;
