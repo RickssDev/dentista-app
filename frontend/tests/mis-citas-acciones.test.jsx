@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
-const sim = vi.hoisted(() => ({ citas: [], errorAlGuardar: null, falloRecarga: false, pedidas: 0 }))
+const sim = vi.hoisted(() => ({ citas: [], errorAlGuardar: null, falloRecarga: false, pedidas: 0, retenerRecarga: null }))
 
 const cita = (cambios) => ({
   id: 40, id_servicio: 2, nombre_servicio: 'Limpieza', fecha_agendada: '2030-03-10T06:00:00.000Z',
@@ -20,10 +20,13 @@ vi.mock('../src/services/api', () => ({
   api: vi.fn(async (ruta, metodo = 'GET', datos) => {
     if (ruta === '/citas/miscitas') {
       sim.pedidas += 1
+      // R1: la recarga posterior a una acción puede quedar pendiente hasta que el test la suelte
+      if (sim.retenerRecarga && sim.pedidas > 1) await sim.retenerRecarga
       if (sim.falloRecarga && sim.pedidas > 1) throw new Error('Error interno del servidor')
       return { payload: sim.citas.map((c) => ({ ...c })) }
     }
     if (ruta === '/servicios/publicos') return { payload: [] }
+    if (ruta === '/comentarios' && metodo === 'POST') return { message: 'ok' }
     if (ruta.startsWith('/citas/horarios-disponibles')) return { payload: ['11:00', '12:00'] }
     const reprogramar = /^\/citas\/mias\/(\d+)$/.exec(ruta)
     if (reprogramar && metodo === 'PUT') {
@@ -54,6 +57,7 @@ beforeEach(() => {
   sim.errorAlGuardar = null
   sim.falloRecarga = false
   sim.pedidas = 0
+  sim.retenerRecarga = null
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -209,6 +213,93 @@ describe('030 · foco (CA9, P16)', () => {
     await reprogramar(await screen.findByRole('dialog'))
     fireEvent.click(await screen.findByRole('button', { name: 'Aceptar' }))
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /Agendar nueva cita/ })))
+  })
+})
+
+describe('030 · correcciones de la review (R1, R2, R5)', () => {
+  test('R1: con la recarga pendiente, «Aceptar» deja el foco en «Agendar nueva cita», no en el body', async () => {
+    await montar([cita({})])
+    let soltar
+    sim.retenerRecarga = new Promise((resolve) => { soltar = resolve })
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_CANCELAR }))
+    const dialogo = await screen.findByRole('dialog')
+    fireEvent.change(within(dialogo).getByLabelText('Motivo'), { target: { value: 'No puedo ir' } })
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Cancelar cita' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Aceptar' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /Agendar nueva cita/ })))
+    soltar()
+    await waitFor(() => expect(screen.getByText('cancelada')).toBeTruthy())
+  })
+
+  test('R1: un aviso posterior sin acción no mueve el foco al destino de la acción anterior', async () => {
+    await montar([cita({}), cita({ id: 42, estado: 'completada', modificable: false })])
+    let soltar
+    sim.retenerRecarga = new Promise((resolve) => { soltar = resolve })
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_REPROGRAMAR }))
+    await reprogramar(await screen.findByRole('dialog'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Aceptar' }))
+    soltar()
+    await screen.findByText('12/03/2030')
+
+    fireEvent.click(screen.getByRole('button', { name: /Dejar comentario/ }))
+    const dialogo = await screen.findByRole('dialog')
+    fireEvent.click(within(dialogo).getByRole('radio', { name: '5 estrellas' }))
+    fireEvent.change(within(dialogo).getByRole('textbox'), { target: { value: 'Muy bien' } })
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Enviar comentario' }))
+    const aceptar = await screen.findByRole('button', { name: 'Aceptar' })
+    fireEvent.click(aceptar)
+    await new Promise((r) => setTimeout(r, 20))
+    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Reprogramar cita de Limpieza del 12/03/2030 a las 11:00 AM' }))
+  })
+
+  test('R2: si la recarga posterior falla, se sigue viendo el aviso de éxito y la lista conserva sus tarjetas', async () => {
+    await montar([cita({})])
+    sim.falloRecarga = true
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_REPROGRAMAR }))
+    await reprogramar(await screen.findByRole('dialog'))
+    await waitFor(() => expect(sim.pedidas).toBe(2))
+    await new Promise((r) => setTimeout(r, 20))
+    expect(screen.getByText('Tu cita se reprogramó correctamente.')).toBeTruthy()
+    expect(screen.queryByText('No se pudieron cargar tus citas')).toBeNull()
+    expect(screen.getByText('Limpieza')).toBeTruthy()
+  })
+
+  test('R5: reprogramar con dos pendientes cambia solo la elegida', async () => {
+    await montar([
+      cita({ id: 40 }),
+      cita({ id: 41, nombre_servicio: 'Ortodoncia', fecha_agendada: '2030-03-11T06:00:00.000Z' }),
+    ])
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_REPROGRAMAR }))
+    await reprogramar(await screen.findByRole('dialog'))
+    await screen.findByText('Tu cita se reprogramó correctamente.')
+    expect(llamadas('PUT')[0][0]).toBe('/citas/mias/40')
+    expect(screen.getByText('11/03/2030')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Reprogramar cita de Ortodoncia del 11/03/2030 a las 10:00 AM' })).toBeTruthy()
+  })
+
+  test('R5: la cancelada no muestra ni «Reprogramar» ni «Cancelar cita»', async () => {
+    await montar([cita({})])
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_CANCELAR }))
+    const dialogo = await screen.findByRole('dialog')
+    fireEvent.change(within(dialogo).getByLabelText('Motivo'), { target: { value: 'No puedo ir' } })
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Cancelar cita' }))
+    await screen.findByText('Tu cita se canceló correctamente.')
+    await waitFor(() => expect(screen.getByText('cancelada')).toBeTruthy())
+    expect(screen.queryByRole('button', { name: /^Reprogramar cita de/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Cancelar cita de/ })).toBeNull()
+  })
+
+  test('R5: un rechazo al cancelar sale en el formulario y la tarjeta queda intacta', async () => {
+    await montar([cita({})])
+    sim.errorAlGuardar = 'Solo puedes modificar citas pendientes'
+    fireEvent.click(screen.getByRole('button', { name: NOMBRE_CANCELAR }))
+    const dialogo = await screen.findByRole('dialog')
+    fireEvent.change(within(dialogo).getByLabelText('Motivo'), { target: { value: 'No puedo ir' } })
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Cancelar cita' }))
+    expect((await within(dialogo).findByRole('alert')).textContent).toBe('Solo puedes modificar citas pendientes')
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Volver' }))
+    expect(screen.getByRole('button', { name: NOMBRE_CANCELAR })).toBeTruthy()
+    expect(screen.getByText('pendiente')).toBeTruthy()
   })
 })
 

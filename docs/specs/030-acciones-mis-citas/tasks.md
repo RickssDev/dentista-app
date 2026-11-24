@@ -98,11 +98,12 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: verificación manual OK 2026-11-23 (usuario): backend y frontend de la rama en local (Docker y Vite en :8080, con la API en `127.0.0.1:3000`), cuenta de paciente con dos citas futuras. Se ven las acciones en las pendientes, se reprograma una y se cancela otra, Inicio igual, y con el Narrador cada botón se anuncia con su cita y el foco vuelve al cerrar, a 1440 y 390 px. Contraste de los botones: el de Inicio, sin cambios (excepción P16, A18: 3.70–2.84:1 en `.mf-btn-prin`, 4.17:1 en el rojo de cancelar, 1.48:1 en el borde de `.mf-btn-sec`)
 
 ## Correcciones de /review (ronda 1)
-- [ ] T030 Tests de las correcciones de «Mis citas»: foco y aviso tras la recarga, y casos que faltaban — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada los de R1 y R2 y pasan los de R5 — cubre: CA3, CA4, CA5, CA6, CA9
+- [x] T030 Tests de las correcciones de «Mis citas»: foco y aviso tras la recarga, y casos que faltaban — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada los de R1 y R2 y pasan los de R5 — cubre: CA3, CA4, CA5, CA6, CA9
   - R1: con la recarga de `/citas/miscitas` pendiente, pulsar «Aceptar» en el aviso deja el foco en el destino (el botón «Reprogramar» de esa tarjeta o «Agendar nueva cita»), no en `body`; un aviso posterior sin acción (p. ej. el del comentario) no mueve el foco a ese destino
   - R2: si la recarga posterior a reprogramar falla, se sigue viendo «Tu cita se reprogramó correctamente.» y la lista conserva sus tarjetas
   - R5: reprogramar con dos pendientes cambia solo la elegida (la otra conserva fecha, hora y botones); la cancelada no muestra ni «Reprogramar» ni «Cancelar cita»; un rechazo al cancelar sale en el `role="alert"` y la tarjeta queda intacta
   - nota: añadida por /review: R1, R2, R5
+  - nota: 3 fallan por la razón esperada en dos corridas: el foco cae en `body` con la recarga pendiente (R1), el aviso posterior desvía el foco al botón de la cita reprogramada (R1) y el error de recarga tapa el aviso de éxito (R2). Los 3 de R5 pasan (el comportamiento ya era correcto). La recarga se puede retener desde el test para reproducir la carrera
 - [ ] T031 Tests del servidor que faltaban — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: pasan, y los que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA8, CA10
   - R4: el 404 sobre una cita ajena también con el rol Administrador
   - R12: el archivo fija `process.env.TZ = 'UTC'` antes de cargar nada, para que el caso de las 23:30 detecte un error de zona en cualquier máquina
