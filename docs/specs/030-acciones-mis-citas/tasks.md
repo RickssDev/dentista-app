@@ -93,6 +93,8 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - en `onHecho`, vuelven a pedir `/citas/miscitas` y muestran el aviso de Inicio;
   - el foco sigue `design.md`: referencia al botón que abrió el formulario y, para «Agendar nueva cita», el botón del encabezado buscado dentro del contenedor de la pantalla.
   · verificación manual: capturas de «Mis citas» e Inicio a 390 y 1440 px antes y después, comparadas con `design.md` (K1, K2); con lector de pantalla y teclado, cada botón se anuncia con su cita y el foco llega a un control con foco visible al cerrar, anotando el destino (K3); contraste de los botones medido en navegador y anotado (excepción P16, /analyze A18)
+  - nota: código y tests listos: T012 13/13 en dos corridas; frontend 30 archivos y 262 pruebas; build en verde; lint con los 7 errores previos. Comprobados rompiéndolos: botones solo con `modificable`, foco al cerrar sin guardar y foco tras el aviso
+  - bloqueo: 2026-11-23 — falta la verificación manual (capturas a 390 y 1440 px de «Mis citas» e Inicio; lector de pantalla y teclado; contraste anotado): sin navegador automatizado en el equipo — usuario
 
 ## Integración y documentación
 - [ ] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: §Frontend menciona `ModalAccionCita` como componente compartido por Inicio y «Mis citas»; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
