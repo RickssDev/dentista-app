@@ -1,7 +1,7 @@
 ---
 id: 030
 slug: acciones-mis-citas
-status: implemented
+status: approved
 created: 2026-11-23
 extends: [005]
 ---
@@ -145,3 +145,4 @@ _(ninguna)_
 | 2026-11-23 | CA1 y CA2 hasta que la cita empieza; CA10 nuevo (el servidor rechaza las pasadas); auditoría con la excepción extendida; clasificación de datos; K1 y K3 | /analyze A1, A2, A6, A8, A10, A15 (decisiones del usuario) |
 | 2026-11-23 | CA9 y K3 con la hora; Decisiones de contraste (excepción P16), ancho y nombre accesible | /analyze A18, A23, A28 (decisiones del usuario) |
 | 2026-11-23 | Implementada (10 de 10 tareas) | /implement |
+| 2026-11-23 | Vuelve a `approved`: /review ronda 1 pide T030–T033 | /review (changes_requested) |

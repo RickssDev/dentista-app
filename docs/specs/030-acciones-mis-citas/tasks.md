@@ -97,12 +97,33 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: desbloqueada 2026-11-23 — el usuario hizo la verificación manual
   - nota: verificación manual OK 2026-11-23 (usuario): backend y frontend de la rama en local (Docker y Vite en :8080, con la API en `127.0.0.1:3000`), cuenta de paciente con dos citas futuras. Se ven las acciones en las pendientes, se reprograma una y se cancela otra, Inicio igual, y con el Narrador cada botón se anuncia con su cita y el foco vuelve al cerrar, a 1440 y 390 px. Contraste de los botones: el de Inicio, sin cambios (excepción P16, A18: 3.70–2.84:1 en `.mf-btn-prin`, 4.17:1 en el rojo de cancelar, 1.48:1 en el borde de `.mf-btn-sec`)
 
+## Correcciones de /review (ronda 1)
+- [ ] T030 Tests de las correcciones de «Mis citas»: foco y aviso tras la recarga, y casos que faltaban — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada los de R1 y R2 y pasan los de R5 — cubre: CA3, CA4, CA5, CA6, CA9
+  - R1: con la recarga de `/citas/miscitas` pendiente, pulsar «Aceptar» en el aviso deja el foco en el destino (el botón «Reprogramar» de esa tarjeta o «Agendar nueva cita»), no en `body`; un aviso posterior sin acción (p. ej. el del comentario) no mueve el foco a ese destino
+  - R2: si la recarga posterior a reprogramar falla, se sigue viendo «Tu cita se reprogramó correctamente.» y la lista conserva sus tarjetas
+  - R5: reprogramar con dos pendientes cambia solo la elegida (la otra conserva fecha, hora y botones); la cancelada no muestra ni «Reprogramar» ni «Cancelar cita»; un rechazo al cancelar sale en el `role="alert"` y la tarjeta queda intacta
+  - nota: añadida por /review: R1, R2, R5
+- [ ] T031 Tests del servidor que faltaban — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: pasan, y los que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA8, CA10
+  - R4: el 404 sobre una cita ajena también con el rol Administrador
+  - R12: el archivo fija `process.env.TZ = 'UTC'` antes de cargar nada, para que el caso de las 23:30 detecte un error de zona en cualquier máquina
+  - R13: una pendiente de hoy que empezó a las 23:00 con `duracion` NULL → 400 (NULL cuenta como 0)
+  - nota: añadida por /review: R4, R12, R13
+- [ ] T032 Corregir el foco y el aviso tras reprogramar o cancelar, y reiniciar el formulario por apertura — `frontend/src/pages/paciente/CitasPaciente.jsx`, `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: pasa T030 y siguen en verde `inicio-paciente.test.jsx` y el resto del frontend; lint sin errores nuevos — cubre: CA3, CA7, CA9 — depende: T030
+  - R1: el destino del foco se fija antes de abrir el aviso y solo vale para ese aviso
+  - R2: la recarga posterior a una acción no muestra su propio aviso ni vacía la lista si falla; el destino pasa a «Agendar nueva cita»
+  - R10: al cerrar el formulario sin guardar, el foco vuelve al botón directamente, sin `setTimeout`
+  - R9: las dos pantallas montan `ModalAccionCita` con una `key` por apertura y el componente quita su efecto de reinicio
+  - R8: el comentario de `Promise.resolve().then(cargarTodo)` en Inicio dice que es por un falso positivo de `react-hooks/set-state-in-effect`
+  - nota: añadida por /review: R1, R2, R8, R9, R10
+- [ ] T033 Reutilizar el cálculo de la hora de México — `backend/src/modules/citas/citas.service.js` — hecho cuando: `getProximaCita` usa `ahoraEnMexico()` y `getMisCitas` lo calcula una vez por lista; siguen en verde `tests/citas` y `tests/comentarios` — cubre: CA1, CA10 — depende: T031
+  - nota: añadida por /review: R11
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: §Frontend menciona `ModalAccionCita` como componente compartido por Inicio y «Mis citas»; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
   - nota: §Frontend de `architecture.md` menciona `ModalAccionCita` y `modificable`; la 005 tiene la entrada en su Historial y su CA10 en `[x]` (A17, A26)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
   - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: 10 de 10 criterios marcados con su test en verde: backend 38 suites, 469 pruebas y 5 `todo`; frontend 30 archivos y 262 pruebas; build en verde; lint con los errores previos (backend 1, frontend 7). gitleaks lo ejecuta el CI del PR
 
 ## Despliegue (lo ejecuta `/release`)
@@ -115,16 +136,16 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T010, T012 | T020, T022 |
+| CA1 | T010, T012 | T020, T022, T033 |
 | CA2 | T010, T012 | T020, T022 |
-| CA3 | T012 | T021, T022 |
-| CA4 | T012 | T021, T022 |
-| CA5 | T012 | T021, T022 |
-| CA6 | T012 | T022 |
-| CA7 | T010, T011, T013 | T020, T021 |
-| CA8 | T010 | T020 |
-| CA9 | T012 | T022 |
-| CA10 | T010 | T020 |
+| CA3 | T012, T030 | T021, T022, T032 |
+| CA4 | T012, T030 | T021, T022 |
+| CA5 | T012, T030 | T021, T022 |
+| CA6 | T012, T030 | T022 |
+| CA7 | T010, T011, T013 | T020, T021, T032 |
+| CA8 | T010, T031 | T020 |
+| CA9 | T012, T030 | T022, T032 |
+| CA10 | T010, T031 | T020, T033 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -135,10 +156,10 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | `backend/src/modules/citas/citas.repository.js` | T020 |
-| `backend/src/modules/citas/citas.service.js` | T020 |
-| `frontend/src/components/ModalAccionCita.jsx` | T021 |
-| `frontend/src/pages/paciente/InicioPaciente.jsx` | T021 |
-| `frontend/src/pages/paciente/CitasPaciente.jsx` | T022 |
+| `backend/src/modules/citas/citas.service.js` | T020, T033 |
+| `frontend/src/components/ModalAccionCita.jsx` | T021, T032 |
+| `frontend/src/pages/paciente/InicioPaciente.jsx` | T021, T032 |
+| `frontend/src/pages/paciente/CitasPaciente.jsx` | T022, T032 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
