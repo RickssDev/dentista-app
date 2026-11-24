@@ -87,18 +87,21 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: T011 sigue 4/4 en dos corridas sin tocar sus aserciones. `ModalAccionCita` recibe `cita`, `subtitulo`, `accion`, `ancho`, `onCerrar` y `onHecho`; Inicio le pasa `{ ...proximaCita, id: id_cita }`, su subtítulo y `ancho={500}`
   - nota: archivo extra justificado: `src/utils/avisosCita.js` con los avisos de éxito, porque exportar una constante desde el archivo del componente rompe `react-refresh/only-export-components`; así las dos pantallas comparten los mismos textos (A14)
   - nota: lint: al simplificar Inicio, el analizador de React marcó `set-state-in-effect` en su carga inicial (antes no la marcaba). Se difiere con `Promise.resolve().then(cargarTodo)`; Inicio queda con la misma advertencia previa que tenía. A27: queda una copia de `formatearHora` en el componente para las opciones de horario
-- [ ] T022 Mostrar «Reprogramar» y «Cancelar cita» en «Mis citas» — `frontend/src/pages/paciente/CitasPaciente.jsx` — hecho cuando: pasa T012 y siguen en verde `inicio-paciente.test.jsx` y los demás tests del frontend. En las tarjetas con `modificable`: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9 — depende: T012, T020, T021
+- [x] T022 Mostrar «Reprogramar» y «Cancelar cita» en «Mis citas» — `frontend/src/pages/paciente/CitasPaciente.jsx` — hecho cuando: pasa T012 y siguen en verde `inicio-paciente.test.jsx` y los demás tests del frontend. En las tarjetas con `modificable`: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9 — depende: T012, T020, T021
   - los dos botones (`.mf-btn .mf-btn-prin` y `.mf-btn .mf-btn-sec`, con sus íconos) dentro de `.cita-acciones`, con `aria-label` de la cita;
   - abren `ModalAccionCita` con el mismo `ancho` que Inicio (500, deuda DS2) y el subtítulo «servicio · fecha · hora»;
   - en `onHecho`, vuelven a pedir `/citas/miscitas` y muestran el aviso de Inicio;
   - el foco sigue `design.md`: referencia al botón que abrió el formulario y, para «Agendar nueva cita», el botón del encabezado buscado dentro del contenedor de la pantalla.
   · verificación manual: capturas de «Mis citas» e Inicio a 390 y 1440 px antes y después, comparadas con `design.md` (K1, K2); con lector de pantalla y teclado, cada botón se anuncia con su cita y el foco llega a un control con foco visible al cerrar, anotando el destino (K3); contraste de los botones medido en navegador y anotado (excepción P16, /analyze A18)
   - nota: código y tests listos: T012 13/13 en dos corridas; frontend 30 archivos y 262 pruebas; build en verde; lint con los 7 errores previos. Comprobados rompiéndolos: botones solo con `modificable`, foco al cerrar sin guardar y foco tras el aviso
-  - bloqueo: 2026-11-23 — falta la verificación manual (capturas a 390 y 1440 px de «Mis citas» e Inicio; lector de pantalla y teclado; contraste anotado): sin navegador automatizado en el equipo — usuario
+  - nota: desbloqueada 2026-11-23 — el usuario hizo la verificación manual
+  - nota: verificación manual OK 2026-11-23 (usuario): backend y frontend de la rama en local (Docker y Vite en :8080, con la API en `127.0.0.1:3000`), cuenta de paciente con dos citas futuras. Se ven las acciones en las pendientes, se reprograma una y se cancela otra, Inicio igual, y con el Narrador cada botón se anuncia con su cita y el foco vuelve al cerrar, a 1440 y 390 px. Contraste de los botones: el de Inicio, sin cambios (excepción P16, A18: 3.70–2.84:1 en `.mf-btn-prin`, 4.17:1 en el rojo de cancelar, 1.48:1 en el borde de `.mf-btn-sec`)
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: §Frontend menciona `ModalAccionCita` como componente compartido por Inicio y «Mis citas»; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
+- [x] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: §Frontend menciona `ModalAccionCita` como componente compartido por Inicio y «Mis citas»; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
+  - nota: §Frontend de `architecture.md` menciona `ModalAccionCita` y `modificable`; la 005 tiene la entrada en su Historial y su CA10 en `[x]` (A17, A26)
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
+  - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
