@@ -1,7 +1,7 @@
 ---
 id: 030
 slug: acciones-mis-citas
-status: approved
+status: implemented
 created: 2026-11-23
 extends: [005]
 ---
@@ -21,38 +21,38 @@ clínica o buscando la opción en otra pantalla.
   han pasado, para liberar el horario si no puedo asistir.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada una cita propia `pendiente` que aún no empieza (su fecha y hora de inicio son
+- [x] CA1 · Dada una cita propia `pendiente` que aún no empieza (su fecha y hora de inicio son
   posteriores a la hora actual de México), cuando el paciente abre «Mis citas», entonces su
   tarjeta muestra las acciones «Reprogramar» y «Cancelar cita».
-- [ ] CA2 · Dada una cita `completada`, `cancelada` o en cualquier otro estado distinto de
+- [x] CA2 · Dada una cita `completada`, `cancelada` o en cualquier otro estado distinto de
   `pendiente`, o una `pendiente` que ya empezó, cuando el paciente abre «Mis
   citas», entonces su tarjeta no muestra esas acciones. Las completadas siguen mostrando «Dejar
   comentario» o «Comentario enviado» como hoy.
-- [ ] CA3 · Dada una cita con las acciones, cuando el paciente elige «Reprogramar», entonces ve el
+- [x] CA3 · Dada una cita con las acciones, cuando el paciente elige «Reprogramar», entonces ve el
   mismo formulario que en Inicio: nueva fecha, horarios disponibles para el servicio de esa cita
   y motivo obligatorio. Al confirmarlo, esa tarjeta muestra la nueva fecha y hora sin recargar la
   página, y aparece el aviso «Tu cita se reprogramó correctamente.».
-- [ ] CA4 · Dada una cita con las acciones, cuando el paciente elige «Cancelar cita», entonces se
+- [x] CA4 · Dada una cita con las acciones, cuando el paciente elige «Cancelar cita», entonces se
   le pide el motivo, como en Inicio. Al confirmarlo, esa tarjeta pasa a `cancelada` sin
   recargar la página y ya no muestra las acciones.
-- [ ] CA5 · Dado que el servidor rechaza la reprogramación o la cancelación (por ejemplo, el
+- [x] CA5 · Dado que el servidor rechaza la reprogramación o la cancelación (por ejemplo, el
   horario se ocupó o la cita ya no está pendiente), cuando el paciente confirma, entonces ve el
   motivo del rechazo en el formulario y la tarjeta conserva sus datos anteriores.
-- [ ] CA6 · Dado que el paciente tiene varias citas pendientes, cuando reprograma o cancela una
+- [x] CA6 · Dado que el paciente tiene varias citas pendientes, cuando reprograma o cancela una
   desde «Mis citas», entonces solo cambia esa cita, y las demás tarjetas conservan sus datos y
   sus acciones.
-- [ ] CA7 · Dado el Inicio del paciente, entonces la tarjeta «Próxima cita» y sus acciones
+- [x] CA7 · Dado el Inicio del paciente, entonces la tarjeta «Próxima cita» y sus acciones
   funcionan igual que hoy. Tras reprogramar o cancelar desde «Mis citas», Inicio muestra la
   próxima cita actualizada al volver a abrirlo.
-- [ ] CA8 · (abuso) Dada una cita de otro paciente, cuando alguien intenta reprogramarla o
+- [x] CA8 · (abuso) Dada una cita de otro paciente, cuando alguien intenta reprogramarla o
   cancelarla aunque no aparezca en su lista, entonces el servidor la rechaza sin revelar que
   existe y la cita no cambia (spec 005 CA10).
-- [ ] CA10 · (abuso) Dada una cita propia `pendiente` que ya terminó (su hora de inicio más la
+- [x] CA10 · (abuso) Dada una cita propia `pendiente` que ya terminó (su hora de inicio más la
   duración del servicio ya pasaron en la hora de México), cuando alguien intenta reprogramarla o
   cancelarla llamando al servidor directamente, entonces se rechaza con el mensaje «Esta cita ya
   pasó y no se puede modificar.» y la cita no cambia. Una cita en curso, que ya empezó pero no ha
   terminado, se sigue pudiendo modificar desde Inicio, como hoy (CA7).
-- [ ] CA9 · Dadas varias tarjetas con acciones, cuando un lector de pantalla recorre «Mis
+- [x] CA9 · Dadas varias tarjetas con acciones, cuando un lector de pantalla recorre «Mis
   citas», entonces cada acción se anuncia con la cita a la que pertenece (servicio, fecha y
   hora), y todas se pueden usar solo con el teclado.
 
@@ -144,3 +144,4 @@ _(ninguna)_
 | 2026-11-23 | Spec aprobada | Confirmación del usuario |
 | 2026-11-23 | CA1 y CA2 hasta que la cita empieza; CA10 nuevo (el servidor rechaza las pasadas); auditoría con la excepción extendida; clasificación de datos; K1 y K3 | /analyze A1, A2, A6, A8, A10, A15 (decisiones del usuario) |
 | 2026-11-23 | CA9 y K3 con la hora; Decisiones de contraste (excepción P16), ancho y nombre accesible | /analyze A18, A23, A28 (decisiones del usuario) |
+| 2026-11-23 | Implementada (10 de 10 tareas) | /implement |

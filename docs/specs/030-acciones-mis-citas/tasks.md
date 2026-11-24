@@ -102,7 +102,8 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: §Frontend de `architecture.md` menciona `ModalAccionCita` y `modificable`; la 005 tiene la entrada en su Historial y su CA10 en `[x]` (A17, A26)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
   - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
+  - nota: 10 de 10 criterios marcados con su test en verde: backend 38 suites, 469 pruebas y 5 `todo`; frontend 30 archivos y 262 pruebas; build en verde; lint con los errores previos (backend 1, frontend 7). gitleaks lo ejecuta el CI del PR
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
