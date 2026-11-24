@@ -1,67 +1,67 @@
 ---
 result: fail
-round: 1
+round: 2
 mode: full
 constitution_version: 1.0.0
 date: 2026-11-23
-spec_sha: c2ef47fa9c06
-plan_sha: 44dba40c20dc
-tasks_sha: 66c37bbc7a77
+spec_sha: 6faf8c55d867
+plan_sha: 90d6e7c287ba
+tasks_sha: 38be6b2900a6
 ---
 
 # Análisis · 030 Reprogramar y cancelar desde «Mis citas»
 
 ## Resumen
-No pasa. Hay cuatro hallazgos altos, todos del Constitution Check:
-- la excepción P13 citada no cubre las citas del paciente;
-- falta probar por rol las rutas de paciente;
-- la verificación de P20 no es un test;
-- el foco al cerrar no tiene un destino con foco visible.
-Las decisiones del usuario resuelven además el momento en que una cita deja de ser modificable y el
-bloqueo de las pendientes pasadas en el servidor.
-Conteo: CRÍTICA 0 · ALTA 4 · MEDIA 4 · BAJA 9
+No pasa. Los 17 hallazgos de la ronda 1 están resueltos; 7 de ellos con algún efecto nuevo. Hay dos
+hallazgos graves:
+- **A18 (crítico):** los botones de Inicio que se reutilizan no cumplen el contraste AA (deudas
+  DS4, DS5 y DS6) y no había excepción.
+- **A19 (alto):** el rechazo de CA10 rompe los mocks de dos tests existentes.
+Hubo modo completo porque el plan y las tareas se reescribieron.
+Conteo (nuevos): CRÍTICA 1 · ALTA 1 · MEDIA 4 · BAJA 5
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 9 / 9 |
-| Amenazas con control y test | 3 / 3 (TM2 parcial: A8) |
-| Principios de la constitución evaluados | 20 / 20 |
+| Criterios con tarea de test e implementación | 10 / 10 |
+| Amenazas con control y test | 3 / 3 |
+| Principios de la constitución evaluados | 20 / 20 (P16 incumplido, P20 parcial y P9 sin verificación viable) |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | ALTA | resuelto | spec Auditoría y Decisiones; plan P13 |
+| A2 | ALTA | resuelto | plan P8; T010 |
+| A3 | ALTA | resuelto con efecto nuevo (→ A23) | `ancho` como prop; test de T012 |
+| A4 | ALTA | resuelto con efecto nuevo (→ A24) | destino «Agendar nueva cita», con el foco global `:focus-visible` (`global.css:104-108`) |
+| A5 | MEDIA | resuelto con efecto nuevo (→ A24) | secuencia en `design.md`; T012 |
+| A6 | MEDIA | resuelto con efecto nuevo (→ A21) | CA1, CA2, T010 |
+| A7 | MEDIA | resuelto con efecto nuevo (→ A21) | T010 con `Date` |
+| A8 | MEDIA | resuelto con efecto nuevo (→ A19, A20) | CA10, T010, T020 |
+| A9–A16 | BAJA | resuelto | plan y tareas |
+| A17 | BAJA | resuelto con efecto nuevo (→ A26) | T090 |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Constitución (P13) | ALTA | plan P13; spec Auditoría y Decisiones | La excepción P13 de la 021 solo cubre cambios de rol y acciones administrativas; reprogramar y cancelar citas del paciente quedan fuera | Decisión del usuario: se extiende la excepción → `/specify --edit`, `/plan --fix` |
-| A2 | Constitución (P8) | ALTA | plan P8; T010 | Las rutas de paciente no tienen `authorizeRoles` y el plan solo prueba 401 | Decisión del usuario: se mantiene; T010 prueba que Administrador y Asistente solo ven y cambian sus propias citas → `/plan --fix`, `/tasks --fix` |
-| A3 | Constitución (P20) | ALTA | plan P20; T021 | La verificación de P20 no es un test; `ModalAccionCita` heredaría `ancho={500}` | El componente nuevo no lleva valores visuales literales (test que lo lea); el ancho lo pasa cada pantalla como hoy → `/plan --fix`, `/tasks --fix` |
-| A4 | Constitución (P16) | ALTA | design Accesibilidad; T022 | El foco iría al título de la tarjeta, que no tiene estilo de foco | El foco va siempre a un control con foco visible del sistema; test → `design --fix`, `/tasks --fix` |
-| A5 | Ambigüedad | MEDIA | design; T021, T022 | No se define cuándo vuelve el foco con el aviso de éxito de por medio, ni dónde vive esa lógica | Secuencia fijada en la pantalla, sin tocar el componente compartido; test → `/tasks --fix` |
-| A6 | Inconsistencia | MEDIA | plan; spec CA1, CA2 | `modificable` usaba el fin de la cita; la spec dice «aún no pasan» | Decisión del usuario: hasta que empieza; tests de límite → `/specify --edit`, `/plan --fix`, `/tasks --fix` |
-| A7 | Cobertura | MEDIA | T010, T020 | `fecha_agendada` llega como `Date` del driver; un test con texto pasaría sin detectar el fallo | T010 simula `Date` → `/tasks --fix` |
-| A8 | Seguridad | MEDIA | plan TM2 | La API deja reprogramar y cancelar una pendiente pasada | Decisión del usuario: se bloquea en el servidor → `/specify --edit`, `/plan --fix`, `/tasks --fix` |
-| A9 | Inconsistencia | BAJA | plan P1 | «`design.md` por aprobar» | Actualizar |
-| A10 | Inconsistencia | BAJA | spec K1; design | Los botones en «Mis citas» reparten el ancho; en Inicio no | K1 refleja el ancho repartido |
-| A11 | Inconsistencia | BAJA | plan Contratos | `id_servicio` y `modificable` en snake_case, contra la convención camelCase | Decisión: se sigue la convención del endpoint |
-| A12 | Cobertura | BAJA | T011 | Falta que Inicio vuelva a pedir la próxima cita al montarse | Añadirlo a T011 |
-| A13 | Cobertura | BAJA | T012 | Casos negativos sin comprobar rompiendo; CA6 sin afirmar el id | Añadirlo a T012 |
-| A14 | Duplicación | BAJA | T011, T012 | Textos duplicados entre pantallas | Los tests comprueban los mismos textos literales |
-| A15 | Inconsistencia | BAJA | spec Seguridad | La clasificación de citas en `security.md` es «confidencial» | Alinear la redacción |
-| A16 | Inconsistencia | BAJA | plan P11 | «0 altas» sin citar la excepción GHSA-fc5q | Citar el comando y la excepción |
-| A17 | Inconsistencia | BAJA | spec 005 | Nadie actualiza la 005 inferida | T090 lo incluye |
+| A18 | Constitución (P16) | CRÍTICA | plan P16; design; spec K1; T022 | Los botones que se reutilizan no cumplen el contraste: `.mf-btn-prin` blanco sobre `#e94b6a`→`#f0708a` da 3.70–2.84:1 (DS4); `mf-btn-peligro` `#e63946` da 4.17:1 (DS5); el borde de `.mf-btn-sec` da 1.48:1 (DS6). No había excepción | Decisión del usuario: excepción P16 temporal para esos botones hasta una spec que corrija DS4, DS5 y DS6 en todo el panel; medir el contraste en T022 y en `/review` → `/plan --fix`, roadmap |
+| A19 | Cobertura | ALTA | T020; `tests/citas/horario-paciente.test.js`, `tipos-paciente.test.js` | Sus mocks de `getCitaConUsuario` no traen fecha, hora ni duración: el rechazo de CA10 los rompería, o empujaría a un código que deja pasar las citas a las que les faltan datos | Tarea de test nueva que actualiza esos mocks antes de T020; T010 fija qué pasa si falta la duración → `/tasks --fix` |
+| A20 | Cobertura de riesgos | MEDIA | plan (`getCitaConUsuario`); T020 | `comen.service` también usa `getCitaConUsuario`; un `INNER JOIN` con `servicio` y una `duracion` NULL cambiarían su respuesta o darían 500 | `LEFT JOIN`; `duracion` NULL cuenta como 0; `tests/comentarios` en verde; caso de NULL en T010 → `/plan --fix`, `/tasks --fix` |
+| A21 | Ambigüedad | MEDIA | plan Estrategia; T010, T020 | Con la CI en UTC, los casos de ±1 minuto no detectan un error de zona; no se fija el instante exacto; comparar textos de hora falla en el límite | `fechaComoTexto` y minutos numéricos con el límite de `getProximaCita`; T010 a las 23:30 de México, con «empieza ahora» y «termina ahora» → `/plan --fix`, `/tasks --fix` |
+| A22 | Inconsistencia | MEDIA | plan P9; T010 | Con el repositorio simulado no se puede comprobar el SQL | Bloque con el repositorio real y `jest.spyOn(pool, 'query')` → `/tasks --fix` |
+| A23 | Constitución (P20) | MEDIA | plan P20; T022 | `ancho={500}` en «Mis citas» es un literal nuevo en una pantalla modificada | Decisión del usuario: el mismo 500 que Inicio, como deuda DS2; el test de T012 prohíbe además `style=` en el componente → `/plan --fix`, `/tasks --fix` |
+| A24 | Ambigüedad | BAJA | design; T022 | No se fija cómo se da el foco al botón del encabezado ni a dónde va si la recarga falla | Mecanismo y casos fijados; test → `design --fix`, `/tasks --fix` |
+| A25 | Cobertura | BAJA | T011, T012 | El `textarea` es `required`: el caso «sin motivo» debe usar espacios | Motivo `"   "` |
+| A26 | Inconsistencia | BAJA | T090 | `architecture.md` no tiene lista de componentes del portal | Mencionarlo en §Frontend |
+| A27 | Duplicación | BAJA | T021 | Tercera copia de `formatearFecha` y `formatearHora` | El componente recibe el subtítulo ya formateado |
+| A28 | Ambigüedad | BAJA | spec CA9 | Dos citas del mismo servicio el mismo día tendrían el mismo nombre accesible | Decisión del usuario: se añade la hora → `/specify --edit` |
 
 ## Decisiones pendientes del usuario
 Respondidas por el usuario el 2026-11-23:
-- **A1:** la excepción P13 se extiende a las acciones del paciente sobre sus citas, hasta el objetivo 3.
-- **A2:** se mantiene que las rutas de paciente sirvan a cualquier cuenta con perfil, cada una solo
-  sobre sus citas; se prueba.
-- **A6:** las acciones se ofrecen hasta que la cita **empieza**.
-- **A8:** el servidor bloquea reprogramar y cancelar las pendientes pasadas. Supuesto, para no
-  cambiar Inicio (CA7): «pasada» en el servidor es la cita que ya **terminó**, porque la tarjeta
-  «Próxima cita» sigue mostrando la cita en curso.
+- **A18:** excepción P16 temporal para los botones `.mf-btn-prin`, `.mf-btn-sec` y `mf-btn-peligro`
+  en «Mis citas», como ya están en Inicio, hasta una spec que corrija DS4, DS5 y DS6 en todo el panel.
+- **A23:** «Mis citas» usa el mismo ancho que Inicio (500), anotado como deuda DS2.
+- **A28:** el nombre accesible incluye la hora.
 
 ## Aceptados
-Ninguno se acepta sin corregir: los 17 van a `/specify --edit`, `/plan 030 --fix` y `/tasks 030 --fix`.
-Después, `/analyze 030` en modo delta.
+Ninguno se acepta sin corregir. Después, `/analyze 030` delta.
