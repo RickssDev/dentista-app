@@ -52,7 +52,7 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - con un motivo de solo espacios (`"   "`), sale el error del formulario.
   Se comprueba rompiendo un texto
   - nota: caracterización: 4/4 antes del cambio, dos corridas iguales. Comprobada rompiendo el texto del aviso de reprogramar y el id del PATCH: falla; restaurado, pasa. La barra lateral va simulada (no es parte de lo que se caracteriza)
-- [ ] T012 [P] Tests de las acciones en «Mis citas» — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada (no hay botones ni componente). Con `api` simulado: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9
+- [x] T012 [P] Tests de las acciones en «Mis citas» — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada (no hay botones ni componente). Con `api` simulado: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9
   - una pendiente con `modificable: true` muestra «Reprogramar» y «Cancelar cita», con nombre accesible «Reprogramar cita de <servicio> del dd/mm/aaaa a las hh:mm AM/PM» y «Cancelar cita de <servicio> del dd/mm/aaaa a las hh:mm AM/PM»;
   - una pendiente con `modificable: false` y una completada no los muestran, y la completada conserva «Dejar comentario». Los casos que ya pasan se comprueban rompiendo lo que protegen;
   - reprogramar pide los horarios con el `id_servicio` de esa cita, exige el motivo, manda `PUT /citas/mias/<id de esa tarjeta>`, vuelve a pedir `/citas/miscitas`, la tarjeta muestra la nueva fecha y sale «Cita reprogramada» / «Tu cita se reprogramó correctamente.»;
@@ -62,6 +62,7 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - foco: cerrar sin guardar lo devuelve al botón que abrió el formulario; tras «Aceptar» en el aviso de reprogramar, va al botón «Reprogramar» de esa tarjeta; tras el de cancelar, a «Agendar nueva cita»; si la recarga de la lista falla, también a «Agendar nueva cita»;
   - `src/components/ModalAccionCita.jsx` no contiene colores, medidas con unidad, un valor numérico de `ancho` ni `style=`, con un control positivo que detecta un literal de ejemplo.
   Dos corridas iguales
+  - nota: 11 de 13 fallan por la razón esperada (no hay botones; `ModalAccionCita.jsx` no existe, ENOENT); dos corridas iguales. Pasan el control positivo del patrón y el caso negativo (pendiente no modificable y completada sin botones), que se comprueba rompiendo la condición en T022
 
 - [ ] T013 Dar fecha, hora y duración futuras a los mocks de `getCitaConUsuario` de los tests existentes — `backend/tests/citas/horario-paciente.test.js`, `backend/tests/citas/tipos-paciente.test.js` — hecho cuando: siguen en verde antes del cambio y sus mocks devuelven una pendiente futura con `fecha_agendada` como `Date`, `hora` y `duracion`, para que el rechazo de CA10 no los rompa (/analyze A19) — cubre: CA7
 
