@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done
+status: released
+released: v1.8.1 (2026-11-23)
 base: 8d9a58b
 relates: [012]
 covers: []
@@ -52,6 +53,7 @@ servicios no.
   - El panel (`AdminServicios.jsx`) nunca manda `imagen` como texto, así que no le afecta.
   - No hay otros consumidores del servicio.
   - Hallazgos menores: la ficha incompleta (completada); posibles datos ya manipulados en producción (consulta de solo lectura → roadmap); y un 500 si falla la relectura final tras guardar (previo, no cambia).
+- Liberación: PR #99 (`a187ff5`), v1.8.1. Aprobado por RickssDev el 2026-11-23 («desplegar v1.8.1 a producción»); desplegado por el usuario, panel verificado sin errores. Revisión de datos en producción (consulta de solo lectura): ninguna fila, ningún servicio apunta a un archivo ajeno.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

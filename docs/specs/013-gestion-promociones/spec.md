@@ -45,3 +45,4 @@ La clínica publica ofertas por tiempo limitado sobre sus servicios.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-23 | Corregido por la ficha 2026-11-23-fix-foto-huerfana-promociones en v1.8.1 | /release |
