@@ -4,7 +4,8 @@ import { api } from "../services/api";
 import { hoyClave } from "../utils/fechas";
 
 // Formulario para reprogramar o cancelar una cita del paciente (spec 030). Lo usan Inicio y
-// «Mis citas» con los mismos textos y validaciones. El foco al cerrar lo decide cada pantalla.
+// «Mis citas» con los mismos textos y validaciones. El foco al cerrar lo decide cada pantalla, y
+// cada apertura monta una instancia nueva (con `key`), así que el formulario empieza vacío.
 
 const FORM_VACIO = { fecha: "", hora: "", motivo: "" };
 
@@ -36,13 +37,6 @@ function ModalAccionCita({ cita, subtitulo, accion, ancho, onCerrar, onHecho }) 
   const [cargandoHorarios, setCargandoHorarios] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
-
-  // Cada apertura empieza con el formulario vacío
-  useEffect(() => {
-    setForm(FORM_VACIO);
-    setHorarios([]);
-    setError("");
-  }, [accion, cita?.id]);
 
   // Horarios disponibles al reprogramar
   useEffect(() => {

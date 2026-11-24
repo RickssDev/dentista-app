@@ -111,13 +111,16 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: añadida por /review: R4, R12, R13
   - nota: R4: 404 también con el rol Administrador; comprobado sin la verificación de propiedad, falla. R13: pendiente empezada a las 23:00 con duración NULL → 400; comprobado contando NULL como NaN, falla
   - nota: R12: fijar `process.env.TZ` dentro del archivo no tiene efecto en Jest (el cálculo con la zona del proceso seguía pasando). Archivo extra justificado: `tests/support/guard.js` (`globalSetup`) fija `TZ=UTC` antes de crear los procesos de prueba; ahora el cálculo roto falla en local (2 casos) y la suite completa pasa en UTC (38 suites, 471 pruebas)
-- [ ] T032 Corregir el foco y el aviso tras reprogramar o cancelar, y reiniciar el formulario por apertura — `frontend/src/pages/paciente/CitasPaciente.jsx`, `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: pasa T030 y siguen en verde `inicio-paciente.test.jsx` y el resto del frontend; lint sin errores nuevos — cubre: CA3, CA7, CA9 — depende: T030
+- [x] T032 Corregir el foco y el aviso tras reprogramar o cancelar, y reiniciar el formulario por apertura — `frontend/src/pages/paciente/CitasPaciente.jsx`, `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: pasa T030 y siguen en verde `inicio-paciente.test.jsx` y el resto del frontend; lint sin errores nuevos — cubre: CA3, CA7, CA9 — depende: T030
   - R1: el destino del foco se fija antes de abrir el aviso y solo vale para ese aviso
   - R2: la recarga posterior a una acción no muestra su propio aviso ni vacía la lista si falla; el destino pasa a «Agendar nueva cita»
   - R10: al cerrar el formulario sin guardar, el foco vuelve al botón directamente, sin `setTimeout`
   - R9: las dos pantallas montan `ModalAccionCita` con una `key` por apertura y el componente quita su efecto de reinicio
   - R8: el comentario de `Promise.resolve().then(cargarTodo)` en Inicio dice que es por un falso positivo de `react-hooks/set-state-in-effect`
   - nota: añadida por /review: R1, R2, R8, R9, R10
+  - nota: pasa T030 (19/19 en dos corridas) y sigue `inicio-paciente.test.jsx` (4/4); frontend 30 archivos y 268 pruebas; build en verde; lint con los 7 errores previos
+  - nota: R1: el destino se guarda antes de abrir el aviso junto al aviso al que pertenece, y cerrar cualquier aviso lo consume. R2: la recarga tras una acción es `silenciosa`: si falla, no muestra su aviso ni vacía la lista, y el destino pasa a «Agendar nueva cita». R10: al cerrar el formulario se enfoca el botón directamente. R9: las dos pantallas montan `ModalAccionCita` con `key` por apertura; el componente ya no tiene efecto de reinicio. R8: comentario del `Promise.resolve` en Inicio
+  - nota: comprobados rompiéndolos: sin `silenciosa` falla R2; sin consumir el destino falla el aviso posterior de R1. Restaurado, pasan
 - [ ] T033 Reutilizar el cálculo de la hora de México — `backend/src/modules/citas/citas.service.js` — hecho cuando: `getProximaCita` usa `ahoraEnMexico()` y `getMisCitas` lo calcula una vez por lista; siguen en verde `tests/citas` y `tests/comentarios` — cubre: CA1, CA10 — depende: T031
   - nota: añadida por /review: R11
 

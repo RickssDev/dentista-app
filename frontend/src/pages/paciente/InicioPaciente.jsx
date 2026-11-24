@@ -78,7 +78,8 @@ function InicioPaciente() {
   };
 
   useEffect(() => {
-    // La carga corre fuera del cuerpo del efecto (las actualizaciones llegan tras la respuesta)
+    // Se difiere una microtarea solo por un falso positivo de react-hooks/set-state-in-effect: los
+    // setState de cargarTodo ya ocurren después de un await (spec 030, /review R8)
     Promise.resolve().then(cargarTodo);
   }, []);
 
@@ -229,6 +230,8 @@ function InicioPaciente() {
 
       {/* Reprogramar / cancelar */}
       <ModalAccionCita
+        // Una instancia nueva por apertura: el formulario empieza vacío (R9)
+        key={accion || "cerrado"}
         cita={proximaCita ? { ...proximaCita, id: proximaCita.id_cita } : null}
         subtitulo={
           proximaCita

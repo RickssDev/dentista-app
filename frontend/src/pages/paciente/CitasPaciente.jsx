@@ -68,12 +68,14 @@ function CitasPaciente() {
   const [accionCita, setAccionCita] = useState(null); // { cita, accion } | null
   const contenedorRef = useRef(null);
   const botonOrigenRef = useRef(null);
-  const focoTrasAvisoRef = useRef(null); // id de la cita reprogramada, o "agendar"
+  // Destino del foco al cerrar el aviso de una acción: { destino, aviso } (R1). Solo vale para ese aviso
+  const focoTrasAvisoRef = useRef(null);
 
   const mostrarAviso = (titulo, mensaje) => setAviso({ titulo, mensaje });
 
-  // Devuelve si la lista se pudo cargar
-  const cargarCitas = async () => {
+  // Devuelve si la lista se pudo cargar. Con `silenciosa` (recarga tras una acción) un fallo no
+  // muestra su aviso ni vacía la lista, para no tapar el aviso de éxito (R2)
+  const cargarCitas = async ({ silenciosa = false } = {}) => {
     try {
       const res = await api("/citas/miscitas");
       const data = res?.payload ?? res?.data ?? res;
@@ -81,6 +83,7 @@ function CitasPaciente() {
       return true;
     } catch (error) {
       console.error(error);
+      if (silenciosa) return false;
       setCitas([]);
       mostrarAviso(
         "No se pudieron cargar tus citas",
@@ -111,25 +114,28 @@ function CitasPaciente() {
 
   const cerrarAccionCita = () => {
     setAccionCita(null);
-    const boton = botonOrigenRef.current;
-    setTimeout(() => boton?.focus(), 0);
+    botonOrigenRef.current?.focus();
   };
 
   const alHechoAccionCita = async (accion) => {
     const idCita = accionCita?.cita.id;
+    const aviso = EXITOS_ACCION_CITA[accion];
+    // El destino se fija antes de abrir el aviso: vale aunque se cierre antes de la recarga (R1)
+    const foco = { destino: accion === "reprogramar" ? idCita : "agendar", aviso };
+    focoTrasAvisoRef.current = foco;
     setAccionCita(null);
-    setAviso(EXITOS_ACCION_CITA[accion]);
-    const cargada = await cargarCitas();
-    focoTrasAvisoRef.current =
-      cargada && accion === "reprogramar" ? idCita : "agendar";
+    setAviso(aviso);
+    const cargada = await cargarCitas({ silenciosa: true });
+    // Sin lista nueva no se garantiza el botón de la tarjeta: «Agendar nueva cita»
+    if (!cargada) foco.destino = "agendar";
   };
 
   const cerrarAviso = () => {
+    const foco = focoTrasAvisoRef.current;
+    // Solo el aviso de la acción mueve el foco; cualquier otro aviso lo descarta
+    if (foco && foco.aviso === aviso) enfocar(foco.destino);
+    focoTrasAvisoRef.current = null;
     setAviso(null);
-    if (focoTrasAvisoRef.current !== null) {
-      enfocar(focoTrasAvisoRef.current);
-      focoTrasAvisoRef.current = null;
-    }
   };
 
   const cargarServicios = async () => {
@@ -521,6 +527,8 @@ function CitasPaciente() {
 
       {/* Reprogramar / cancelar, con el mismo formulario que Inicio (spec 030) */}
       <ModalAccionCita
+        // Una instancia nueva por apertura: el formulario empieza vacío (R9)
+        key={accionCita ? `${accionCita.accion}-${accionCita.cita.id}` : "cerrado"}
         cita={accionCita?.cita || null}
         subtitulo={
           accionCita
