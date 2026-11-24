@@ -34,6 +34,6 @@ En una spec inferida, `[x]` significa "un test existente cubre este criterio" y 
 | [025](025-frontend-sin-root/spec.md) | Servicio del sitio sin privilegios de administrador | Seguridad | released | v1.7.0 |
 | [026](026-logs-seguros-correlacion/spec.md) | Logs seguros y correlación por petición | Observabilidad | released | v1.6.0 |
 | [029](029-limite-galeria/spec.md) | Límite de 15 imágenes en la galería | Contenido y sitio público | released | v1.8.0 |
-| [030](030-acciones-mis-citas/spec.md) | Reprogramar y cancelar desde «Mis citas» | Citas y recordatorios | implemented | — |
+| [030](030-acciones-mis-citas/spec.md) | Reprogramar y cancelar desde «Mis citas» | Citas y recordatorios | released | v1.9.0 |
 
 Las pantallas de cada feature están en el inventario de vistas de [docs/design/system.md](../design/system.md).

@@ -136,11 +136,15 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: tras las tareas de /review (T030–T033): backend 38 suites, 472 pruebas y 5 `todo` (en UTC); frontend 30 archivos y 268 pruebas; build en verde; lint con los errores previos (backend 1, frontend 7)
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - nota: no hay staging (`docs/deployment.md`); las verificaciones se hacen en local en T022
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout): backend y frontend en el mismo `up -d --build`; «Mis citas» muestra las acciones en una pendiente futura; sin errores en `/api/v1/citas/miscitas` ni en `/citas/mias/*`
-- [ ] T098 Marcar spec como `released`
+  - nota: no aplica: sin staging; equivalente local en T022 (verificación manual del usuario)
+- [x] T096 Aprobación humana para producción
+  - aprobado por RickssDev el 2026-11-24 («desplegar v1.9.0 a producción») para v1.9.0; fusionó el PR #102 (`59a9e98`) con el CI en verde
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout): backend y frontend en el mismo `up -d --build`; «Mis citas» muestra las acciones en una pendiente futura; sin errores en `/api/v1/citas/miscitas` ni en `/citas/mias/*`
+  - nota: 2026-11-24: el usuario desplegó en el servidor (`59a9e98`) y confirmó «todo bien sin errores». Comprobado desde fuera: `curl -sI /api/v1/servicios/publicos` con `X-Request-Id: verificacion-v1-9-0` devuelve 200 y la misma cabecera
+- [x] T098 Marcar spec como `released`
+  - nota: spec `released: v1.9.0 (2026-11-24)`; historial de la 005; deuda 030/R3, R6, R7, R14, R15 y R16 en el roadmap; sin riesgos `RS`/`OB`/`RD`/`SE` dentro de alcance
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

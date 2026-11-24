@@ -41,6 +41,14 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
 - ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
 
+**Deuda de la spec 030** (aceptada en /review, ronda 1)
+- 030/R3 «Mis citas» no recalcula `modificable` si la página sigue abierta cuando la cita empieza; el servidor rechaza las ya terminadas.
+- 030/R6 Test automatizado de que Inicio muestra la próxima cita actualizada al volver a abrirlo.
+- 030/R7 Pruebas de teclado (Tab, Enter, Escape) en «Mis citas».
+- 030/R14 Enlazar el subtítulo del formulario con `aria-describedby` en `ModalFormulario`.
+- 030/R15 Medir en navegador el objetivo de toque de `.mf-btn` a 390 px.
+- 030/R16 Unificar `formatearFecha`, `formatearHora` y `datosDe` en utilidades compartidas (`/refactor`).
+
 **Excepciones de la spec 030** (aprobadas por el usuario, /analyze, 2026-11-23)
 - P16: los botones `.mf-btn-prin`, `.mf-btn-sec` y `mf-btn-peligro` de Inicio y de «Mis citas» no llegan a AA (DS4, DS5, DS6); una spec debe corregirlos en todo el panel.
 - DS2: «Mis citas» usa el ancho fijo 500 del formulario, como Inicio.
