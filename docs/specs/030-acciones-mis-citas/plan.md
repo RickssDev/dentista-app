@@ -32,25 +32,25 @@ En el frontend, el formulario de Inicio se extrae a un componente `ModalAccionCi
 | P6 Rollback documentado | ✅ | Sin migración; ver Rollout | manual: Rollout |
 | P7 Migraciones compatibles | ➖ | Sin cambios de esquema | — |
 | P8 Autorización en el servidor | ✅ | Las rutas de citas del paciente siguen con `verifyToken` y la propiedad verificada en el servicio. Cualquier cuenta con perfil de paciente opera solo sobre sus citas (decisión del usuario, /analyze A2) | test: `mis-citas-modificable.test.js` → sin token 401; con token de Paciente, Administrador y Asistente, `GET /miscitas` solo devuelve las citas de su propio perfil, y `PUT`/`PATCH` sobre una cita ajena → 404 |
-| P9 Entrada validada y SQL parametrizado | ✅ | Las consultas solo ganan columnas; los ids siguen en `?` | test: `mis-citas-modificable.test.js` → ids en los parámetros |
+| P9 Entrada validada y SQL parametrizado | ✅ | Las consultas solo ganan columnas; los ids siguen en `?` | test: `mis-citas-modificable.test.js`, bloque con el repositorio real y `jest.spyOn(pool, 'query')`: el SQL de `getMisCitas` y `getCitaConUsuario` usa `?` y el id va en los parámetros (/analyze A22) |
 | P10 Secretos fuera del repositorio | ✅ | Ninguno | lint: gitleaks en CI |
 | P11 Sin vulnerabilidades críticas o altas | ✅ | `npm audit --omit=dev` sin altas (2026-11-23); en desarrollo, la excepción vigente GHSA-fc5q (`docs/security.md`, hasta 2027-01-31) | test: npm audit y trivy en CI y en `/release` |
 | P12 Modelo de amenazas en datos sensibles | ✅ | Citas del paciente (confidenciales): modelo abajo | manual: `/analyze` |
 | P13 Auditoría de datos sensibles | ❌ aceptado: reprogramar y cancelar citas del paciente no se auditan; la excepción P13 del 2026-11-11 se extiende a estas acciones hasta el objetivo 3 — aprobado por el usuario el 2026-11-23 (/analyze A1) | Sin evento nuevo; destino: specs 027 y 028 | — (llega con las specs 027 y 028) |
 | P14 Correlación por petición | ✅ | Sin cambio: spec 026 | test: existentes en `tests/logs/` |
 | P15 Logs sin datos sensibles | ✅ | Sin logs nuevos | — (sin logs nuevos) |
-| P16 Accesibilidad WCAG 2.1 AA | ✅ | Nombre accesible por cita; foco a controles con foco visible del sistema; sin colores nuevos, así que el contraste es el de `.mf-btn` | test: `mis-citas-acciones.test.jsx` → rol y nombre, foco tras cerrar y tras el aviso; manual: lector de pantalla y teclado, con el destino del foco anotado |
+| P16 Accesibilidad WCAG 2.1 AA | ❌ aceptado: los botones reutilizados de Inicio no llegan a AA (DS4 3.70–2.84:1, DS5 4.17:1, borde DS6 1.48:1); se usan iguales en «Mis citas» hasta una spec que corrija DS4, DS5 y DS6 en todo el panel — aprobado por el usuario el 2026-11-23 (/analyze A18) | Nombre accesible por cita con hora; foco a controles con foco visible del sistema | test: `mis-citas-acciones.test.jsx` → rol y nombre, foco tras cerrar, tras el aviso y si la recarga falla; manual: contraste medido en navegador (valores anotados en T022), lector de pantalla y teclado |
 | P17 Sin lógica de negocio en las vistas | ✅ | `modificable` y el rechazo de CA10 los decide el servidor | test: `mis-citas-modificable.test.js` (reglas); `mis-citas-acciones.test.jsx` (sin botones si `modificable` es falso aunque la cita sea pendiente) |
 | P18 Metadatos por ruta indexable | ➖ | Ruta privada | — |
 | P19 Noindex fuera de lo público | ➖ | Sin cambios | — |
-| P20 La interfaz usa solo el sistema de diseño | ✅ | Sin estilos nuevos. `ModalAccionCita` no lleva valores visuales: el ancho lo pasa cada pantalla, como hoy hace Inicio (`ancho={500}`, valor previo, deuda DS2) | test: `mis-citas-acciones.test.jsx` → `ModalAccionCita.jsx` no contiene colores, medidas con unidad ni números de ancho (control positivo) |
+| P20 La interfaz usa solo el sistema de diseño | ✅ | Sin estilos nuevos. `ModalAccionCita` no lleva valores visuales. El ancho lo pasa cada pantalla: Inicio su `ancho={500}` previo y «Mis citas» el mismo 500, como deuda DS2 aprobada por el usuario (/analyze A23) | test: `mis-citas-acciones.test.jsx` → `ModalAccionCita.jsx` no contiene colores, medidas con unidad, valores numéricos de `ancho` ni `style=` (control positivo) |
 
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
 |---|---|---|
-| `backend/src/modules/citas/citas.repository.js` | `getMisCitas` añade `c.id_servicio`; `getCitaConUsuario` añade `c.fecha_agendada`, `c.hora` y `s.duracion` (join con `servicio`) | bajo |
-| `backend/src/modules/citas/citas.service.js` | `getMisCitas` devuelve además `id_servicio` y `modificable` (pendiente e inicio posterior a la hora de México). `obtenerCitaPropia` rechaza con 400 «Esta cita ya pasó y no se puede modificar.» la pendiente cuyo inicio + duración ya pasó, después de la comprobación de propiedad y de estado | medio: afecta también a Inicio solo para citas ya terminadas, que Inicio no muestra |
-| `frontend/src/components/ModalAccionCita.jsx` (nuevo) | El formulario de reprogramar o cancelar de Inicio, con los mismos textos y campos. Recibe `cita` (`id`, `id_servicio`, `nombre_servicio`, `fecha_agendada`, `hora`), `accion`, `ancho`, `onCerrar` y `onHecho`. Carga los horarios, valida el motivo, llama a `PUT /citas/mias/:id` o `PATCH /citas/mias/:id/cancelar` y muestra el error del servidor. No gestiona el foco | medio: Inicio pasa a usarlo |
+| `backend/src/modules/citas/citas.repository.js` | `getMisCitas` añade `c.id_servicio`. `getCitaConUsuario` añade `c.fecha_agendada`, `c.hora` y `s.duracion` con un `LEFT JOIN` a `servicio`, para no cambiar lo que recibe `comen.service` (/analyze A20) | bajo |
+| `backend/src/modules/citas/citas.service.js` | `getMisCitas` devuelve además `id_servicio` y `modificable` (pendiente e inicio posterior a la hora de México). `obtenerCitaPropia` rechaza con 400 «Esta cita ya pasó y no se puede modificar.» la pendiente cuyo inicio + duración ya pasó, después de la comprobación de propiedad y de estado. Las dos reglas usan `fechaComoTexto` y minutos numéricos con la fecha y hora de México, y el mismo límite que `getProximaCita`: no es modificable si inicio ≤ ahora; se rechaza si fin ≤ ahora. Una `duracion` NULL cuenta como 0 (/analyze A20, A21) | medio: afecta también a Inicio solo para citas ya terminadas, que Inicio no muestra |
+| `frontend/src/components/ModalAccionCita.jsx` (nuevo) | El formulario de reprogramar o cancelar de Inicio, con los mismos textos y campos. Recibe `cita` (`id`, `id_servicio`), `subtitulo` ya formateado por la pantalla (/analyze A27), `accion`, `ancho`, `onCerrar` y `onHecho`. Carga los horarios, valida el motivo, llama a `PUT /citas/mias/:id` o `PATCH /citas/mias/:id/cancelar` y muestra el error del servidor. No gestiona el foco | medio: Inicio pasa a usarlo |
 | `frontend/src/pages/paciente/InicioPaciente.jsx` | Usa `ModalAccionCita` con `ancho={500}`; mismos textos, avisos y comportamiento | medio: lo cubre la caracterización |
 | `frontend/src/pages/paciente/CitasPaciente.jsx` | En las tarjetas con `modificable`, «Reprogramar» y «Cancelar cita» con `aria-label` de la cita; abre `ModalAccionCita`; tras el éxito vuelve a pedir `/citas/miscitas` y muestra el aviso de Inicio; gestiona el foco según `design.md` | bajo |
 
@@ -81,7 +81,8 @@ después, cita terminada (400). Sin migración.
 ## Estrategia de pruebas
 - **Backend (Jest):** `backend/tests/citas/mis-citas-modificable.test.js`, con los repositorios de
   citas y pacientes simulados y `fecha_agendada` como `Date`, igual que el driver (/analyze A7).
-  La hora se fija con `jest.useFakeTimers`.
+  La hora se fija con `jest.useFakeTimers` a las 23:30 de México, cuando la fecha UTC ya es la
+  del día siguiente (/analyze A21).
   - `modificable`:
     - verdadero para una pendiente de mañana y para una de hoy que empieza dentro de un minuto;
     - falso para una de hoy que empezó hace un minuto, aunque no haya terminado;
@@ -89,13 +90,18 @@ después, cita terminada (400). Sin migración.
     - incluye `id_servicio`.
   - Rechazo de CA10:
     - `PUT` y `PATCH` sobre una pendiente propia terminada hace un minuto → 400 con el mensaje;
-    - sobre una en curso (empezó y no ha terminado) → se procesa.
+    - sobre una en curso (empezó y no ha terminado) → se procesa;
+    - límites exactos: «empieza ahora» → no modificable; «termina ahora» → rechazada;
+    - cancelar una pendiente futura con `duracion` NULL → se procesa.
   - Por HTTP:
     - sin token → 401;
     - con token de Paciente, Administrador y Asistente, cada uno ve solo sus citas;
     - cita de otro → 404 sin actualizar;
     - cancelar una completada → 400.
-  - Los ids van en los parámetros.
+  - Bloque con el repositorio real y `jest.spyOn(pool, 'query')`: el SQL lleva `?` y los ids van
+    en los parámetros (/analyze A22).
+  - Los mocks de `tests/citas/horario-paciente.test.js` y `tipos-paciente.test.js` ganan fecha,
+    hora y duración futuras (/analyze A19), y `tests/comentarios` sigue en verde.
 - **Frontend (Vitest + Testing Library):** `frontend/tests/mis-citas-acciones.test.jsx`, con `api`
   simulado.
   - Botones solo en las `modificable`, con su nombre accesible; una pendiente no modificable y una

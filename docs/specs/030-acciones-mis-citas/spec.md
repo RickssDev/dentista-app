@@ -53,8 +53,8 @@ clínica o buscando la opción en otra pantalla.
   pasó y no se puede modificar.» y la cita no cambia. Una cita en curso, que ya empezó pero no ha
   terminado, se sigue pudiendo modificar desde Inicio, como hoy (CA7).
 - [ ] CA9 · Dadas varias tarjetas con acciones, cuando un lector de pantalla recorre «Mis
-  citas», entonces cada acción se anuncia con la cita a la que pertenece (servicio y fecha), y
-  todas se pueden usar solo con el teclado.
+  citas», entonces cada acción se anuncia con la cita a la que pertenece (servicio, fecha y
+  hora), y todas se pueden usar solo con el teclado.
 
 ## Fuera de alcance
 - Cambiar las reglas de reprogramación o cancelación: quién, qué estados, horarios y el motivo
@@ -102,7 +102,7 @@ Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 3 candidatos.
 |---|---|---|---|
 | K1 | Acciones en las tarjetas pendientes futuras | «Reprogramar» y «Cancelar cita» visibles en la tarjeta a 390 y 1440 px, con los mismos estilos de botón que Inicio, repartiendo el ancho de la tarjeta como su zona de acciones | CA1 |
 | K2 | Sin regresión visual | El resto de «Mis citas» y la tarjeta «Próxima cita» de Inicio iguales que hoy a 390 y 1440 px | CA2, CA7 |
-| K3 | Accesibilidad de las acciones | Nombre accesible con servicio y fecha; uso por teclado; al cerrar, el foco vuelve a un control con foco visible | CA9, constitución P16 |
+| K3 | Accesibilidad de las acciones | Nombre accesible con servicio, fecha y hora; uso por teclado; al cerrar, el foco vuelve a un control con foco visible | CA9, constitución P16 |
 
 Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica: pesos por defecto.
 
@@ -123,6 +123,9 @@ _(ninguna)_
 | 2026-11-23 | brecha | ¿Se cambia Inicio? | No: «Próxima cita» y sus acciones quedan igual | usuario (petición inicial) |
 | 2026-11-23 | implícita | ¿Qué estados se pueden reprogramar o cancelar? | Solo `pendiente`, de la propia cuenta | `docs/specs/005-portal-paciente-citas/spec.md` CA8, CA9, CA10 |
 | 2026-11-23 | contradicción | P13 pide auditar los cambios en citas de pacientes; la excepción del 2026-11-11 solo cubría acciones administrativas | Se extiende la excepción P13 a las acciones del paciente sobre sus citas, hasta el objetivo 3 | usuario · /analyze A1 |
+| 2026-11-23 | contradicción | P16 pide contraste AA y los botones de Inicio que se reutilizan no lo cumplen (DS4, DS5, DS6) | Excepción P16 temporal para esos botones en «Mis citas», como ya están en Inicio, hasta una spec que corrija DS4, DS5 y DS6 en todo el panel | usuario · /analyze A18 |
+| 2026-11-23 | brecha | ¿Ancho del formulario en «Mis citas»? | El mismo que Inicio (500), como deuda DS2 | usuario · /analyze A23 |
+| 2026-11-23 | brecha | Dos citas del mismo servicio el mismo día tendrían el mismo nombre accesible | El nombre accesible incluye la hora | usuario · /analyze A28 |
 | 2026-11-23 | supuesto | Texto del rechazo de CA10 | «Esta cita ya pasó y no se puede modificar.» | /specify (/analyze A8) |
 | 2026-11-23 | supuesto | ¿Mismos formularios, textos y avisos que en Inicio? | Sí, los mismos | usuario («mismas acciones que en Inicio») |
 | 2026-11-23 | diseño | ¿Cómo se ven las acciones en «Mis citas»? | Sin diseño nuevo: los botones y el formulario de Inicio en la zona de acciones de la tarjeta | [design.md](design.md) |
@@ -140,3 +143,4 @@ _(ninguna)_
 | 2026-11-23 | Spec creada | Petición del usuario: acciones de cita en «Mis citas» |
 | 2026-11-23 | Spec aprobada | Confirmación del usuario |
 | 2026-11-23 | CA1 y CA2 hasta que la cita empieza; CA10 nuevo (el servidor rechaza las pasadas); auditoría con la excepción extendida; clasificación de datos; K1 y K3 | /analyze A1, A2, A6, A8, A10, A15 (decisiones del usuario) |
+| 2026-11-23 | CA9 y K3 con la hora; Decisiones de contraste (excepción P16), ancho y nombre accesible | /analyze A18, A23, A28 (decisiones del usuario) |

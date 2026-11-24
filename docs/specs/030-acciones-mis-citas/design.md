@@ -39,8 +39,8 @@ Ninguno: sin ciclo de candidatos (ver Resultado y Decisiones).
   campos, textos de botones y subtítulo «servicio · fecha · hora» de la cita elegida. Los errores
   salen en su `<p role="alert">`. Los avisos de éxito son el mismo `ModalConfirmacion`.
 - **Accesibilidad (CA9):** cada botón conserva su texto visible y añade un nombre accesible con la
-  cita: «Reprogramar cita de Limpieza del 03/12/2026» y «Cancelar cita de Limpieza del
-  03/12/2026». Al cerrar, el foco vuelve a un control con foco visible: al botón que abrió el
+  cita: «Reprogramar cita de Limpieza del 03/12/2026 a las 10:00 AM» y «Cancelar cita de
+  Limpieza del 03/12/2026 a las 10:00 AM». Al cerrar, el foco vuelve a un control con foco visible: al botón que abrió el
   formulario, o a «Agendar nueva cita» si la tarjeta se quedó sin botones (cita cancelada).
 
 Inicio no cambia (CA7).
@@ -85,7 +85,12 @@ Ninguno.
 
 ## Accesibilidad
 
-- Contraste: el de los botones `.mf-btn` del sistema, sin cambios.
+- Contraste: el de los botones `.mf-btn` del sistema, sin cambios, y por debajo de AA.
+  - `.mf-btn-prin`: blanco sobre `#e94b6a` → `#f0708a`, 3.70–2.84:1 (DS4).
+  - El rojo de confirmar la cancelación: `#e63946`, 4.17:1 (DS5).
+  - El borde de `.mf-btn-sec`: 1.48:1 (DS6).
+  - Se reutilizan igual que en Inicio por la excepción P16 que aprobó el usuario (/analyze A18),
+    hasta una spec que corrija DS4, DS5 y DS6 en todo el panel. T022 mide y anota los valores.
 - Nombre accesible: el texto visible está contenido en el nombre accesible, para que el control
   por voz también funcione (WCAG 2.5.3).
 - Foco, con esta secuencia:
@@ -96,6 +101,11 @@ Ninguno.
   - Los dos destinos tienen el foco visible del sistema (`.mf-btn:focus-visible` y el botón del
     encabezado), sin estilos nuevos.
   - La lógica vive en «Mis citas»; el formulario compartido no cambia el foco de Inicio.
+  - Mecanismo: «Mis citas» guarda la referencia del botón que abrió el formulario. Para «Agendar
+    nueva cita» busca el botón del encabezado dentro de su propio contenedor, sin cambiar
+    `EncabezadoModulo`.
+  - Si el botón de la tarjeta ya no existe, o la lista no se pudo volver a cargar, el foco va a
+    «Agendar nueva cita».
 - Teclado: botones nativos; el formulario cierra con Escape, como hoy.
 
 ## Decisiones
@@ -103,4 +113,6 @@ Ninguno.
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-23 | diseño | ¿Ciclo de candidatos o sin diseño nuevo? | Sin diseño nuevo: se reutilizan la tarjeta, los botones y el formulario de Inicio | `references/spec-mode.md` §1; spec 030 («sin romper diseños») |
+| 2026-11-23 | refinado | Contraste de los botones reutilizados por debajo de AA | Se mantienen iguales que en Inicio con una excepción P16 temporal | usuario · /analyze A18 |
+| 2026-11-23 | refinado | Nombre accesible | Incluye la hora | usuario · /analyze A28 |
 | 2026-11-23 | refinado | ¿A dónde va el foco si la cita cancelada ya no tiene botones? | A «Agendar nueva cita»: el título de la tarjeta no tiene foco visible y añadirlo sería un estilo nuevo | P16 · /analyze A4, A5 |
