@@ -30,7 +30,7 @@ Revisado contra el Constitution Check de [plan.md](plan.md):
 Sin tareas: no hay dependencias, configuración ni migraciones.
 
 ## Tests (antes de implementar)
-- [ ] T010 [P] Tests del servidor: `modificable`, rechazo de citas terminadas y permisos por rol — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: fallan por la razón esperada los casos nuevos (no hay `modificable`, `id_servicio` ni rechazo). Repositorios simulados con `fecha_agendada` como `Date` y la hora fijada con `jest.useFakeTimers`: — cubre: CA1, CA2, CA7, CA8, CA10
+- [x] T010 [P] Tests del servidor: `modificable`, rechazo de citas terminadas y permisos por rol — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: fallan por la razón esperada los casos nuevos (no hay `modificable`, `id_servicio` ni rechazo). Repositorios simulados con `fecha_agendada` como `Date` y la hora fijada con `jest.useFakeTimers`: — cubre: CA1, CA2, CA7, CA8, CA10
   - la hora se fija a las 23:30 de México (fecha UTC del día siguiente) y `fecha_agendada` es un `Date` a medianoche local, como el driver;
   - `modificable` verdadero para una pendiente de mañana y para una de hoy que empieza dentro de un minuto; falso para una que empieza justo ahora, para una de hoy que empezó hace un minuto (sin terminar), para una de ayer y para una completada o cancelada futura;
   - cada cita incluye `id_servicio`;
@@ -39,6 +39,10 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - `PUT` y `PATCH` sobre una cita de otro → 404 sin actualizar, con token de Paciente y de Asistente; cancelar una completada propia → 400;
   - un bloque con el repositorio real y `jest.spyOn(pool, 'query')`: el SQL de `getMisCitas` y de `getCitaConUsuario` lleva `?` y el id va en los parámetros, no en el texto.
   Los casos que ya se cumplen se comprueban rompiendo lo que protegen
+  - nota: 16 de 25 fallan por la razón esperada (no hay `modificable`, `id_servicio` ni rechazo de terminadas)
+  - nota: comprobados rompiendo lo protegido los que ya pasan: sin `verifyToken` en `/miscitas` falla el 401; sin la comprobación de propiedad fallan los 3 de «otro»; sin la de estado falla «completada propia»; con el id interpolado en el SQL falla P9. Restaurado, pasan
+  - nota: al comprobar la propiedad se vio que los 404 por HTTP pasaban por otra razón (`getCitaById` sin simular); se simula una cita actualizable para que el 404 solo pueda venir de la propiedad
+  - nota: «en curso» y «duración NULL» pasan hoy porque no hay rechazo; se comprueban rompiendo la regla en T020
 - [ ] T011 [P] Test de caracterización de Inicio — `frontend/tests/inicio-paciente.test.jsx` — hecho cuando: pasa antes del cambio, con `api` simulado. Comprueba: — cubre: CA7
   - al montarse pide `/citas/proximacita`;
   - la tarjeta «Próxima cita» muestra «Reprogramar» y «Cancelar cita»;
