@@ -43,7 +43,7 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: comprobados rompiendo lo protegido los que ya pasan: sin `verifyToken` en `/miscitas` falla el 401; sin la comprobación de propiedad fallan los 3 de «otro»; sin la de estado falla «completada propia»; con el id interpolado en el SQL falla P9. Restaurado, pasan
   - nota: al comprobar la propiedad se vio que los 404 por HTTP pasaban por otra razón (`getCitaById` sin simular); se simula una cita actualizable para que el 404 solo pueda venir de la propiedad
   - nota: «en curso» y «duración NULL» pasan hoy porque no hay rechazo; se comprueban rompiendo la regla en T020
-- [ ] T011 [P] Test de caracterización de Inicio — `frontend/tests/inicio-paciente.test.jsx` — hecho cuando: pasa antes del cambio, con `api` simulado. Comprueba: — cubre: CA7
+- [x] T011 [P] Test de caracterización de Inicio — `frontend/tests/inicio-paciente.test.jsx` — hecho cuando: pasa antes del cambio, con `api` simulado. Comprueba: — cubre: CA7
   - al montarse pide `/citas/proximacita`;
   - la tarjeta «Próxima cita» muestra «Reprogramar» y «Cancelar cita»;
   - el formulario de reprogramar tiene «Nueva fecha», «Nueva hora» y «Motivo», y pide los horarios con el `id_servicio` de la próxima cita;
@@ -51,6 +51,7 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - cancelar manda `PATCH /citas/mias/<id_cita>/cancelar` con el motivo, y muestra «Cita cancelada» / «Tu cita se canceló correctamente.»;
   - con un motivo de solo espacios (`"   "`), sale el error del formulario.
   Se comprueba rompiendo un texto
+  - nota: caracterización: 4/4 antes del cambio, dos corridas iguales. Comprobada rompiendo el texto del aviso de reprogramar y el id del PATCH: falla; restaurado, pasa. La barra lateral va simulada (no es parte de lo que se caracteriza)
 - [ ] T012 [P] Tests de las acciones en «Mis citas» — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada (no hay botones ni componente). Con `api` simulado: — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9
   - una pendiente con `modificable: true` muestra «Reprogramar» y «Cancelar cita», con nombre accesible «Reprogramar cita de <servicio> del dd/mm/aaaa a las hh:mm AM/PM» y «Cancelar cita de <servicio> del dd/mm/aaaa a las hh:mm AM/PM»;
   - una pendiente con `modificable: false` y una completada no los muestran, y la completada conserva «Dejar comentario». Los casos que ya pasan se comprueban rompiendo lo que protegen;
