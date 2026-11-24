@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done
+status: released
+released: v1.9.1 (2026-11-24)
 base: 59a9e98
 relates: [007]
 covers: [CA1, CA3]
