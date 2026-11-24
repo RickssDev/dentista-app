@@ -64,7 +64,8 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   Dos corridas iguales
   - nota: 11 de 13 fallan por la razón esperada (no hay botones; `ModalAccionCita.jsx` no existe, ENOENT); dos corridas iguales. Pasan el control positivo del patrón y el caso negativo (pendiente no modificable y completada sin botones), que se comprueba rompiendo la condición en T022
 
-- [ ] T013 Dar fecha, hora y duración futuras a los mocks de `getCitaConUsuario` de los tests existentes — `backend/tests/citas/horario-paciente.test.js`, `backend/tests/citas/tipos-paciente.test.js` — hecho cuando: siguen en verde antes del cambio y sus mocks devuelven una pendiente futura con `fecha_agendada` como `Date`, `hora` y `duracion`, para que el rechazo de CA10 no los rompa (/analyze A19) — cubre: CA7
+- [x] T013 Dar fecha, hora y duración futuras a los mocks de `getCitaConUsuario` de los tests existentes — `backend/tests/citas/horario-paciente.test.js`, `backend/tests/citas/tipos-paciente.test.js` — hecho cuando: siguen en verde antes del cambio y sus mocks devuelven una pendiente futura con `fecha_agendada` como `Date`, `hora` y `duracion`, para que el rechazo de CA10 no los rompa (/analyze A19) — cubre: CA7
+  - nota: A19: los dos mocks devuelven una pendiente del 2030-01-07 a las 10:00 con duración de 1 h (`Date` a medianoche local, como el driver). 50/50 en verde antes del cambio
 
 ## Implementación
 - [ ] T020 Añadir `id_servicio` y `modificable` a «Mis citas» y rechazar las citas terminadas — `backend/src/modules/citas/citas.repository.js`, `backend/src/modules/citas/citas.service.js` — hecho cuando: pasa T010 y siguen en verde `tests/citas` y `tests/comentarios`. Cambios: — cubre: CA1, CA2, CA7, CA8, CA10 — depende: T010, T013
