@@ -16,7 +16,12 @@ beforeEach(() => {
   jest.resetAllMocks();
   repo.getCitasDelDia.mockResolvedValue([]);
   repo.createCita.mockResolvedValue(99);
-  repo.getCitaConUsuario.mockResolvedValue({ id_cita: ID_CITA, estado: 'pendiente', id_usuario: ID_USUARIO });
+  // Spec 030 (T013): una pendiente futura con fecha, hora y duración, para que el rechazo de las
+  // citas terminadas (CA10) no aplique a estos casos
+  repo.getCitaConUsuario.mockResolvedValue({
+    id_cita: ID_CITA, estado: 'pendiente', id_usuario: ID_USUARIO,
+    fecha_agendada: new Date(2030, 0, 7), hora: '10:00:00', duracion: '01:00:00',
+  });
   repo.getCitaById.mockResolvedValue({ id_cita: ID_CITA, estado: 'pendiente', id_servicio: 1, fecha_agendada: LUNES, hora: '10:00' });
   servicioRepo.getServicioById.mockResolvedValue({ duracion: '01:00', nombre_servicio: 'Limpieza' });
   pacienteRepo.findByUserId.mockResolvedValue({ id_paciente: 3 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   FaRegCalendarAlt,
@@ -6,13 +6,17 @@ import {
   FaCommentDots,
   FaCheckCircle,
   FaStar,
+  FaCalendarAlt,
+  FaTimesCircle,
 } from "react-icons/fa";
 import Sidebar from "../../components/sidebar";
 import EncabezadoModulo from "../../components/EncabezadoModulo";
 import ModalFormulario from "../../components/ModalFormulario";
 import ModalConfirmacion from "../../components/ModalConfirmacion";
+import ModalAccionCita from "../../components/ModalAccionCita";
 import { api } from "../../services/api";
 import { hoyClave } from "../../utils/fechas";
+import { EXITOS_ACCION_CITA } from "../../utils/avisosCita";
 import "../../styles/adminpanel.css";
 import "../../styles/CitasAdmin.css";
 import "../../styles/MisCitas.css";
@@ -31,6 +35,10 @@ const formatearHora = (hora) => {
   const hora12 = String(horas % 12 || 12).padStart(2, "0");
   return `${hora12}:${m} ${periodo}`;
 };
+
+// «servicio del dd/mm/aaaa a las hh:mm AM»: identifica la cita para el lector de pantalla (spec 030)
+const describirCita = (cita) =>
+  `${cita.nombre_servicio} del ${formatearFecha(cita.fecha_agendada)} a las ${formatearHora(cita.hora)}`;
 
 function CitasPaciente() {
   const fechaMinima = hoyClave();
@@ -56,23 +64,78 @@ function CitasPaciente() {
   const [enviandoComentario, setEnviandoComentario] = useState(false);
   const [errorComentario, setErrorComentario] = useState("");
 
+  // Reprogramar o cancelar (spec 030): la cita elegida y a dónde vuelve el foco al cerrar
+  const [accionCita, setAccionCita] = useState(null); // { cita, accion } | null
+  const contenedorRef = useRef(null);
+  const botonOrigenRef = useRef(null);
+  // Destino del foco al cerrar el aviso de una acción: { destino, aviso } (R1). Solo vale para ese aviso
+  const focoTrasAvisoRef = useRef(null);
+
   const mostrarAviso = (titulo, mensaje) => setAviso({ titulo, mensaje });
 
-  const cargarCitas = async () => {
+  // Devuelve si la lista se pudo cargar. Con `silenciosa` (recarga tras una acción) un fallo no
+  // muestra su aviso ni vacía la lista, para no tapar el aviso de éxito (R2)
+  const cargarCitas = async ({ silenciosa = false } = {}) => {
     try {
       const res = await api("/citas/miscitas");
       const data = res?.payload ?? res?.data ?? res;
       setCitas(Array.isArray(data) ? data : []);
+      return true;
     } catch (error) {
       console.error(error);
+      if (silenciosa) return false;
       setCitas([]);
       mostrarAviso(
         "No se pudieron cargar tus citas",
         error.message || "Intenta de nuevo más tarde."
       );
+      return false;
     } finally {
       setCargando(false);
     }
+  };
+
+  // El foco solo va a controles con foco visible del sistema (design.md de la spec 030)
+  const enfocar = (destino) => {
+    setTimeout(() => {
+      const contenedor = contenedorRef.current;
+      const boton =
+        destino === "agendar"
+          ? null
+          : contenedor?.querySelector(`[data-reprogramar="${destino}"]`);
+      (boton || contenedor?.querySelector(".encabezado-btn"))?.focus();
+    }, 0);
+  };
+
+  const abrirAccionCita = (evento, cita, accion) => {
+    botonOrigenRef.current = evento.currentTarget;
+    setAccionCita({ cita, accion });
+  };
+
+  const cerrarAccionCita = () => {
+    setAccionCita(null);
+    botonOrigenRef.current?.focus();
+  };
+
+  const alHechoAccionCita = async (accion) => {
+    const idCita = accionCita?.cita.id;
+    const aviso = EXITOS_ACCION_CITA[accion];
+    // El destino se fija antes de abrir el aviso: vale aunque se cierre antes de la recarga (R1)
+    const foco = { destino: accion === "reprogramar" ? idCita : "agendar", aviso };
+    focoTrasAvisoRef.current = foco;
+    setAccionCita(null);
+    setAviso(aviso);
+    const cargada = await cargarCitas({ silenciosa: true });
+    // Sin lista nueva no se garantiza el botón de la tarjeta: «Agendar nueva cita»
+    if (!cargada) foco.destino = "agendar";
+  };
+
+  const cerrarAviso = () => {
+    const foco = focoTrasAvisoRef.current;
+    // Solo el aviso de la acción mueve el foco; cualquier otro aviso lo descarta
+    if (foco && foco.aviso === aviso) enfocar(foco.destino);
+    focoTrasAvisoRef.current = null;
+    setAviso(null);
   };
 
   const cargarServicios = async () => {
@@ -238,7 +301,7 @@ function CitasPaciente() {
       <Sidebar tipo="paciente" />
 
       <div className="admin-content">
-        <div className="citas-container">
+        <div className="citas-container" ref={contenedorRef}>
           <EncabezadoModulo
             titulo="Mis citas"
             descripcion="Consulta tus citas y agenda una nueva cuando lo necesites."
@@ -276,6 +339,28 @@ function CitasPaciente() {
                         <span>{formatearHora(cita.hora)}</span>
                       </div>
                     </div>
+
+                    {cita.modificable && (
+                      <div className="cita-acciones">
+                        <button
+                          type="button"
+                          className="mf-btn mf-btn-prin"
+                          data-reprogramar={cita.id}
+                          aria-label={`Reprogramar cita de ${describirCita(cita)}`}
+                          onClick={(e) => abrirAccionCita(e, cita, "reprogramar")}
+                        >
+                          <FaCalendarAlt /> Reprogramar
+                        </button>
+                        <button
+                          type="button"
+                          className="mf-btn mf-btn-sec"
+                          aria-label={`Cancelar cita de ${describirCita(cita)}`}
+                          onClick={(e) => abrirAccionCita(e, cita, "cancelar")}
+                        >
+                          <FaTimesCircle /> Cancelar cita
+                        </button>
+                      </div>
+                    )}
 
                     {estado === "completada" && (
                       <div className="cita-acciones">
@@ -440,13 +525,31 @@ function CitasPaciente() {
         </p>
       </ModalFormulario>
 
+      {/* Reprogramar / cancelar, con el mismo formulario que Inicio (spec 030) */}
+      <ModalAccionCita
+        // Una instancia nueva por apertura: el formulario empieza vacío (R9)
+        key={accionCita ? `${accionCita.accion}-${accionCita.cita.id}` : "cerrado"}
+        cita={accionCita?.cita || null}
+        subtitulo={
+          accionCita
+            ? `${accionCita.cita.nombre_servicio} · ${formatearFecha(
+                accionCita.cita.fecha_agendada
+              )} · ${formatearHora(accionCita.cita.hora)}`
+            : ""
+        }
+        accion={accionCita?.accion || null}
+        ancho={500}
+        onCerrar={cerrarAccionCita}
+        onHecho={alHechoAccionCita}
+      />
+
       <ModalConfirmacion
         abierto={!!aviso}
         titulo={aviso?.titulo}
         mensaje={aviso?.mensaje}
         textoCancelar={null}
         textoConfirmar="Aceptar"
-        onConfirmar={() => setAviso(null)}
+        onConfirmar={cerrarAviso}
       />
     </div>
   );

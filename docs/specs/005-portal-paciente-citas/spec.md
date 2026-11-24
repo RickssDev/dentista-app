@@ -27,7 +27,7 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 - [ ] CA7 · Dado un paciente, entonces consulta sus citas y su próxima cita.
 - [ ] CA8 · Dada una cita propia `pendiente`, cuando reprograma con fecha, hora y motivo, entonces se actualiza y se reactiva su recordatorio.
 - [ ] CA9 · Dada una cita propia `pendiente`, cuando cancela con motivo, entonces pasa a `cancelada`.
-- [ ] CA10 · (abuso) Una cita de otro paciente responde 404 al modificarla o cancelarla.
+- [x] CA10 · (abuso) Una cita de otro paciente responde 404 al modificarla o cancelarla.
 - [ ] CA11 · (abuso) Solo se aceptan fecha, hora y motivo al reprogramar; otros campos se ignoran.
 
 ## Fuera de alcance
@@ -57,3 +57,4 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | Horario definido para el sitio y el agendado | Ficha fix-horario-sitio |
+| 2026-11-23 | La spec 030 extiende el contrato: `/miscitas` añade `id_servicio` y `modificable`, y reprogramar o cancelar una pendiente ya terminada responde 400. CA10 cubierto por `backend/tests/citas/mis-citas-modificable.test.js` | spec 030 (T090) |

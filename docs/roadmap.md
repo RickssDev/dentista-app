@@ -41,6 +41,10 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 - ~~`frontend/Dockerfile` no declaraba `ARG VITE_GOOGLE_CLIENT_ID`~~: resuelto en v1.4.0 (ficha 2026-11-17-fix-dockerfile-google-client-id); el servidor ya no necesita el cambio local del `Dockerfile`.
 - ~~Rendimiento de la portada~~: resuelto por [023](specs/023-rendimiento-sitio/spec.md) en v1.4.0 (Lighthouse móvil local: 100 en galería, contacto, aviso y términos; 97 en portada y nosotros; 99 en login).
 
+**Excepciones de la spec 030** (aprobadas por el usuario, /analyze, 2026-11-23)
+- P16: los botones `.mf-btn-prin`, `.mf-btn-sec` y `mf-btn-peligro` de Inicio y de «Mis citas» no llegan a AA (DS4, DS5, DS6); una spec debe corregirlos en todo el panel.
+- DS2: «Mis citas» usa el ancho fijo 500 del formulario, como Inicio.
+
 **Deuda de la spec 029** (aceptada en /review, ronda 1)
 - 029/R7 El bloqueo `dentissa_galeria_alta` es global a la instancia de MySQL; si un día se comparte la instancia entre bases, incluir la base en el nombre.
 - ~~029/R9~~ resuelto por la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria en v1.8.1. Un `PUT /imagenes/:id` con archivo nuevo que falla (404, 400 o error del repositorio) deja la foto en disco (defecto previo a la 029); ficha `/fix`.

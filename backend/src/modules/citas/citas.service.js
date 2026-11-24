@@ -70,6 +70,33 @@ const fechaComoTexto = (fecha) => {
   return `${fecha.getFullYear()}-${mes}-${dia}`;
 };
 
+// Fecha (AAAA-MM-DD), hora (HH:MM:SS) y minuto del día actuales en la hora de negocio de México,
+// sin depender de la zona horaria del proceso ni de MySQL (spec 030)
+const ahoraEnMexico = () => {
+  const ahora = new Date();
+  const zona = "America/Mexico_City";
+  const fecha = ahora.toLocaleDateString("en-CA", { timeZone: zona });
+  const hora = ahora.toLocaleTimeString("en-GB", { timeZone: zona, hourCycle: "h23" });
+  const [h, m] = hora.split(":");
+  return { fecha, hora, minutos: Number(h) * 60 + Number(m) };
+};
+
+// Spec 030: «Mis citas» solo ofrece modificar la pendiente que aún no empieza (CA1, CA2)
+const aunNoEmpieza = (cita, ahora = ahoraEnMexico()) => {
+  const fecha = fechaComoTexto(cita.fecha_agendada);
+  if (fecha !== ahora.fecha) return fecha > ahora.fecha;
+  return timeToMinutes(cita.hora) > ahora.minutos;
+};
+
+// Spec 030 CA10: una pendiente cuyo inicio + duración ya pasó no se modifica. El límite es el de
+// getProximaCita (que sigue mostrando la cita en curso); una duración NULL cuenta como 0
+const yaTermino = (cita, ahora = ahoraEnMexico()) => {
+  const fecha = fechaComoTexto(cita.fecha_agendada);
+  if (fecha !== ahora.fecha) return fecha < ahora.fecha;
+  const duracion = cita.duracion ? durationToMinutes(cita.duracion) : 0;
+  return timeToMinutes(cita.hora) + duracion <= ahora.minutos;
+};
+
 // Toda cita (paciente o personal) debe empezar y terminar dentro del horario de atención.
 const validarHorarioDeAtencion = (fechaRecibida, hora, duracion) => {
   const fecha = fechaComoTexto(fechaRecibida);
@@ -431,6 +458,7 @@ exports.getMisCitas = async (idUsuario) => {
   }
 
   const citas = await repo.getMisCitas(paciente.id_paciente);
+  const ahora = ahoraEnMexico();
 
   return citas.map((c) => ({
     id: c.id_cita,
@@ -440,6 +468,8 @@ exports.getMisCitas = async (idUsuario) => {
     estado: c.estado,
     motivo: c.motivo,
     comentado: Boolean(c.comentado),
+    id_servicio: c.id_servicio,
+    modificable: c.estado === "pendiente" && aunNoEmpieza(c, ahora),
   }));
 };
 exports.createCitaPaciente = async (idUsuario, data) => {
@@ -554,16 +584,9 @@ exports.getProximaCita = async (idUsuario) => {
     return null;
   }
 
-  // Fecha y hora actuales de México, sin depender de la zona horaria de MySQL
-  const ahora = new Date();
-  const zona = "America/Mexico_City";
-  const fechaHoy = ahora.toLocaleDateString("en-CA", { timeZone: zona });
-  const horaAhora = ahora.toLocaleTimeString("en-GB", {
-    timeZone: zona,
-    hourCycle: "h23",
-  });
+  const ahora = ahoraEnMexico();
 
-  return await repo.getProximaCita(paciente.id_paciente, fechaHoy, horaAhora);
+  return await repo.getProximaCita(paciente.id_paciente, ahora.fecha, ahora.hora);
 };
 exports.getHorariosDisponibles = async (fecha, id_servicio) => {
   if (!fecha || !id_servicio) {
@@ -662,6 +685,10 @@ const obtenerCitaPropia = async (idUsuario, idCita) => {
  
   if (cita.estado !== "pendiente") {
     throw new AppError("Solo puedes modificar citas pendientes", 400);
+  }
+
+  if (yaTermino(cita)) {
+    throw new AppError("Esta cita ya pasó y no se puede modificar.", 400);
   }
  
   return cita;

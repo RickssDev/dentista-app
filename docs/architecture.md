@@ -90,6 +90,7 @@ Los campos completos son inferidos de las consultas.
 ## Frontend
 - Componentes y organización: `src/{pages,components,services,api,hooks,utils,data,styles}`;
   páginas separadas por rol en `pages/admin` y `pages/paciente`.
+- Portal del paciente: Inicio y «Mis citas» comparten `components/ModalAccionCita.jsx` para reprogramar o cancelar una cita; «Mis citas» ofrece las acciones según el campo `modificable` que calcula el servidor (spec 030).
 - Estado: local con hooks; sin Context, Redux ni Zustand.
 - Routing: `BrowserRouter`, con `React.lazy` en las públicas; guarda `PrivateRoute` en `App.jsx`.
 - Design tokens / sistema de diseño: [design/system.md](design/system.md).
