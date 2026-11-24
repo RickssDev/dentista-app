@@ -66,3 +66,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | CA6 cumplido y `axios` importado | Fichas fix-recordatorios-apagado y fix-whatsapp-axios |
 | 2026-11-09 | Corregido por las fichas 2026-11-09-fix-whatsapp-axios (CA1, CA3) y 2026-11-09-fix-recordatorios-apagado (CA6) en v1.1.0 | /release |
+| 2026-11-24 | Corregido por la ficha 2026-11-24-fix-whatsapp-codigo-pais en v1.9.1 (CA1, CA3) | /release |
