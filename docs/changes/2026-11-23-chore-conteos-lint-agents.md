@@ -1,6 +1,7 @@
 ---
 lane: chore
-status: done
+status: released
+released: v1.8.1 (2026-11-23)
 base: a0b2d1e
 relates: []
 escalated_to: null

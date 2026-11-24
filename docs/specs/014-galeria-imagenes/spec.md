@@ -47,3 +47,4 @@ La clínica muestra fotografías de sus instalaciones y su trabajo.
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-23 | Corregido por la ficha 2026-11-23-hotfix-limite-subida-nginx en v1.7.1 (CA2) | /release |
 | 2026-11-23 | Comportamiento modificado por 029 en v1.8.0: máximo 15 imágenes en el alta, la imagen solo del archivo subido y borrado de la foto en los rechazos | /release |
+| 2026-11-23 | Corregido por la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria en v1.8.1 | /release |

@@ -43,10 +43,10 @@ Detectados por `/init` y aún sin objetivo; el usuario decide cuáles promover.
 
 **Deuda de la spec 029** (aceptada en /review, ronda 1)
 - 029/R7 El bloqueo `dentissa_galeria_alta` es global a la instancia de MySQL; si un día se comparte la instancia entre bases, incluir la base en el nombre.
-- ~~029/R9~~ resuelto por la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria (sin liberar). Un `PUT /imagenes/:id` con archivo nuevo que falla (404, 400 o error del repositorio) deja la foto en disco (defecto previo a la 029); ficha `/fix`.
+- ~~029/R9~~ resuelto por la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria en v1.8.1. Un `PUT /imagenes/:id` con archivo nuevo que falla (404, 400 o error del repositorio) deja la foto en disco (defecto previo a la 029); ficha `/fix`.
 - 029/R12 Medir en navegador el objetivo de toque del botón de `EncabezadoModulo` a 390 px.
 - Usuarios (hallado en la review de la ficha 2026-11-23-fix-foto-huerfana-edicion-galeria): `conImagenSubida` (`user.controller.js`) borra la foto subida ante cualquier error, también si falla la lectura posterior al guardado; en ese caso borraría una foto ya referenciada. Improbable; ficha `/fix`.
-- Servicios (ficha 2026-11-23-fix-imagen-servicios): revisar en producción, con una consulta de solo lectura, si algún `servicio.imagen` apunta a un archivo de otra tabla o se repite entre servicios (por si el hueco ya corregido se aprovechó).
+- ~~Servicios (ficha 2026-11-23-fix-imagen-servicios)~~: revisado en producción el 2026-11-23, sin filas. Revisar en producción, con una consulta de solo lectura, si algún `servicio.imagen` apunta a un archivo de otra tabla o se repite entre servicios (por si el hueco ya corregido se aprovechó).
 
 **Deuda de la spec 025** (aceptada en /review, ronda 1)
 - 025/R3 El `sed` del `Dockerfile` del frontend no comprueba que quitó `user` y movió `pid`.

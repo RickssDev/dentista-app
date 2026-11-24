@@ -54,3 +54,4 @@ Esta spec documenta el comportamiento actual y no corrige los riesgos citados.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-08 | Spec inferida del código | /init |
+| 2026-11-23 | Corregido por la ficha 2026-11-23-fix-imagen-servicios en v1.8.1 | /release |

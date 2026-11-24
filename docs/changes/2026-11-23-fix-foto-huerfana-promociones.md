@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done
+status: released
+released: v1.8.1 (2026-11-23)
 base: 8472975
 relates: [013]
 covers: []
