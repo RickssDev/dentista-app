@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-11-24
+### Fixed
+- Los avisos de WhatsApp (recordatorio, confirmación, reprogramación y cancelación de citas) se envían con el número en formato internacional (52 + 10 dígitos), como exige WhatsApp. Antes se enviaban con los 10 dígitos guardados y no podían llegar (fix 2026-11-24-fix-whatsapp-codigo-pais).
+
 ## [1.9.0] - 2026-11-24
 ### Added
 - En «Mis citas», el paciente puede reprogramar o cancelar cualquiera de sus citas pendientes que aún no empiezan, con el mismo formulario y los mismos avisos que en Inicio. Cada botón indica a los lectores de pantalla de qué cita es (spec 030).
