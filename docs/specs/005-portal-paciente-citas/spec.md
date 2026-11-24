@@ -58,3 +58,4 @@ Los pacientes necesitan agendar y administrar sus citas sin llamar a la clínica
 | 2026-11-08 | Spec inferida del código | /init |
 | 2026-11-09 | Horario definido para el sitio y el agendado | Ficha fix-horario-sitio |
 | 2026-11-23 | La spec 030 extiende el contrato: `/miscitas` añade `id_servicio` y `modificable`, y reprogramar o cancelar una pendiente ya terminada responde 400. CA10 cubierto por `backend/tests/citas/mis-citas-modificable.test.js` | spec 030 (T090) |
+| 2026-11-24 | Comportamiento modificado por 030 en v1.9.0 | /release |
