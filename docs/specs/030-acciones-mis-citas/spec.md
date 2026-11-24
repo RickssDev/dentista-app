@@ -76,7 +76,7 @@ Cambia solo la pantalla «Mis citas» del portal del paciente. Las tarjetas de l
 pendientes futuras ganan las mismas dos acciones que ya tiene la tarjeta «Próxima cita» de Inicio,
 en la misma zona de acciones donde hoy está «Dejar comentario». El resto de la pantalla y las
 demás tarjetas no cambian («sin romper diseños», decisión del usuario). Sistema:
-[docs/design/system.md](../../design/system.md).
+[docs/design/system.md](../../design/system.md). Acta de diseño: [design.md](design.md).
 
 - Qué debe lograr: que el paciente vea de un vistazo qué citas puede cambiar y lo haga en dos
   pasos (acción y confirmación).
@@ -111,6 +111,7 @@ _(ninguna)_
 | 2026-11-23 | implícita | ¿Qué estados se pueden reprogramar o cancelar? | Solo `pendiente`, de la propia cuenta | `docs/specs/005-portal-paciente-citas/spec.md` CA8, CA9, CA10 |
 | 2026-11-23 | implícita | ¿Hace falta auditoría nueva? | No: las acciones ya existen; la excepción P13 cubre su registro hasta el objetivo 3 | excepción P13 (decisión del usuario, 2026-11-11; `docs/specs/021-proteccion-cuentas-admin/plan.md`) |
 | 2026-11-23 | supuesto | ¿Mismos formularios, textos y avisos que en Inicio? | Sí, los mismos | usuario («mismas acciones que en Inicio») |
+| 2026-11-23 | diseño | ¿Cómo se ven las acciones en «Mis citas»? | Sin diseño nuevo: los botones y el formulario de Inicio en la zona de acciones de la tarjeta | [design.md](design.md) |
 
 ## Notas para /plan
 - El servidor ya permite reprogramar y cancelar las citas propias `pendiente` (spec 005, CA8 a
