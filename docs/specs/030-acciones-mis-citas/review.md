@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-23
 base: 9ac0f54
 head: 77e27df
-human_signoff: pending
+human_signoff: RickssDev 2026-11-24 (revisó y fusionó el PR #101)
 ---
 
 # Review · 030 Reprogramar y cancelar desde «Mis citas»
