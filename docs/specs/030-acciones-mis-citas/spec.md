@@ -1,7 +1,7 @@
 ---
 id: 030
 slug: acciones-mis-citas
-status: draft
+status: approved
 created: 2026-11-23
 extends: [005]
 ---
@@ -123,3 +123,4 @@ _(ninguna)_
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-23 | Spec creada | Petición del usuario: acciones de cita en «Mis citas» |
+| 2026-11-23 | Spec aprobada | Confirmación del usuario |
