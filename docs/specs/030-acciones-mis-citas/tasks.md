@@ -1,6 +1,7 @@
 ---
 spec: 030-acciones-mis-citas
 plan: plan.md
+impl_base: 12a80fe
 status: approved
 ---
 
