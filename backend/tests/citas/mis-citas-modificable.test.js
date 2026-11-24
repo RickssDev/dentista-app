@@ -112,8 +112,9 @@ describe('030 · el servidor rechaza modificar una pendiente que ya terminó (CA
     expect(repo.updateCita).toHaveBeenCalledWith(40, expect.objectContaining({ estado: 'cancelada' }));
   });
 
-  test('una pendiente futura con duración NULL se sigue pudiendo cancelar', async () => {
-    propia({ fecha_agendada: MAÑANA, hora: '10:00:00', duracion: null });
+  // De hoy y más tarde, para que la regla tenga que mirar la duración
+  test('una pendiente de hoy, más tarde, con duración NULL se sigue pudiendo cancelar', async () => {
+    propia({ fecha_agendada: HOY, hora: '23:45:00', duracion: null });
     await cancelar();
     expect(repo.updateCita).toHaveBeenCalled();
   });

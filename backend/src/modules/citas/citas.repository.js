@@ -190,6 +190,7 @@ exports.getMisCitas = async (id_paciente) => {
       c.hora,
       c.estado,
       c.motivo,
+      c.id_servicio,
       s.nombre_servicio,
       EXISTS (
         SELECT 1 FROM comentarios co WHERE co.id_cita = c.id_cita
@@ -335,9 +336,13 @@ exports.getCitaConUsuario = async (id) => {
       c.id_cita,
       c.estado,
       c.id_paciente,
+      c.fecha_agendada,
+      c.hora,
+      s.duracion,
       p.id_usuario
     FROM citas c
     JOIN paciente p ON c.id_paciente = p.id_paciente
+    LEFT JOIN servicio s ON c.id_servicio = s.id_servicio
     WHERE c.id_cita = ?
     `,
     [id],

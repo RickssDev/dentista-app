@@ -68,12 +68,15 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: A19: los dos mocks devuelven una pendiente del 2030-01-07 a las 10:00 con duración de 1 h (`Date` a medianoche local, como el driver). 50/50 en verde antes del cambio
 
 ## Implementación
-- [ ] T020 Añadir `id_servicio` y `modificable` a «Mis citas» y rechazar las citas terminadas — `backend/src/modules/citas/citas.repository.js`, `backend/src/modules/citas/citas.service.js` — hecho cuando: pasa T010 y siguen en verde `tests/citas` y `tests/comentarios`. Cambios: — cubre: CA1, CA2, CA7, CA8, CA10 — depende: T010, T013
+- [x] T020 Añadir `id_servicio` y `modificable` a «Mis citas» y rechazar las citas terminadas — `backend/src/modules/citas/citas.repository.js`, `backend/src/modules/citas/citas.service.js` — hecho cuando: pasa T010 y siguen en verde `tests/citas` y `tests/comentarios`. Cambios: — cubre: CA1, CA2, CA7, CA8, CA10 — depende: T010, T013
   - `getMisCitas` añade `c.id_servicio` a la consulta; el servicio calcula `modificable` (pendiente y fecha + hora de inicio posteriores a la hora de `America/Mexico_City`);
   - `getCitaConUsuario` añade `c.fecha_agendada`, `c.hora` y `s.duracion` con un `LEFT JOIN` a `servicio`;
   - las dos reglas usan `fechaComoTexto` y minutos numéricos, con el límite de `getProximaCita` (no modificable si inicio ≤ ahora; rechazada si fin ≤ ahora), y una `duracion` NULL cuenta como 0;
   - `obtenerCitaPropia`, después de la propiedad y del estado, lanza `AppError("Esta cita ya pasó y no se puede modificar.", 400)` si el inicio + duración ya pasó;
   - no devuelve la duración al cliente.
+  - nota: pasa T010 (25/25) y siguen en verde `tests/citas` y `tests/comentarios` (85/85). `ahoraEnMexico` (fecha con `toLocaleDateString` en `America/Mexico_City` y minuto del día), `aunNoEmpieza` y `yaTermino` con `fechaComoTexto` y minutos numéricos
+  - nota: comprobado rompiendo cada regla: sin el rechazo fallan 3 casos de CA10; rechazando por el inicio falla «en curso»; sin la guarda de duración NULL falla su caso; con `>=` en el inicio falla «empieza justo ahora»; con la fecha UTC fallan 2 casos de modificable. Restaurado, pasan
+  - nota: archivo extra justificado (test de T010): el caso de duración NULL usaba una cita de mañana y no llegaba a mirar la duración; ahora es de hoy y más tarde
 - [ ] T021 Extraer el formulario de Inicio a `ModalAccionCita` y usarlo en Inicio — `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: T011 sigue en verde sin cambiar ninguna de sus aserciones. El componente: — cubre: CA3, CA4, CA5, CA7 — depende: T011
   - recibe `cita` (`id`, `id_servicio`), `subtitulo` ya formateado, `accion`, `ancho`, `onCerrar` y `onHecho(accion)`;
   - tiene los mismos títulos, campos, textos y validación del motivo;
