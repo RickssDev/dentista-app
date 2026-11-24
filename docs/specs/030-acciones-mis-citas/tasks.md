@@ -121,16 +121,19 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - nota: pasa T030 (19/19 en dos corridas) y sigue `inicio-paciente.test.jsx` (4/4); frontend 30 archivos y 268 pruebas; build en verde; lint con los 7 errores previos
   - nota: R1: el destino se guarda antes de abrir el aviso junto al aviso al que pertenece, y cerrar cualquier aviso lo consume. R2: la recarga tras una acción es `silenciosa`: si falla, no muestra su aviso ni vacía la lista, y el destino pasa a «Agendar nueva cita». R10: al cerrar el formulario se enfoca el botón directamente. R9: las dos pantallas montan `ModalAccionCita` con `key` por apertura; el componente ya no tiene efecto de reinicio. R8: comentario del `Promise.resolve` en Inicio
   - nota: comprobados rompiéndolos: sin `silenciosa` falla R2; sin consumir el destino falla el aviso posterior de R1. Restaurado, pasan
-- [ ] T033 Reutilizar el cálculo de la hora de México — `backend/src/modules/citas/citas.service.js` — hecho cuando: `getProximaCita` usa `ahoraEnMexico()` y `getMisCitas` lo calcula una vez por lista; siguen en verde `tests/citas` y `tests/comentarios` — cubre: CA1, CA10 — depende: T031
+- [x] T033 Reutilizar el cálculo de la hora de México — `backend/src/modules/citas/citas.service.js` — hecho cuando: `getProximaCita` usa `ahoraEnMexico()` y `getMisCitas` lo calcula una vez por lista; siguen en verde `tests/citas` y `tests/comentarios` — cubre: CA1, CA10 — depende: T031
   - nota: añadida por /review: R11
+  - nota: R11: `ahoraEnMexico` devuelve también la hora en texto; `getProximaCita` lo usa y `getMisCitas` lo calcula una vez por lista. `tests/citas` y `tests/comentarios` 88/88; backend 472
+  - nota: archivo extra justificado: `getProximaCita` no tenía test. Se añade un caso de caracterización en `mis-citas-modificable.test.js` (fecha y hora de México que recibe el repositorio): pasa con la versión anterior y con la nueva, y falla si se rompe el parámetro
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: §Frontend menciona `ModalAccionCita` como componente compartido por Inicio y «Mis citas»; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
   - nota: §Frontend de `architecture.md` menciona `ModalAccionCita` y `modificable`; la 005 tiene la entrada en su Historial y su CA10 en `[x]` (A17, A26)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
   - nota: sin cambios: no hay variables, entornos, pasos de despliegue, logs, eventos de auditoría ni métricas nuevos
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
   - nota: 10 de 10 criterios marcados con su test en verde: backend 38 suites, 469 pruebas y 5 `todo`; frontend 30 archivos y 262 pruebas; build en verde; lint con los errores previos (backend 1, frontend 7). gitleaks lo ejecuta el CI del PR
+  - nota: tras las tareas de /review (T030–T033): backend 38 suites, 472 pruebas y 5 `todo` (en UTC); frontend 30 archivos y 268 pruebas; build en verde; lint con los errores previos (backend 1, frontend 7)
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

@@ -1,7 +1,7 @@
 ---
 id: 030
 slug: acciones-mis-citas
-status: approved
+status: implemented
 created: 2026-11-23
 extends: [005]
 ---
@@ -146,3 +146,4 @@ _(ninguna)_
 | 2026-11-23 | CA9 y K3 con la hora; Decisiones de contraste (excepción P16), ancho y nombre accesible | /analyze A18, A23, A28 (decisiones del usuario) |
 | 2026-11-23 | Implementada (10 de 10 tareas) | /implement |
 | 2026-11-23 | Vuelve a `approved`: /review ronda 1 pide T030–T033 | /review (changes_requested) |
+| 2026-11-23 | Implementada de nuevo con T030–T033 (review ronda 1) | /implement |

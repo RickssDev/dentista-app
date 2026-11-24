@@ -85,6 +85,14 @@ describe('030 · modificable en «Mis citas» (CA1, CA2)', () => {
   });
 });
 
+describe('030 · R11: la próxima cita usa la misma hora de México', () => {
+  test('getProximaCita pide la próxima con la fecha y la hora de México (HH:MM:SS)', async () => {
+    repo.getProximaCita.mockResolvedValue(null);
+    await citas.getProximaCita(7);
+    expect(repo.getProximaCita).toHaveBeenCalledWith(3, '2030-03-05', '23:30:00');
+  });
+});
+
 describe('030 · el servidor rechaza modificar una pendiente que ya terminó (CA10, CA7)', () => {
   const propia = (cambios) => repo.getCitaConUsuario.mockResolvedValue({
     id_cita: 40, estado: 'pendiente', id_paciente: 3, id_usuario: 7,
