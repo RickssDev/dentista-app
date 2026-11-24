@@ -1,7 +1,7 @@
 ---
 spec: 030-acciones-mis-citas
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 030 Reprogramar y cancelar desde «Mis citas»
