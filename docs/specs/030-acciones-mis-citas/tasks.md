@@ -1,7 +1,7 @@
 ---
 spec: 030-acciones-mis-citas
 plan: plan.md
-status: approved
+status: draft
 ---
 
 # Tareas · 030 Reprogramar y cancelar desde «Mis citas»
@@ -20,37 +20,65 @@ Formato:
 Revisado contra el Constitution Check de [plan.md](plan.md):
 - **P2:** cada implementación depende de su test, y la caracterización de Inicio (T011) va antes de la extracción (T021). ✅
 - **P3:** ninguna tarea toca `package.json`. ✅
-- **P8 y P17:** el servidor calcula `modificable` (T020) antes de que la vista lo use (T022). ✅
-- **P20:** ninguna tarea toca hojas de estilo. ✅
+- **P8:** T010 prueba las rutas por rol antes de cambiarlas (T020). ✅
+- **P17:** el servidor decide `modificable` y el rechazo (T020) antes de que la vista los use (T022). ✅
+- **P20:** ninguna tarea toca hojas de estilo; T012 comprueba que `ModalAccionCita` no tiene valores visuales literales. ✅
 - **P7, P13, P18, P19:** ➖, como en el plan. ➖
 
 ## Preparación
 Sin tareas: no hay dependencias, configuración ni migraciones.
 
 ## Tests (antes de implementar)
-- [ ] T010 [P] Tests del servidor de «Mis citas» — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: fallan por la razón esperada (no hay `modificable` ni `id_servicio`). Casos con los repositorios simulados y la hora fijada con `jest.useFakeTimers`:
-  - `modificable` es verdadero para una pendiente de mañana y para una de hoy cuyo fin (hora + duración) aún no llega en la hora de México;
-  - es falso para una pendiente de hoy ya terminada, para una de ayer y para una completada o cancelada futura;
-  - cada cita incluye `id_servicio`, y el id del paciente va en los parámetros de la consulta.
-  Por HTTP: `GET /api/v1/citas/miscitas` sin token → 401; `PUT /api/v1/citas/mias/:id` y `PATCH /api/v1/citas/mias/:id/cancelar` sobre una cita de otro paciente → 404 sin llamar a la actualización; cancelar una cita completada propia → rechazo. Los casos que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA1, CA2, CA8
-- [ ] T011 [P] Test de caracterización de Inicio — `frontend/tests/inicio-paciente.test.jsx` — hecho cuando: pasa antes del cambio, con `api` simulado. Comprueba que la tarjeta «Próxima cita» muestra «Reprogramar» y «Cancelar cita»; que el formulario de reprogramar tiene «Nueva fecha», «Nueva hora» y «Motivo» y pide los horarios con el `id_servicio` de la próxima cita; que confirmar manda `PUT /citas/mias/:id` con fecha, hora y motivo y muestra «Tu cita se reprogramó correctamente.»; que cancelar manda `PATCH /citas/mias/:id/cancelar` con el motivo y muestra «Tu cita se canceló correctamente.»; y que sin motivo sale el error del formulario. Se comprueba rompiendo un texto — cubre: CA7
-- [ ] T012 [P] Tests de las acciones en «Mis citas» — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada (no hay botones). Casos con `api` simulado:
+- [ ] T010 [P] Tests del servidor: `modificable`, rechazo de citas terminadas y permisos por rol — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: fallan por la razón esperada los casos nuevos (no hay `modificable`, `id_servicio` ni rechazo). Repositorios simulados con `fecha_agendada` como `Date` y la hora fijada con `jest.useFakeTimers`:
+  - `modificable` verdadero para una pendiente de mañana y para una de hoy que empieza dentro de un minuto; falso para una de hoy que empezó hace un minuto (sin terminar), para una de ayer y para una completada o cancelada futura;
+  - cada cita incluye `id_servicio`;
+  - `PUT /api/v1/citas/mias/:id` y `PATCH /api/v1/citas/mias/:id/cancelar` sobre una pendiente propia que terminó hace un minuto → 400 con el cuerpo exacto `{ success: false, status: "fail", message: "Esta cita ya pasó y no se puede modificar." }`, sin actualizar; sobre una en curso, se procesa;
+  - `GET /api/v1/citas/miscitas` sin token → 401; con token de Paciente, Administrador y Asistente, cada uno recibe solo las citas de su propio perfil;
+  - `PUT` y `PATCH` sobre una cita de otro → 404 sin actualizar; cancelar una completada propia → 400;
+  - los ids van en los parámetros de las consultas.
+  Los casos que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA1, CA2, CA7, CA8, CA10
+- [ ] T011 [P] Test de caracterización de Inicio — `frontend/tests/inicio-paciente.test.jsx` — hecho cuando: pasa antes del cambio, con `api` simulado. Comprueba:
+  - al montarse pide `/citas/proximacita`;
+  - la tarjeta «Próxima cita» muestra «Reprogramar» y «Cancelar cita»;
+  - el formulario de reprogramar tiene «Nueva fecha», «Nueva hora» y «Motivo», y pide los horarios con el `id_servicio` de la próxima cita;
+  - confirmar manda `PUT /citas/mias/<id_cita>` con fecha, hora y motivo, y muestra el aviso «Cita reprogramada» / «Tu cita se reprogramó correctamente.»;
+  - cancelar manda `PATCH /citas/mias/<id_cita>/cancelar` con el motivo, y muestra «Cita cancelada» / «Tu cita se canceló correctamente.»;
+  - sin motivo, sale el error del formulario.
+  Se comprueba rompiendo un texto — cubre: CA7
+- [ ] T012 [P] Tests de las acciones en «Mis citas» — `frontend/tests/mis-citas-acciones.test.jsx` — hecho cuando: fallan por la razón esperada (no hay botones ni componente). Con `api` simulado:
   - una pendiente con `modificable: true` muestra «Reprogramar» y «Cancelar cita», con nombre accesible «Reprogramar cita de <servicio> del dd/mm/aaaa» y «Cancelar cita de <servicio> del dd/mm/aaaa»;
-  - una pendiente con `modificable: false` y una completada no los muestran, y la completada conserva «Dejar comentario»;
-  - reprogramar pide los horarios con el `id_servicio` de esa cita, exige el motivo, manda `PUT /citas/mias/<id>`, vuelve a pedir `/citas/miscitas`, la tarjeta muestra la nueva fecha y sale «Tu cita se reprogramó correctamente.»;
-  - cancelar manda `PATCH /citas/mias/<id>/cancelar` y la tarjeta queda cancelada, sin botones;
+  - una pendiente con `modificable: false` y una completada no los muestran, y la completada conserva «Dejar comentario». Los casos que ya pasan se comprueban rompiendo lo que protegen;
+  - reprogramar pide los horarios con el `id_servicio` de esa cita, exige el motivo, manda `PUT /citas/mias/<id de esa tarjeta>`, vuelve a pedir `/citas/miscitas`, la tarjeta muestra la nueva fecha y sale «Cita reprogramada» / «Tu cita se reprogramó correctamente.»;
+  - cancelar manda `PATCH /citas/mias/<id>/cancelar`; la tarjeta queda cancelada sin botones y sale «Cita cancelada» / «Tu cita se canceló correctamente.»;
   - un rechazo del servidor sale en el `role="alert"` del formulario y la tarjeta conserva sus datos;
-  - con dos pendientes, solo cambia la elegida;
-  - al cerrar el formulario, el foco vuelve al botón que lo abrió, o al título de la tarjeta si la cita quedó cancelada.
+  - con dos pendientes, la llamada va al id de la elegida y la otra conserva sus botones;
+  - foco: cerrar sin guardar lo devuelve al botón que abrió el formulario; tras «Aceptar» en el aviso de reprogramar, va al botón «Reprogramar» de esa tarjeta; tras el de cancelar, a «Agendar nueva cita»;
+  - `src/components/ModalAccionCita.jsx` no contiene colores, medidas con unidad ni un valor numérico de `ancho`, con un control positivo que detecta un literal de ejemplo.
   Dos corridas iguales — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9
 
 ## Implementación
-- [ ] T020 Añadir `id_servicio` y `modificable` a «Mis citas» — `backend/src/modules/citas/citas.repository.js`, `backend/src/modules/citas/citas.service.js` — hecho cuando: pasa T010 y siguen en verde `tests/citas`. La consulta de `getMisCitas` añade `c.id_servicio` y `s.duracion`; el servicio calcula `modificable` con la fecha y hora de `America/Mexico_City`, como `getProximaCita` (pendiente y fecha mayor que hoy, o de hoy con hora + duración mayor que la hora actual), y no devuelve la duración — cubre: CA1, CA2, CA8 — depende: T010
-- [ ] T021 Extraer el formulario de Inicio a `ModalAccionCita` y usarlo en Inicio — `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: T011 sigue en verde sin cambiar ninguna de sus aserciones. El componente recibe `cita`, `accion`, `onCerrar` y `onHecho(accion)`; tiene los mismos títulos, campos, textos y validación del motivo; carga los horarios con `cita.id_servicio`; llama a `PUT` o `PATCH` con `cita.id`, y muestra en `error` el mensaje del servidor o el de respaldo. Inicio le pasa la próxima cita con `id: id_cita` y, en `onHecho`, recarga y muestra su aviso como hoy — cubre: CA3, CA4, CA5, CA7 — depende: T011
-- [ ] T022 Mostrar «Reprogramar» y «Cancelar cita» en «Mis citas» — `frontend/src/pages/paciente/CitasPaciente.jsx` — hecho cuando: pasa T012 y siguen en verde `inicio-paciente.test.jsx` y los demás tests del frontend. En las tarjetas con `modificable`, los dos botones (`.mf-btn .mf-btn-prin` y `.mf-btn .mf-btn-sec`, con sus íconos) dentro de `.cita-acciones`, con `aria-label` de la cita. Abren `ModalAccionCita`; en `onHecho`, vuelven a pedir `/citas/miscitas` y muestran el aviso de Inicio («Cita reprogramada» o «Cita cancelada»). Al cerrar, el foco vuelve al botón que lo abrió, o al título de la tarjeta si ya no tiene botones · verificación manual: capturas de «Mis citas» e Inicio a 390 y 1440 px antes y después, comparadas con `design.md` (K1, K2); con lector de pantalla y teclado, cada botón se anuncia con su cita y el foco vuelve al cerrar (K3) — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9 — depende: T012, T020, T021
+- [ ] T020 Añadir `id_servicio` y `modificable` a «Mis citas» y rechazar las citas terminadas — `backend/src/modules/citas/citas.repository.js`, `backend/src/modules/citas/citas.service.js` — hecho cuando: pasa T010 y siguen en verde `tests/citas`. Cambios:
+  - `getMisCitas` añade `c.id_servicio` a la consulta; el servicio calcula `modificable` (pendiente y fecha + hora de inicio posteriores a la hora de `America/Mexico_City`);
+  - `getCitaConUsuario` añade `c.fecha_agendada`, `c.hora` y `s.duracion`;
+  - `obtenerCitaPropia`, después de la propiedad y del estado, lanza `AppError("Esta cita ya pasó y no se puede modificar.", 400)` si el inicio + duración ya pasó;
+  - no devuelve la duración al cliente.
+  — cubre: CA1, CA2, CA7, CA8, CA10 — depende: T010
+- [ ] T021 Extraer el formulario de Inicio a `ModalAccionCita` y usarlo en Inicio — `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: T011 sigue en verde sin cambiar ninguna de sus aserciones. El componente:
+  - recibe `cita`, `accion`, `ancho`, `onCerrar` y `onHecho(accion)`;
+  - tiene los mismos títulos, campos, textos y validación del motivo;
+  - carga los horarios con `cita.id_servicio` y llama a `PUT` o `PATCH` con `cita.id`;
+  - muestra en `error` el mensaje del servidor o el de respaldo;
+  - no gestiona el foco ni tiene valores visuales literales.
+  Inicio le pasa `{ ...proximaCita, id: proximaCita.id_cita }` y `ancho={500}`, y en `onHecho` recarga y muestra su aviso como hoy — cubre: CA3, CA4, CA5, CA7 — depende: T011
+- [ ] T022 Mostrar «Reprogramar» y «Cancelar cita» en «Mis citas» — `frontend/src/pages/paciente/CitasPaciente.jsx` — hecho cuando: pasa T012 y siguen en verde `inicio-paciente.test.jsx` y los demás tests del frontend. En las tarjetas con `modificable`:
+  - los dos botones (`.mf-btn .mf-btn-prin` y `.mf-btn .mf-btn-sec`, con sus íconos) dentro de `.cita-acciones`, con `aria-label` de la cita;
+  - abren `ModalAccionCita` con el mismo `ancho` que Inicio;
+  - en `onHecho`, vuelven a pedir `/citas/miscitas` y muestran el aviso de Inicio;
+  - el foco sigue `design.md`.
+  · verificación manual: capturas de «Mis citas» e Inicio a 390 y 1440 px antes y después, comparadas con `design.md` (K1, K2); con lector de pantalla y teclado, cada botón se anuncia con su cita y el foco llega a un control con foco visible al cerrar, anotando el destino (K3) — cubre: CA1, CA2, CA3, CA4, CA5, CA6, CA9 — depende: T012, T020, T021
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura — `docs/architecture.md` — hecho cuando: `ModalAccionCita` figura entre los componentes del portal del paciente, y «Mis citas» como consumidora de `id_servicio` y `modificable`
+- [ ] T090 Actualizar `docs/architecture.md` y la spec 005 — `docs/architecture.md`, `docs/specs/005-portal-paciente-citas/spec.md` — hecho cuando: `ModalAccionCita` figura entre los componentes del portal del paciente; la 005 tiene en su Historial que la 030 extiende `/miscitas` y añade el rechazo de las citas terminadas, y su CA10 marcado `[x]` con el test de T010
 - [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas — hecho cuando: confirmado que no cambian, anotado como nota
 - [ ] T092 Marcar spec como `implemented`
 
@@ -70,9 +98,10 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
 | CA4 | T012 | T021, T022 |
 | CA5 | T012 | T021, T022 |
 | CA6 | T012 | T022 |
-| CA7 | T011 | T021 |
+| CA7 | T010, T011 | T020, T021 |
 | CA8 | T010 | T020 |
 | CA9 | T012 | T022 |
+| CA10 | T010 | T020 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -91,5 +120,5 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
 | WCAG 2.1 AA en las acciones y el formulario | T012 · verificación manual en T022 |
-| Mensajes en español sin detalles internos | T012 |
+| Mensajes en español sin detalles internos | T010, T012 |
 | Reglas en el servidor | T010, T012 |

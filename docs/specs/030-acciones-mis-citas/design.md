@@ -9,7 +9,7 @@ accepted: none
 score: 0
 system_version: 1.0.0
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-23  # refinado por /analyze A4, A5, A10
 ---
 
 # Diseño · 030 Reprogramar y cancelar desde «Mis citas»
@@ -31,7 +31,8 @@ Ninguno: sin ciclo de candidatos (ver Resultado y Decisiones).
   Inicio: «Reprogramar» (`.mf-btn .mf-btn-prin`, ícono de calendario) y «Cancelar cita»
   (`.mf-btn .mf-btn-sec`, ícono de cancelar), en ese orden. Se usa la regla actual
   `.cita-acciones .mf-btn`: los dos botones se reparten el ancho de la tarjeta, igual que «Dejar
-  comentario» hoy en la misma rejilla.
+  comentario» hoy en la misma rejilla. En Inicio, la «Próxima cita» los muestra con ancho automático
+  en escritorio; esa diferencia es la de hoy y no cambia.
 - **Demás tarjetas (CA2):** sin cambios. Las completadas conservan «Dejar comentario» o
   «Comentario enviado».
 - **Formulario (CA3, CA4, CA5):** el mismo `ModalFormulario` de Inicio, con los mismos títulos,
@@ -39,7 +40,8 @@ Ninguno: sin ciclo de candidatos (ver Resultado y Decisiones).
   salen en su `<p role="alert">`. Los avisos de éxito son el mismo `ModalConfirmacion`.
 - **Accesibilidad (CA9):** cada botón conserva su texto visible y añade un nombre accesible con la
   cita: «Reprogramar cita de Limpieza del 03/12/2026» y «Cancelar cita de Limpieza del
-  03/12/2026». Al cerrar el formulario, el foco vuelve al botón que lo abrió.
+  03/12/2026». Al cerrar, el foco vuelve a un control con foco visible: al botón que abrió el
+  formulario, o a «Agendar nueva cita» si la tarjeta se quedó sin botones (cita cancelada).
 
 Inicio no cambia (CA7).
 
@@ -86,8 +88,14 @@ Ninguno.
 - Contraste: el de los botones `.mf-btn` del sistema, sin cambios.
 - Nombre accesible: el texto visible está contenido en el nombre accesible, para que el control
   por voz también funcione (WCAG 2.5.3).
-- Foco: vuelve al botón que abrió el formulario al cerrarlo, por cancelación o por éxito. Si la
-  tarjeta pierde los botones (cancelada), vuelve al título de la tarjeta.
+- Foco, con esta secuencia:
+  - si el formulario se cierra sin guardar, el foco vuelve al botón que lo abrió;
+  - si se guarda, primero sale el aviso de éxito, que toma el foco; al pulsar «Aceptar», el foco
+    vuelve al botón «Reprogramar» de esa tarjeta, o a «Agendar nueva cita» si la cita quedó
+    cancelada y ya no tiene botones.
+  - Los dos destinos tienen el foco visible del sistema (`.mf-btn:focus-visible` y el botón del
+    encabezado), sin estilos nuevos.
+  - La lógica vive en «Mis citas»; el formulario compartido no cambia el foco de Inicio.
 - Teclado: botones nativos; el formulario cierra con Escape, como hoy.
 
 ## Decisiones
@@ -95,4 +103,4 @@ Ninguno.
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-23 | diseño | ¿Ciclo de candidatos o sin diseño nuevo? | Sin diseño nuevo: se reutilizan la tarjeta, los botones y el formulario de Inicio | `references/spec-mode.md` §1; spec 030 («sin romper diseños») |
-| 2026-11-23 | diseño | ¿A dónde va el foco si la cita cancelada ya no tiene botones? | Al título de su tarjeta | P16 |
+| 2026-11-23 | refinado | ¿A dónde va el foco si la cita cancelada ya no tiene botones? | A «Agendar nueva cita»: el título de la tarjeta no tiene foco visible y añadirlo sería un estilo nuevo | P16 · /analyze A4, A5 |
