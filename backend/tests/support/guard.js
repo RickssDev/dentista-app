@@ -12,4 +12,9 @@ module.exports = async () => {
   if (!HOSTS_LOCALES.includes(DB_HOST)) {
     throw new Error('Suite detenida: DB_HOST apunta a un servidor que no es local.');
   }
+
+  // Las pruebas corren en UTC en cualquier máquina, como la CI: así un cálculo de fecha que use la
+  // zona del proceso en vez de America/Mexico_City falla también en local (spec 030, /review R12).
+  // Los procesos de Jest se crean después y heredan la variable.
+  process.env.TZ = 'UTC';
 };

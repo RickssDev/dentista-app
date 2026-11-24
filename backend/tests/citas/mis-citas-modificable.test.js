@@ -2,6 +2,9 @@
 // (pendientes que aún no empiezan, en la hora de México) y el servidor rechaza reprogramar o cancelar
 // una pendiente que ya terminó. Cada cuenta solo ve y cambia sus propias citas.
 // La hora se fija a las 23:30 de México del 2030-03-05, cuando en UTC ya es el 2030-03-06 (A21).
+// R12: la suite corre en UTC (tests/support/guard.js), así que el caso de las 23:30 detecta
+// cualquier cálculo que use la zona del proceso en vez de America/Mexico_City.
+
 const request = require('supertest');
 
 jest.mock('google-auth-library', () => ({
@@ -119,6 +122,13 @@ describe('030 · el servidor rechaza modificar una pendiente que ya terminó (CA
     expect(repo.updateCita).toHaveBeenCalled();
   });
 
+  // R13: con la duración NULL contada como 0, una cita que ya empezó ya terminó
+  test('una pendiente de hoy que empezó a las 23:00 con duración NULL se rechaza', async () => {
+    propia({ fecha_agendada: HOY, hora: '23:00:00', duracion: null });
+    await expect(cancelar()).rejects.toMatchObject({ statusCode: 400, message: PASADA });
+    expect(repo.updateCita).not.toHaveBeenCalled();
+  });
+
   test('una cita de otro paciente responde 404 antes de mirar si pasó (TM1)', async () => {
     propia({ id_usuario: 99 });
     await expect(cancelar()).rejects.toMatchObject({ statusCode: 404 });
@@ -155,7 +165,7 @@ describe('030 · por HTTP: permisos y propiedad (CA8, TM1, TM3)', () => {
     expect(r.body.payload[0]).toMatchObject({ id_servicio: 2, modificable: true });
   });
 
-  test.each([[3], [2]])('con rol %i, reprogramar o cancelar la cita de otro → 404 sin actualizar', async (id_rol) => {
+  test.each([[3], [1], [2]])('con rol %i, reprogramar o cancelar la cita de otro → 404 sin actualizar', async (id_rol) => {
     const { cabecera } = sesion(id_rol);
     repo.getCitaConUsuario.mockResolvedValue({
       id_cita: 40, estado: 'pendiente', id_usuario: 999, fecha_agendada: MAÑANA, hora: '10:00:00', duracion: '01:00:00',

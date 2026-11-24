@@ -104,11 +104,13 @@ Sin tareas: no hay dependencias, configuración ni migraciones.
   - R5: reprogramar con dos pendientes cambia solo la elegida (la otra conserva fecha, hora y botones); la cancelada no muestra ni «Reprogramar» ni «Cancelar cita»; un rechazo al cancelar sale en el `role="alert"` y la tarjeta queda intacta
   - nota: añadida por /review: R1, R2, R5
   - nota: 3 fallan por la razón esperada en dos corridas: el foco cae en `body` con la recarga pendiente (R1), el aviso posterior desvía el foco al botón de la cita reprogramada (R1) y el error de recarga tapa el aviso de éxito (R2). Los 3 de R5 pasan (el comportamiento ya era correcto). La recarga se puede retener desde el test para reproducir la carrera
-- [ ] T031 Tests del servidor que faltaban — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: pasan, y los que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA8, CA10
+- [x] T031 Tests del servidor que faltaban — `backend/tests/citas/mis-citas-modificable.test.js` — hecho cuando: pasan, y los que ya se cumplen se comprueban rompiendo lo que protegen — cubre: CA8, CA10
   - R4: el 404 sobre una cita ajena también con el rol Administrador
   - R12: el archivo fija `process.env.TZ = 'UTC'` antes de cargar nada, para que el caso de las 23:30 detecte un error de zona en cualquier máquina
   - R13: una pendiente de hoy que empezó a las 23:00 con `duracion` NULL → 400 (NULL cuenta como 0)
   - nota: añadida por /review: R4, R12, R13
+  - nota: R4: 404 también con el rol Administrador; comprobado sin la verificación de propiedad, falla. R13: pendiente empezada a las 23:00 con duración NULL → 400; comprobado contando NULL como NaN, falla
+  - nota: R12: fijar `process.env.TZ` dentro del archivo no tiene efecto en Jest (el cálculo con la zona del proceso seguía pasando). Archivo extra justificado: `tests/support/guard.js` (`globalSetup`) fija `TZ=UTC` antes de crear los procesos de prueba; ahora el cálculo roto falla en local (2 casos) y la suite completa pasa en UTC (38 suites, 471 pruebas)
 - [ ] T032 Corregir el foco y el aviso tras reprogramar o cancelar, y reiniciar el formulario por apertura — `frontend/src/pages/paciente/CitasPaciente.jsx`, `frontend/src/components/ModalAccionCita.jsx`, `frontend/src/pages/paciente/InicioPaciente.jsx` — hecho cuando: pasa T030 y siguen en verde `inicio-paciente.test.jsx` y el resto del frontend; lint sin errores nuevos — cubre: CA3, CA7, CA9 — depende: T030
   - R1: el destino del foco se fija antes de abrir el aviso y solo vale para ese aviso
   - R2: la recarga posterior a una acción no muestra su propio aviso ni vacía la lista si falla; el destino pasa a «Agendar nueva cita»
