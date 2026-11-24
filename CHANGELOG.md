@@ -5,6 +5,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-24
+### Added
+- En «Mis citas», el paciente puede reprogramar o cancelar cualquiera de sus citas pendientes que aún no empiezan, con el mismo formulario y los mismos avisos que en Inicio. Cada botón indica a los lectores de pantalla de qué cita es (spec 030).
+
+### Changed
+- Una cita pendiente que ya terminó ya no se puede reprogramar ni cancelar desde el portal del paciente: se responde «Esta cita ya pasó y no se puede modificar.» y la resuelve la clínica (spec 030).
+
 ## [1.8.1] - 2026-11-23
 ### Security
 - La imagen de un servicio solo puede ser un archivo subido en ese momento: ya no se acepta una ruta indicada en la petición, que podía hacer que se borrara la foto de otra sección del sitio, como la de perfil de un paciente (fix 2026-11-23-fix-imagen-servicios).
